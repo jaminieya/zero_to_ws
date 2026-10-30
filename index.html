@@ -353,6 +353,16 @@ body::after{background:repeating-linear-gradient(0deg,rgba(8,31,67,.07) 0 1px,tr
 @media(max-width:1000px){.stage>.lu,.stage>.bug{display:none}.stage>.card{display:block}}
 @media(max-width:700px){.stage>.card{display:none}}
 @media(max-width:600px){.pcard .gear-icon{width:118px;height:112px}}
+/* 데스크톱에서는 휴대폰 전용 문구를 숨긴다 */
+.phone-only{display:none}
+/* 휴대폰 상점: 프로필 → 장비 업그레이드 → 기타 상점 순서, 커스터마이제이션은 창으로 */
+@media(max-width:760px){
+.phone-only{display:block}.shop-profile h2.phone-only{margin-bottom:8px}.shop-profile{cursor:pointer}
+.sgrid>.shop-col{display:contents}
+.sgrid .shop-profile{order:1}.sgrid .shop-eq-panel{order:2}.sgrid .lux{order:3}.sgrid>.shop-col>.shop-cust-panel{display:none}
+.cust-win .shop-cust-panel{display:block;margin:0;box-shadow:none;border:0;padding:0;background:none}.cust-win .shop-cust-panel>h2{display:none}.cust-win .crows,.cust-win .crow{display:flex}.cust-win .crows{flex-direction:column}.cust-win .lkbtn{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}.cust-win .lkbtn .btn{flex:none;writing-mode:horizontal-tb}
+.hgrid .home-coach{order:1}.hgrid .home-play{order:2}
+}
 /* 휴대폰: 커스터마이즈는 카드 위·옵션 아래로 쌓고, 홈 필드는 캐릭터 키에 맞춰 늘린다 */
 @media(max-width:560px){.cust-grid{grid-template-columns:1fr}.cust-grid #cardBox{display:flex;justify-content:center}.cust-grid #cardBox .ncard{width:200px;max-width:200px}.panel.hp .hfield,.hp .hfield{height:auto!important;min-height:220px;padding:12px 0}.hcap-top{flex-wrap:wrap}.hcap-top .sub{flex-basis:100%}}
 </style>
@@ -1342,7 +1352,7 @@ function logPanel(){
 }
 let HUBTAB='main';
 const TABS=['shop','main','rec'],TABN={shop:['SHOP','상점'],main:['HOME','선수 홈'],rec:['CAREER','기록실']};
-function setTab(t){HUBTAB=t;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPCONS=false;SHOPLUX=false}hub()}
+function setTab(t){HUBTAB=t;SHOPCUSTWIN=false;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPCONS=false;SHOPLUX=false}hub()}
 function heroPanel(){
   const cu=P.cust;
   const rt=H.length;H.push(()=>{HUBRETIRE=true;hub()});
@@ -1366,8 +1376,8 @@ function mainTab(ny,na){
   const stats=`<div class="panel hp"><div class="ovrrow"><div><span class="sub">OVR</span><b>${o}${ovrDeltaMark()}</b></div><div><span class="sub">최근 시즌</span><b class="sm2">${last?last.lv:'-'}</b></div><div><span class="sub">최고 OVR</span><b>${Math.max(P.peak||0,o)}</b></div></div>
     ${P.labels.map((l,i)=>bar(l,P.st[i],P.lastDelta&&P.lastDelta[i])).join('')}${bar('멘탈',P.mental,P.lastMen)}${bar('명성',Math.min(P.fame,10)*10)}
     <p class="sub" style="margin-top:10px">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}보유 ${moneyPair(P.money)}</p></div>`;
-  const play=`<div class="panel hp"><div class="tbox team-play-row"><div><b>${P.team}</b><br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
-  const coach=`<div class="panel hp"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
+  const play=`<div class="panel hp home-play"><div class="tbox team-play-row"><div><b>${P.team}</b><br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
+  const coach=`<div class="panel hp home-coach"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
   return `<div class="hgrid">${heroPanel()}${stats}${play}${coach}</div>`;
 }
 const EQUIP=[
@@ -1379,7 +1389,8 @@ const EQUIP=[
  {id:'recov',n:()=>'회복 장비',d:'시즌 멘탈 +2 / 레벨'}
 ];
 const EQ_MAX=5,eqCost=l=>Math.round((.1+.08*l)*100)/100,CUST_COST=.05;
-let SHOPSEL=0,SHOPCONS=false,SHOPLUX=false,SHOPCU=null,SHOPEDIT=null;
+let SHOPSEL=0,SHOPCONS=false,SHOPLUX=false,SHOPCU=null,SHOPEDIT=null,SHOPCUSTWIN=false;
+const isPhone=()=>{try{return matchMedia('(max-width:760px)').matches}catch(e){return false}};
 const txt=v=>typeof v==='function'?v():v;
 function eqLv(id){return (P.eq&&P.eq[id])||0}
 function eqBuy(id){
@@ -1407,8 +1418,10 @@ function shopTab(){
   }).join('');
   const left=`<div class="panel shop-eq-panel"><h2>장비 업그레이드</h2><div class="eql">${eqList}</div></div>`;
   const luxN=Object.keys(P.luxOwned||{}).length;
-  const store=`<div class="panel lux"><div class="luxh"><b>상점</b><span class="sub">럭셔리 ${luxN}/${LUXURY.length} 보유</span></div><div class="store-btns">${B(`소모품<small>시즌 아이템 · ${SHOP.length}종</small>`,()=>{SHOPCONS=true;hub()})}${B(`럭셔리 박스<small>영구 자산 · ${LUXURY.length}종</small>`,()=>{SHOPLUX=true;hub()},'red')}</div></div>`;
-  const hero=`<div class="panel hp"><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><b>${P.name}</b><span class="sub">보유 ${moneyPair(P.money)}</span></div></div>`;
+  const store=`<div class="panel lux"><div class="luxh"><b>기타 상점</b><span class="sub">럭셔리 ${luxN}/${LUXURY.length} 보유</span></div><div class="store-btns">${B(`소모품<small>시즌 아이템 · ${SHOP.length}종</small>`,()=>{SHOPCONS=true;hub()})}${B(`럭셔리 박스<small>영구 자산 · ${LUXURY.length}종</small>`,()=>{SHOPLUX=true;hub()},'red')}</div></div>`;
+  /* 휴대폰: 프로필 박스를 누르면 커스터마이제이션 창이 열린다 */
+  const ho=hx(()=>{if(isPhone()){SHOPCUSTWIN=true;hub()}});
+  const hero=`<div class="panel hp shop-profile" onclick="H[${ho}]()"><h2 class="phone-only">프로필</h2><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><b>${P.name}</b><span class="sub">보유 ${moneyPair(P.money)}</span><span class="sub phone-only">눌러서 외형 바꾸기 ✎</span></div></div>`;
   const mid=`<div class="shop-col shop-mid-col">${hero}${store}</div>`;
   /* 오른쪽: 커스터마이제이션 */
   const cell=f=>{
@@ -1423,6 +1436,10 @@ function shopTab(){
   const right=`<div class="panel shop-cust-panel"><h2>커스터마이제이션</h2><div class="crows lock">${rows}</div><p class="sub" style="margin-top:10px">저장 1회 ${priceLabel(CUST_COST)} · 보유 ${priceLabel(P.money)}</p><div class="lkbtn"><button class="btn alt ${dirty?'':'dis'}" onclick="H[${rs}]()">초기화</button><button class="btn ${dirty&&P.money>=CUST_COST?'':'dis'}" onclick="H[${sv}]()">저장</button></div></div>`;
   /* 편집 팝업 */
   let extra='';
+  if(SHOPCUSTWIN){
+    const cw=hx(()=>{SHOPCUSTWIN=false;hub()});
+    extra+=`<div class="backdrop b2" onclick="H[${cw}]()"><div class="win cust-modal" style="width:min(440px,94vw)" onclick="event.stopPropagation()"><div class="wbar"><span>커스터마이제이션</span><button class="wx" onclick="H[${cw}]()">✕</button></div><div class="wbody cust-win">${right}</div></div></div>`;
+  }
   const f=CFIELDS.find(x=>x.k===SHOPEDIT);
   if(f){
     const cl=hx(()=>{SHOPEDIT=null;hub()});

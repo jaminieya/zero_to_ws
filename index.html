@@ -661,7 +661,9 @@ function rollStats(kind,role){
   const pot=Math.round(C(58+Math.abs(G())*16+R(0,6),58,97));
   return {labels,st:st.map(v=>C(v,20,70)),pot};
 }
-const potGrade=p=>p>=88?'S':p>=80?'A':p>=70?'B':'C';
+const potGrade=p=>p>=90?'S':p>=80?'A':p>=70?'B':'C';
+/* 스카우트 등급은 하한선: S는 90 이상, A는 80 이상, B는 70 이상. 실제 잠재력은 등급보다 높을 수 있다 */
+const potG=()=>P.potG||potG();
 function defCust(){return {skin:0,hcol:0,style:0,cap:0,body:1,theme:2,num:RI(1,99),nick:'',hand:'우투우타'}}
 function newPlayer(cr){
   const car=()=>({g:0,w:0,l:0,sv:0,hd:0,ip:0,k:0,er:0,ab:0,h:0,hr:0,rbi:0,sb:0});
@@ -763,7 +765,7 @@ function toggleSet(k){SET[k]=!SET[k];try{localStorage.setItem(SETKEY,JSON.string
 function closeHubModals(){HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';hub()}
 function careerShareText(){
   if(!P)return '';
-  const o=ovr(),g=potGrade(P.pot),ti=titleOf();
+  const o=ovr(),g=potG(),ti=titleOf();
   return `⚾ 「${GAME_NAME}」\n${P.name} · ${ROLE[P.role]} · OVR ${o} · ${g}급 유망주\n${lvLabel()} · ${P.team} · ${P.y}년 (${P.age}세)\n${ti}\nKBO 1군 ${P.kbo1Years||0}시즌 · MLB ${P.mlbYears||0}시즌 · 보유 ${won(P.money)}\n`;
 }
 function fmtCarLine(c){
@@ -1091,7 +1093,29 @@ function hofScreen(){
 /* ----- 선수 생성 (이름 · 출신 · 난이도) ----- */
 let CR={};
 const DIFFS=[{k:'쉬움'},{k:'보통'},{k:'어려움'}];
-const DIFF_IDX=[.25,0,-.25],DIFF_POT=[6,0,-6],DIFF_CASH=[.3,.18,.08];
+const DIFF_IDX=[.25,0,-.25],DIFF_CASH=[.3,.18,.08];
+/* 잠재력 등급 확률: 쉬움 S>A>B · 보통 A>B>S · 어려움 B>A>S */
+const DIFF_GRADE=[{S:.5,A:.35,B:.15},{A:.5,B:.3,S:.2},{B:.55,A:.3,S:.15}];
+function rollPot(diff){
+  const w=DIFF_GRADE[diff==null?1:diff];let x=Math.random(),g='B';
+  for(const k of Object.keys(w)){if((x-=w[k])<0){g=k;break}}
+  const floor={S:90,A:80,B:70}[g];
+  return {g,pot:Math.round(C(floor+Math.abs(G())*5+R(0,2),floor,99))};
+}
+/* 시즌 부상 확률. 어려움은 실제 MLB 수준: 시즌마다 선수 약 3분의 1이 부상자 명단(IL)에 오르고, 투수가 타자보다 높고, 30세가 넘으면 늘어난다 */
+function injuryBase(){
+  const d=P.diff==null?1:P.diff;
+  if(d===0)return .015;
+  if(d===1)return .08+(P.age>31?.05:0);
+  return (P.pitcher?.36:.27)+Math.max(0,P.age-30)*.015;
+}
+function injurySeverity(){
+  const d=P.diff==null?1:P.diff,r=Math.random();
+  if(d===0)return 'minor';
+  if(d===1)return r<.6?'minor':r<.92?'major':'surg';
+  /* 어려움: IL 대부분은 짧은 부상, 시즌 아웃 수술은 투수 약 6%·타자 약 3% */
+  return r<.62?'minor':r<(P.pitcher?.94:.97)?'major':'surg';
+}
 function newGame(force){
   if(hasSave()&&force!==true){
     stagePage(()=>({title:'NEW GAME',close:menu,body:`<p style="text-align:center">저장된 게임이 있습니다.<br>새로 시작하면 기존 저장이 덮어씌워집니다.</p><div style="text-align:center">${B('새로 시작',()=>newGame(true),'mbtn')}${B('취소',menu,'alt mbtn')}</div>`}));
@@ -1244,10 +1268,10 @@ function randCust(){
 function beginCareer(){
   HUBTAB='main';
   if(!CR.st||!CR.role||!CR.highSchool)return;
-  CR.pot=C(CR.pot+DIFF_POT[CR.diff],45,99);if(!CR.cust)CR.cust=randCust();
+  const rp=rollPot(CR.diff);CR.pot=rp.pot;CR.potG=rp.g;if(!CR.cust)CR.cust=randCust();
   newPlayer(CR);
-  P.diff=CR.diff;P.money=DIFF_CASH[CR.diff];P.bp=0;P.bpFold=true;
-  const g=potGrade(P.pot);
+  P.diff=CR.diff;P.potG=CR.potG;P.money=DIFF_CASH[CR.diff];P.bp=0;P.bpFold=true;
+  const g=potG();
   L(`고교 야구부 입단 — ${P.team} (난이도 ${DIFFS[CR.diff].k})`);
   show(()=>panel('2027년 봄',`<p><b>${P.team}</b> 야구장. 후보 선수 명단 맨 아래에 <b>${P.name}</b>의 이름이 적혀 있다.</p><p>“쟤는 벤치나 지켜라.” 감독님은 눈길도 주지 않았다.</p><p>그래도 매일 밤 글러브를 닦으며 다짐한다. 언젠가 <b>한국시리즈</b>를 거쳐, <b>월드시리즈</b> 무대에 서겠다고.</p><p class="sub">${ROLE[P.role]} · ${P.region} 출신 · 스카우트 사전 평가: ${g}급 유망주 · 난이도 ${DIFFS[CR.diff].k}</p>${B('라커룸으로',hub)}`));
 }
@@ -1296,7 +1320,7 @@ function shopPanel(){
 }
 function centerPanel(ny,na){
   const o=ovr();
-  return `<div class="panel"><h2>선수 정보</h2><div class="two">${cardHtml(P,{ovr:o,pot:potGrade(P.pot)})}<div>${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div></div><p style="margin-top:12px"><b>${P.name}</b> · ${ROLE[P.role]} · ${P.region} 출신</p><p class="sub">${lvLabel()} · ${P.team}</p><p class="sub">다음 시즌 ${ny}년 (${na}세)${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''} · 명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}</p>${B('▶ 게임 플레이하기',playNext,'play')}</div>`;
+  return `<div class="panel"><h2>선수 정보</h2><div class="two">${cardHtml(P,{ovr:o,pot:potG()})}<div>${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div></div><p style="margin-top:12px"><b>${P.name}</b> · ${ROLE[P.role]} · ${P.region} 출신</p><p class="sub">${lvLabel()} · ${P.team}</p><p class="sub">다음 시즌 ${ny}년 (${na}세)${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''} · 명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}</p>${B('▶ 게임 플레이하기',playNext,'play')}</div>`;
 }
 function careerPanel(){
   const f=c=>{if(!c.g)return '<span class="sub">기록 없음</span>';return P.pitcher?`${c.w}승 ${c.l}패 ${c.sv}세이브 ${c.hd}홀드<br>평균자책 ${c.ip?f2(c.er*9/c.ip):'-'} · ${c.k}탈삼진 · ${c.ip}이닝`:`타율 ${c.ab?rate(c.h/c.ab):'-'} · ${c.hr}홈런<br>${c.rbi}타점 · ${c.sb}도루`};
@@ -1554,6 +1578,7 @@ function grow(){
   if(q('recov'))mental(2*q('recov'));
 }
 function injure(sev){
+  if(P.diff===0)sev='minor'; /* 쉬움: 큰 부상 없음 */
   P.injured=sev;
   if(sev==='major'){bump(RI(0,4),-RI(1,3))}
   if(sev==='surg'){if(P.pitcher){bump(0,-RI(2,4));bump(1,-RI(1,3))}else{bump(1,-RI(2,4));bump(3,-RI(1,3))}}
@@ -1994,7 +2019,7 @@ function statline(lg,idx,gf){
     const ip=Math.max(0,Math.round(g*(sp?R(4.7,6.1):P.role==='MR'?R(.9,1.35):R(.85,1.2))*sc*(.85+P.st[3]/330)));
     const era=C(4.35-idx*.95+G()*.3,.9,9.5),k9=C(7.2+idx*1.5+(P.st[0]-60)/22,3.5,14);
     const k=Math.round(ip*k9/9),er=era*ip/9;
-    if(sp){const dec=Math.min(g,Math.round(ip/6*.65)),wp=C(.5+idx*.08+G()*.05,.15,.9),w=Math.round(dec*wp),l=dec-w;return {g,line:`${w}승 ${l}패 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd:0,ip,k,er}}
+    if(sp){const dec=Math.min(g,Math.round(ip/6*.72)),wp=C(.5+idx*.08+G()*.05,.15,.9),w=Math.round(dec*wp),l=dec-w;return {g,line:`${w}승 ${l}패 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd:0,ip,k,er}}
     if(P.role==='CL'){const sv=idx>-.2?Math.round(C(g*(.3+idx*.06),0,g*.72)):RI(0,Math.min(4,g));return {g,line:`${sv}세이브 ERA ${f2(era)} ${k}K ${ip}이닝`,w:0,l:0,sv,hd:0,ip,k,er}}
     const hd=idx>-.2?Math.round(C(g*(.22+idx*.05),0,g*.58)):RI(0,Math.min(5,g)),w=Math.round(hd/5),l=Math.round(hd/7);
     return {g,line:`${w}승 ${l}패 ${hd}홀드 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd,ip,k,er};
@@ -2008,43 +2033,58 @@ function statline(lg,idx,gf){
   const sb=Math.round(C((P.st[3]-40)/2.5,0,45)*volume*(1+idx*.1));
   const ops=C(.705+idx*.085+(P.st[2]-60)/700,.35,1.3);
   const h=Math.round(ab*avg);
-  return {g,line:`타율 ${rate(avg)} ${hr}홈런 ${rbi}타점 ${sb}도루 OPS ${rate(ops)}`,ab,h,hr,rbi,sb};
+  return {g,line:`타율 ${rate(avg)} ${hr}홈런 ${rbi}타점 ${sb}도루 OPS ${rate(ops)}`,pa,ab,h,hr,rbi,sb,ops};
 }
-function awardChance(score,team,base=.04,scale=.12,cap=.72){return C(base+Math.max(0,score)*scale+team,0,cap)}
+/* 시즌 수상: 실제 리그 1위 기록 범위(최근 KBO·MLB 시즌 기준)에서 경쟁자를 뽑고, 내 기록이 넘어야 수상 */
+const rival=(lo,hi)=>lo+(hi-lo)*(Math.random()+Math.random())/2;
+const AWARD_BAR={
+  KBO:{avg:[.335,.365],hr:[30,46],rbi:[100,135],sb:[38,65],w:[14,20],era:[1.9,2.8],k:[170,230],sv:[30,42],hd:[28,38],
+       mvp:[6.5,9],roy:[2,4],gg:[3.5,5.5],ggP:[5,7.5],star:[2.5,4],pa:446,ip:144},
+  MLB:{avg:[.325,.350],hr:[40,58],rbi:[110,140],sb:[40,70],w:[16,20],era:[2.0,2.8],k:[225,290],sv:[37,47],
+       mvp:[7.5,10],cy:[6,8.5],roy:[3,5.5],star:[3,4.5],ss:[.850,.950],glove:[78,90],pa:502,ip:162}
+};
+/* 대략적인 WAR: 타자는 OPS·타석·포지션, 투수는 평균 대비 실점 억제와 이닝 */
+function seasonWar(sl){
+  if(!sl)return 0;
+  if(P.pitcher){const era=sl.ip?sl.er*9/sl.ip:9,lev=isSP()?1:1.6;return ((4.4-era)*sl.ip/9/9.5)*lev+sl.ip*.011}
+  const pos=P.role==='IF'?.6:P.role==='DH'?-1.5:0;
+  return (sl.ops-.720)*sl.pa*.045+sl.pa/300+(sl.sb-10)*.02+pos*sl.pa/600;
+}
 function awards(lg,idx,gf,sl,tr){
-  const a=[],r=Math.random,team=(tr&&tr.champ)?0.13:(tr&&/준우승/.test(tr.tag||''))?0.08:(tr&&/가을야구|플레이오프|시리즈/.test(tr.t||''))?0.04:-0.02;
-  const win=(name,score,base=.04,scale=.12,cap=.72)=>{if(r()<awardChance(score,team,base,scale,cap))a.push(name)};
-  if(lg==='HS'&&idx>2.1&&!P.ach['고교 최고 유망주'])a.push('고교 최고 유망주');
-  if(lg==='KBO1'){
-    if(P.kbo1Years===1&&P.proYears<=5&&gf>.6)win('KBO 신인왕',idx-.25,.06,.16,.58);
-    win('KBO MVP',idx-1.25,.025,.13,.58);
-    win('KBO 골든글러브',idx-.65,.05,.15,.68);
-    win('KBO 올스타',idx-.2,.12,.18,.78);
+  const a=[],add=n=>a.push(n);
+  if(lg==='HS'&&idx>2.1&&!P.ach['고교 최고 유망주'])add('고교 최고 유망주');
+  if((lg==='KBO1'||lg==='MLB')&&sl){
+    const L=lg==='MLB'?'MLB':'KBO',B=AWARD_BAR[L],war=seasonWar(sl),post=tr&&(tr.champ||/시리즈|플레이오프|가을야구 진출|준우승/.test((tr.t||'')+(tr.tag||'')))?.5:0;
+    const beat=(v,k,low)=>low?v<=rival(...B[k]):v>=rival(...B[k]);
+    const rookie=lg==='MLB'?P.mlbYears===1:(P.kbo1Years===1&&P.proYears<=5);
+    if(rookie&&gf>.6&&war>=rival(...B.roy))add(L+' 신인왕');
+    if(war+post>=rival(...B.mvp))add(lg==='MLB'&&P.pitcher?'':L+' MVP');
+    if(war>=rival(...B.star)||(gf>.5&&idx>0&&P.fame>=(lg==='MLB'?8:5)))add(L+' 올스타');
     if(P.pitcher){
       const era=sl.ip?sl.er*9/sl.ip:9;
-      if(P.role==='CL')win('KBO 세이브왕',(sl.sv-25)/9,.02,.18,.68);
-      else if(P.role==='MR')win('KBO 홀드왕',(sl.hd-24)/8,.02,.18,.68);
-      else{win('KBO 다승왕',(sl.w-12)/4,.02,.17,.66);win('KBO 평균자책왕',(3.35-era)/.65,.02,.18,.66);win('KBO 탈삼진왕',(sl.k-145)/45,.02,.16,.66)}
+      if(lg==='MLB'&&sl.ip>=150&&war>=rival(...B.cy))add('사이영상');
+      if(lg==='KBO1'&&sl.ip>=B.ip&&war>=rival(...B.ggP))add('KBO 골든글러브');
+      if(P.role==='CL')beat(sl.sv,'sv')&&add(L+' 세이브왕');
+      else if(P.role==='MR'){if(B.hd&&beat(sl.hd,'hd'))add('KBO 홀드왕')}
+      else{
+        if(beat(sl.w,'w'))add(L+' 다승왕');
+        if(sl.ip>=B.ip&&beat(era,'era',true))add(L+' 평균자책왕');
+        if(beat(sl.k,'k'))add(L+' 탈삼진왕');
+      }
     }else{
       const avg=sl.ab?sl.h/sl.ab:0;
-      win('KBO 타격왕',(avg-.285)/.025,.02,.17,.66);win('KBO 홈런왕',(sl.hr-27)/10,.02,.17,.68);win('KBO 타점왕',(sl.rbi-85)/24,.02,.16,.66);win('KBO 도루왕',(sl.sb-20)/10,.02,.18,.68);
+      if(lg==='KBO1'&&sl.g>=96&&war>=rival(...B.gg))add('KBO 골든글러브');
+      if(lg==='MLB'){
+        if(P.role!=='DH'&&sl.g>=100&&P.st[4]+idx*2>=rival(...B.glove))add('MLB 골드글러브');
+        if(sl.pa>=400&&sl.ops>=rival(...B.ss))add('MLB 실버슬러거');
+      }
+      if(sl.pa>=B.pa&&beat(avg,'avg'))add(L+' 타격왕');
+      if(beat(sl.hr,'hr'))add(L+' 홈런왕');
+      if(beat(sl.rbi,'rbi'))add(L+' 타점왕');
+      if(beat(sl.sb,'sb'))add(L+' 도루왕');
     }
   }
-  if(lg==='MLB'){
-    if(P.mlbYears===1&&gf>.6)win('MLB 신인왕',idx-.45,.04,.14,.48);
-    win(P.pitcher?'사이영상':'MLB MVP',idx-1.55,.015,.11,.48);
-    win('MLB 올스타',idx-.25,.09,.15,.68);
-    if(P.pitcher){
-      const era=sl.ip?sl.er*9/sl.ip:9;
-      if(P.role==='CL')win('MLB 세이브왕',(sl.sv-34)/10,.015,.15,.58);
-      else if(isSP()){win('MLB 다승왕',(sl.w-15)/4,.015,.14,.56);win('MLB 평균자책왕',(3.05-era)/.55,.015,.15,.56);win('MLB 탈삼진왕',(sl.k-205)/55,.015,.14,.56)}
-    }else{
-      const avg=sl.ab?sl.h/sl.ab:0,def=(P.st[4]-65)/14,bat=(idx-1)+(P.st[1]-70)/30;
-      win('MLB 골드글러브',def,.025,.14,.52);win('MLB 실버슬러거',bat,.025,.13,.54);
-      win('MLB 타격왕',(avg-.295)/.022,.015,.15,.55);win('MLB 홈런왕',(sl.hr-36)/12,.015,.15,.58);win('MLB 타점왕',(sl.rbi-100)/25,.015,.14,.56);win('MLB 도루왕',(sl.sb-28)/12,.015,.16,.58);
-    }
-  }
-  a.forEach(k=>A(k));return a;
+  const out=a.filter(Boolean);out.forEach(k=>A(k));return out;
 }
 function postseason(t,league){
   let rounds;
@@ -2112,7 +2152,7 @@ function playSeason(){
   if(isPro(lg))P.proYears++;
   const rehab=P.rehab;P.rehab=0;
   const mod=P.mod||{inj:0,perf:0};
-  if(lg!=='MIL'&&!P.injured&&Math.random()<C(.08+(P.age>31?.05:0)-(P.restFlag?.05:0)-(P.shield?.04:0)-.012*((P.eq&&P.eq.helmet)||0)+(P.prepInjExtra||0)+(mod.inj||0),.01,.45)){const r=Math.random();injure(r<.6?'minor':r<.92?'major':'surg')}
+  if(lg!=='MIL'&&!P.injured&&Math.random()<C(injuryBase()+(P.diff===0?.3:1)*(-(P.restFlag?.05:0)-(P.shield?.04:0)-.012*((P.eq&&P.eq.helmet)||0)+(P.prepInjExtra||0)+(mod.inj||0)),P.diff===0?0:.01,P.diff===2?.65:P.diff===0?.05:.45)){injure(injurySeverity())}
   let inj='';
   if(P.injured){gf=P.injured==='minor'?.82:P.injured==='major'?.5:.12;inj=P.injured==='minor'?'경미한 부상으로 일부 경기를 결장했다.':P.injured==='major'?'큰 부상으로 시즌의 절반을 날렸다.':(P.pitcher?'토미 존 수술':'큰 수술')+'을 받고 시즌을 거의 접었다.';if(P.injured==='surg')P.rehab=1}
   else if(rehab)gf=.75;
@@ -2502,7 +2542,7 @@ function ending(){
   P.done=true;try{localStorage.removeItem(SK('b2ws_save'))}catch(e){}
   const s=score(),[g,gd]=gradeOf(s),ti=titleOf();
   const role=ROLE[P.role];
-  try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potGrade(P.pot)})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
+  try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potG()})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
   const ach=Object.keys(P.ach).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
   const epi=g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.';
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;

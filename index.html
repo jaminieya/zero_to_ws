@@ -1,0 +1,2175 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>벤치에서 월드시리즈까지</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css">
+<style>
+:root{--paper:#f3e9c6;--ink:#17140d;--gold:#f6c21b;--red:#d8452f;--grass:#2b7a3d;--navy:#0f2a1a}
+*{box-sizing:border-box}
+html,body{margin:0;background:#050d08}
+body{color:var(--paper);font-family:'Galmuri11','Galmuri9',ui-monospace,monospace;font-size:15px;line-height:1.65}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px)}
+.app{max-width:780px;margin:0 auto;padding:16px 14px 70px}
+.panel{background:var(--navy);border:4px solid var(--paper);box-shadow:6px 6px 0 #000;padding:16px 18px;margin:16px 0}
+.panel>h2{margin:0 0 8px;color:var(--gold);font-size:19px}
+.panel p{margin:6px 0}
+.sub{color:#9fc7a6;font-size:13px}
+.btn{font:inherit;cursor:pointer;background:var(--gold);color:var(--ink);border:3px solid #000;padding:9px 14px;margin:6px 8px 6px 0;box-shadow:0 4px 0 #7a5d00;text-align:left}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #7a5d00}
+.btn.alt{background:var(--paper);box-shadow:0 4px 0 #8a7f5a}
+.btn.red{background:var(--red);color:#fff;box-shadow:0 4px 0 #7a2415}
+.hud{display:grid;grid-template-columns:1fr auto;gap:6px 14px}
+.hud .ovr{grid-row:1/3;grid-column:2;text-align:center;border:3px solid var(--gold);padding:4px 12px;color:var(--gold);font-size:12px}
+.hud .ovr b{display:block;font-size:34px;line-height:1.1}
+.hud .bars,.hud .meta2{grid-column:1/3}
+.row{display:grid;grid-template-columns:4.6em minmax(0,1fr) 2.4em 2.8em;gap:6px;align-items:center;font-size:13px}
+.bar{height:12px;border:2px solid var(--paper);background:#06130b}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--gold) 0 6px,#c79a00 6px 8px)}
+.grid{display:flex;flex-wrap:wrap}
+.news p{color:var(--gold)}
+.line{font-size:17px;color:#fff;background:#06130b;border:2px dashed #3d6a4a;padding:8px 10px}
+.tag{display:inline-block;background:var(--red);color:#fff;padding:1px 8px;margin:2px 6px 2px 0;font-size:13px;border:2px solid #000}
+.tag.g{background:var(--gold);color:var(--ink)}
+.title{text-align:center;padding:26px 8px 10px}
+.title h1{font-size:clamp(34px,9vw,58px);line-height:1.15;margin:10px 0;color:var(--paper);text-shadow:4px 4px 0 var(--red),8px 8px 0 #000;letter-spacing:-1px}
+.title .kicker{color:var(--gold);letter-spacing:4px;font-size:13px}
+.blink{animation:bl 1s steps(2) infinite}
+@keyframes bl{50%{opacity:.25}}
+input[type=text],select{font:inherit;width:100%;padding:9px;background:#06130b;color:var(--paper);border:3px solid var(--paper)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.cards label{display:block;border:3px solid var(--paper);padding:8px 10px;cursor:pointer;background:#06130b}
+.cards label:has(input:checked){background:var(--gold);color:var(--ink);box-shadow:4px 4px 0 #000}
+.cards input{display:none}
+.cards small{display:block;opacity:.8}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{border:2px solid #2f5a3b;padding:4px 6px;text-align:left;vertical-align:top}
+th{background:#143a24;color:var(--gold)}
+.scroll{overflow-x:auto}
+.big{font-size:56px;color:var(--gold);text-shadow:4px 4px 0 #000;line-height:1.1}
+
+.narrow{max-width:780px;margin:0 auto}
+.app{max-width:1100px}
+.topbar{display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid var(--paper);padding-bottom:6px;margin-bottom:6px;color:var(--gold);gap:8px}
+.topbar-actions{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.topbar-actions .btn{margin:0;padding:0;font-size:12px;box-shadow:0 3px 0 #7a5d00}
+.topbar-actions .btn.icon{width:40px;height:40px;min-width:40px;min-height:40px;padding:0;display:inline-flex;align-items:center;justify-content:center}
+.topbar-actions .btn.icon svg{width:20px;height:20px;display:block}
+.topbar-actions .btn.icon.coffee{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",emoji,sans-serif;font-size:20px;line-height:1}
+.acct{margin:8px 0;padding:10px 12px;text-align:center;font-size:20px;letter-spacing:1px;color:#123f75;background:#fff;border:2px solid #5e91b9;border-radius:8px}
+.wbody a{color:#1768b6}
+.topbar .hub-logo{display:block;height:40px;width:40px;flex-shrink:0;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,.4))}
+.topbar-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+.topbar-name{color:#fff36b;font-weight:700;font-size:15px;line-height:1.15;letter-spacing:-.4px;text-shadow:0 2px #0b315c;white-space:nowrap}
+@media(max-width:640px){.topbar-name{font-size:12px}.topbar .hub-logo{height:32px;width:32px}.topbar-actions .btn.icon{width:36px;height:36px;min-width:36px;min-height:36px}}
+.prep-backdrop{z-index:55;background:rgba(3,8,5,.72);align-items:flex-start;padding-top:max(12px,env(safe-area-inset-top))}
+.prep-win{max-width:520px;width:min(520px,94vw);margin:8vh auto 0;max-height:min(88vh,720px);overflow:auto}
+.prep-news{margin-bottom:10px;padding:8px 10px;background:#06130b;border-left:4px solid var(--gold);font-size:13px;color:var(--gold)}
+.prep-news p{margin:4px 0}
+.prep-meta{margin:0 0 10px;font-size:13px}
+.prep-chips{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.prep-chips .btn.prep-chip{margin:0;flex:1 1 calc(33% - 10px);min-width:92px;text-align:center;font-size:13px;padding:11px 8px;background:#06130b;color:#b8d4be;border:3px solid #2f5a3b;box-shadow:inset 0 2px 0 rgba(0,0,0,.35);opacity:.92}
+.prep-chips .btn.prep-chip.alt{color:#cfe3d0}
+.prep-chips .btn.prep-chip.on{background:var(--gold);color:var(--ink);border-color:#fff;opacity:1;box-shadow:0 0 0 3px #fff,0 5px 0 #7a5d00,inset 0 -2px 0 rgba(0,0,0,.15);font-weight:700;transform:translateY(-1px)}
+.prep-chips .btn.prep-chip.on::before{content:'✓ ';letter-spacing:1px}
+html.no-crt body::after{display:none}
+html.rm .blink,.html.rm .title-player,.html.rm .throw-arm,.html.rm .swing-arm,.html.rm .soft-ball,.html.rm .impact,.html.rm .pcard .mobile-chibi{animation:none!important}
+html.rm .soft-ball,.html.rm .impact{display:none}
+.prep-go{margin-top:14px;text-align:center}
+.prep-go .btn.play{width:100%;max-width:360px}
+.prep-co{margin:0 0 12px;padding:10px 12px;background:#fff8d6;border:2px solid #e2b000;border-radius:10px;color:#5a4300}
+.prep-co .sub{color:#7a6240}
+.prep-q{margin:6px 0 4px;font-size:16px;line-height:1.45;color:#3a2a08}
+.prep-chips .btn.prep-chip.rec:not(.on){border-color:#e2b000;box-shadow:0 0 0 2px #e2b000,inset 0 2px 0 rgba(0,0,0,.2)}
+.plan-steps{display:flex;gap:8px;margin:6px 0 10px}
+.plan-steps.long{flex-wrap:wrap;gap:6px}
+.plan-steps.long span{flex:1 1 21%;font-size:11px;padding:4px 2px}
+.plan-steps span{flex:1;text-align:center;font-size:12px;padding:5px 4px;border:2px solid #6c9ec4;border-radius:8px;color:#526c85;background:#fff}
+.plan-steps span.now{background:#ffd43a;color:#513900;border-color:#c99200;font-weight:700}
+.plan-steps span.done{background:#d7f0df;color:#1d6b3a;border-color:#3d9a62}
+.form-line{margin:0 0 10px;padding:7px 10px;border-radius:8px;color:#fff;font-weight:700;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.form-line.ok{background:#1f8a45}
+.form-line.bad{background:#d23b32}
+.row b{text-align:right}
+.row em{display:block;min-width:2.6em;font-style:normal;font-weight:700;font-size:12px}
+.row em.up,.row em.dn{font-style:normal;font-weight:700;font-size:12px}
+.row em.up{color:#1f8a45}
+.row em.dn{color:#d23b32}
+.delta-note{margin-top:8px;font-weight:700;color:#25425d}
+.delta-note .up{color:#1f8a45}
+.delta-note .dn{color:#d23b32}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.opts .btn.choice{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;margin:0;white-space:normal;height:auto;color:#183454;background:#fff;box-shadow:0 0 0 2px #567895,0 3px #3c5d78;animation:none}
+.opts .btn.choice b{font-size:15px}
+.opts .btn.choice .sub{display:block;font-weight:500;margin-top:2px}
+.share-card-row{display:flex;gap:14px;justify-content:center;align-items:stretch;flex-wrap:wrap;margin:8px 0}
+.scard{flex:1 1 240px;max-width:320px;border:4px solid var(--paper);background:var(--navy);box-shadow:6px 6px 0 #000;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.scard-visual{display:flex;justify-content:center;background:#06130b;border:2px solid #2f5a3b;padding:8px;min-height:130px;align-items:center}
+.scard-info{text-align:center}
+.scard-info>b{display:block;font-size:18px;color:#fff;margin-bottom:4px}
+.scard-info>p{margin:4px 0;font-size:13px}
+.scard-ovr{color:var(--gold)!important;font-size:17px;margin:10px 0 6px!important}
+.scard-info .row{margin:5px 0}
+.scard-lbl{font-size:11px;color:#9fc7a6;text-align:center;margin:0 0 6px}
+.scard-back .scard-quote{font-size:14px;color:var(--gold);text-align:center;margin:6px 0 10px;line-height:1.5;padding:0 4px}
+.scard-teams{font-size:12px;color:#cfe3d0;max-height:150px;overflow:auto;text-align:left}
+.scard-teams p{margin:4px 0;padding-bottom:4px;border-bottom:1px dashed #2f5a3b}
+.scard-cstat{font-size:12px;text-align:left;line-height:1.55}
+.scard-cstat p{margin:8px 0}
+.scard-awards{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left}
+.scard-awards .tag{font-size:11px;margin:2px 4px 2px 0}
+.share-card-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+.share-card-actions .btn{margin:0}
+.share-cv-hid{position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none;width:540px;height:756px;overflow:hidden}
+.hub-modal .win.wide{max-width:min(720px,96vw)}
+.season-news{margin:10px 0;padding:10px 12px;border-left:4px solid var(--gold);background:#123a62;color:#f7fbff;border-radius:8px;font-size:15px;line-height:1.45}
+.res-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:12px 0}
+.res-top .rec{border:3px solid var(--paper);background:#06130b;padding:8px 10px;text-align:center}
+.res-top .rec small{display:block;font-size:11px;color:#9fc7a6;margin-bottom:4px}
+.res-top .rec b{display:block;font-size:22px;color:var(--gold);line-height:1.1}
+.res-top .rec .gp{display:block;margin-top:6px;font-size:13px;color:#f3e9c6;font-weight:700}
+.press-box{margin:10px 0;padding:10px 12px;border:2px solid #8eb4d4;border-radius:8px;background:#f4fbff;color:#183454}
+.press-box b{display:block;margin-bottom:4px;color:#1768b6}
+.press-box p{margin:4px 0}
+.press-box .nick-line{font-weight:700;color:#a15c00}
+.hub-modal .win{max-width:420px}
+.hub-modal .stg-row{display:flex;justify-content:space-between;align-items:center;gap:12px;width:100%;text-align:left;background:#06130b;border:3px solid var(--paper);padding:10px 12px;margin:6px 0;color:var(--paper);cursor:pointer}
+.hub-modal .stg-row.on{border-color:var(--gold);background:#17402a}
+.hub-modal .stg-row small{display:block;color:#9fc7a6;font-size:12px;margin-top:2px}
+.hub-modal .stg-sw{width:44px;height:22px;border:2px solid var(--paper);background:#06130b;position:relative;flex-shrink:0}
+.hub-modal .stg-sw em{position:absolute;top:2px;left:2px;width:14px;height:14px;background:var(--paper);transition:left .12s}
+.hub-modal .stg-row.on .stg-sw em{left:24px;background:var(--gold)}
+.share-pre{white-space:pre-wrap;font-size:13px;background:#06130b;border:2px dashed #3d6a4a;padding:10px;margin:10px 0;max-height:160px;overflow:auto}
+.hof-banner .hof-shopmsg{margin-left:auto;font-weight:700;color:#6b3d00;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.hgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}.hgrid .panel{margin:0}.hp{min-width:0}
+.hfield{position:relative;height:300px;border:4px solid var(--paper);background:repeating-linear-gradient(90deg,#1e7a3a 0 44px,#188a35 44px 88px);display:flex;align-items:center;justify-content:center}
+.hnum{position:absolute;right:10px;top:6px;color:var(--gold);font-size:20px;text-shadow:2px 2px 0 #000}
+.hcap{display:flex;flex-direction:column;align-items:stretch;margin-top:10px;gap:2px}
+.hcap-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}.hcap-id{min-width:0}
+.fan-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;width:100%;margin-top:2px}.fan-nick{color:#a15c00;font-size:13px;font-weight:700;margin-right:auto}.btn.retire-now{margin:0 0 0 auto;padding:2px 8px;min-height:0;font-size:11px;line-height:1.3;font-weight:700;box-shadow:0 2px 0 #3c5d78;flex-shrink:0}
+.money-pair{display:inline-flex;align-items:baseline;gap:8px;flex-wrap:wrap;justify-content:flex-end}.money-pair .usd{color:#526c85;font-weight:700}
+.ovrrow b em{font-size:14px;margin-left:4px;font-style:normal;vertical-align:2px}.ovrrow em.up{color:#1f8a45}.ovrrow em.dn{color:#d23b32}.ovrrow em.flat{color:#526c85;font-size:13px}
+.ovrrow{display:flex;justify-content:space-between;text-align:center;border-top:3px solid var(--paper);border-bottom:3px solid var(--paper);padding:8px 0;margin-bottom:12px}.ovrrow>div{flex:1}.ovrrow span{display:block;font-size:12px}.ovrrow b{font-size:32px;color:var(--gold);display:block}.ovrrow b.sm2{font-size:18px;line-height:40px}
+.hp .row{margin:6px 0}
+.tbox{border:3px solid var(--paper);background:#06130b;padding:10px 12px}
+.team-play-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.team-play-row .btn.play{width:auto;margin:0;flex-shrink:0;font-size:15px;padding:10px 14px;white-space:nowrap}
+.slist{display:flex;flex-direction:column;gap:8px}.sitem{display:flex;justify-content:space-between;align-items:center;gap:10px;border:4px solid var(--paper);background:var(--navy);padding:8px 12px}.sitem .btn{margin:0;white-space:nowrap}
+.sgrid{display:grid;grid-template-columns:1fr 1.05fr 1fr;gap:14px;margin:14px 0;align-items:stretch}.sgrid .panel{margin:0}.sgrid h2{margin-top:0}
+.sgrid>.shop-col{display:flex;flex-direction:column;gap:14px;min-height:100%}
+.sgrid .shop-eq-panel,.sgrid .shop-cust-panel{flex:1;display:flex;flex-direction:column}
+.sgrid .shop-eq-panel .eql{flex:1}
+.sgrid .shop-mid-col .panel.hp{flex:1;display:flex;flex-direction:column}
+.sgrid .shop-mid-col .panel.hp .hfield{flex:1;min-height:200px}
+.eql{display:flex;flex-direction:column;gap:6px}.eqi{display:flex;flex-direction:column;gap:0;border:3px solid #000;background:#0e2a18;padding:0;cursor:pointer;overflow:hidden}.eqi-main{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px}.eqi.on{border-color:var(--gold);background:#17402a}.eqi.on .eqi-main{background:rgba(255,255,255,.04)}.eqi .lv{color:var(--gold);white-space:nowrap}
+.eq-upgrade{padding:8px 10px 10px;border-top:2px dashed rgba(255,255,255,.2);cursor:default;background:rgba(0,0,0,.12)}.eq-upgrade .btn{margin:8px 0 0;width:100%;display:block;text-align:center}
+.pips{display:flex;gap:4px;margin:8px 0}.pips i{width:22px;height:10px;border:2px solid var(--paper);background:#06130b}.pips i.f{background:var(--gold)}
+.lux .luxh{display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--gold)}.sitem.sm{padding:6px 8px;margin-top:6px}
+.lock .cell{padding:8px 10px}.lock .crow{flex:none}.lkbtn{display:flex;gap:8px;justify-content:flex-end}.lkbtn .btn{margin:0}
+.shopmsg{color:var(--gold);margin:8px 0 0}
+@media(max-width:980px){.sgrid{grid-template-columns:1fr}}
+.hnav{display:flex;gap:8px;border:4px solid var(--paper);padding:6px;margin:14px 0;background:var(--navy)}
+.hnav .btn{margin:0}.hnav .hn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px;box-shadow:none}.hnav .hn small{font-size:10px;letter-spacing:2px;opacity:.8}
+.hnav .hn{background:#0e2a18;color:#f3e9c6;border:3px solid var(--paper)}.hnav .hn.ar{flex:0 0 48px}.hnav .hn.on{background:var(--gold);color:#111}.hnav .hn.dis{opacity:.4}
+@media(max-width:760px){.hgrid{grid-template-columns:1fr}.hfield{height:240px}}
+.hubgrid{display:grid;grid-template-columns:230px 1fr 280px;gap:14px;align-items:start}
+@media(max-width:900px){.hubgrid{grid-template-columns:1fr}}
+.two{display:grid;grid-template-columns:minmax(190px,auto) 1fr;gap:16px;align-items:start}
+.two2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:600px){.two{grid-template-columns:1fr}}
+.btn.play{font-size:20px;width:100%;text-align:center;padding:14px;background:var(--red);color:#fff;box-shadow:0 5px 0 #7a2415}
+.btn.dis{opacity:.45;cursor:not-allowed}
+.menu{margin:18px 0}
+.btn.mbtn{display:block;width:100%;max-width:320px;margin:14px auto;text-align:center;font-size:20px;padding:14px}
+.item{border-bottom:2px dashed #2f5a3b;padding:6px 0}
+.log p{margin:3px 0;font-size:12.5px;color:#1a4d82;border-left:3px solid #3d8fd4;padding-left:6px}
+.log .log-empty{color:#526c85!important;border-left-color:#81a9c8}
+.hof-banner{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 12px;padding:10px 12px;border:3px solid #fff;border-radius:12px;background:linear-gradient(#fffce8,#ffe566 55%,#f3c623);box-shadow:0 0 0 2px #9b6412,0 4px #75470c;color:#4a3200;font-size:13px}
+.hof-banner .hof-title{font-weight:700;color:#8a4f00;letter-spacing:1px}
+.hof-banner .hof-list{display:flex;flex-wrap:wrap;gap:6px 14px;flex:1;min-width:0}
+.hof-banner .hof-entry{font-size:12.5px}
+.hof-banner .hof-entry b{color:#6b3d00;margin-right:4px}
+.hof-banner:has(.hof-shopmsg) .hof-list{flex:0 1 auto}
+.log{max-height:280px;overflow:auto}
+.ncard{width:190px;margin:0 auto;border:5px solid var(--cf);background:linear-gradient(180deg,var(--cf2),#0a1a10 75%);box-shadow:6px 6px 0 #000;padding:8px;text-align:center;color:#fff}
+.ncTop{display:flex;justify-content:space-between;font-size:12px;color:var(--cf)}
+.ncImg{background:repeating-linear-gradient(45deg,rgba(255,255,255,.07) 0 6px,transparent 6px 12px);margin:6px 0;padding:6px 0;line-height:0}
+.ncName{font-size:18px;letter-spacing:1px}
+.ncNick{font-size:12px;color:var(--cf);min-height:1.5em}
+.ncBot{display:flex;justify-content:space-between;font-size:12px;opacity:.9}
+.ncStat{margin-top:4px;border-top:2px dashed var(--cf);padding-top:4px;font-size:12px}
+.opt{font:inherit;cursor:pointer;background:#06130b;color:var(--paper);border:3px solid var(--paper);padding:4px 9px;margin:3px 4px 3px 0}
+.opt.on{outline:3px solid var(--gold);background:var(--gold);color:var(--ink)}
+input[type=number]{font:inherit;width:100%;padding:9px;background:#06130b;color:var(--paper);border:3px solid var(--paper)}
+.hofgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.hofrow{display:grid;grid-template-columns:200px 1fr;gap:12px;align-items:center}
+@media(max-width:480px){.hofrow{grid-template-columns:1fr}}
+
+/* ===== 메인 화면: 잠실야구장 ===== */
+.stage{position:fixed;inset:0;z-index:0;overflow:hidden;background:#030616}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 62%,transparent 48%,rgba(0,0,0,.62))}
+.topscrim{position:absolute;left:0;right:0;top:0;height:22%;pointer-events:none;background:linear-gradient(rgba(2,4,16,.6),transparent)}
+.logo{position:absolute;left:0;right:0;top:2.5%;text-align:center;pointer-events:none;padding:0 10px}
+.l1{font-size:clamp(22px,4.3vw,60px);line-height:1.1;color:#f3e9c6;text-shadow:3px 3px 0 #c30452,6px 6px 0 #000;letter-spacing:-1px}
+.l2{color:var(--gold);letter-spacing:5px;font-size:clamp(10px,1.4vw,16px);margin-top:8px;text-shadow:2px 2px 0 #000}
+.l3{display:inline-block;background:rgba(4,8,28,.78);border:3px solid #f3e9c6;padding:2px 18px;margin:0;font-size:clamp(16px,2.6vw,30px);color:#fff;text-shadow:3px 3px 0 #000}
+.stag{position:absolute;left:12px;bottom:12px;z-index:2;background:#c30452;color:#fff;padding:2px 10px;border:2px solid #000;font-size:12px}
+.shint{position:absolute;right:12px;bottom:12px;color:#cfe3d0;font-size:12px;text-shadow:2px 2px 0 #000;text-align:right;max-width:60%}
+.cut{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;animation:cutk 6s linear infinite}
+@keyframes cutk{0%{opacity:.95}5%{opacity:0}92%{opacity:0}98%,100%{opacity:.95}}
+@media(max-width:700px){.stag{display:none}.shint{left:10px;right:10px;max-width:none;text-align:center;font-size:11px}}
+
+.bug{position:absolute;left:12px;top:12px;width:176px;background:rgba(8,12,34,.9);border:2px solid #cfd8ff;font-size:14px;color:#fff;pointer-events:none}
+.bug .r{display:flex;align-items:center;gap:8px;padding:3px 8px;border-bottom:1px solid #2a3158}
+.bug b{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.bug .lg{background:#c30452}.bug .dd{background:#1c2a6b;border:1px solid #8fa6ff}
+.bug .r span:nth-child(2){flex:1}
+.sw{position:relative;display:inline-block;width:1.2em;height:1.2em;text-align:right}.sw i{position:absolute;right:0;font-style:normal;color:#ffe46b}
+.bug .inn{position:relative;height:22px;font-size:12px;color:#f6c21b;padding:2px 8px}
+.bug .inn span{position:absolute;left:8px;top:3px}.bug .walk{color:#ff7aa8}
+.lu{position:absolute;top:28%;width:128px;background:rgba(8,12,34,.82);border:2px solid #cfd8ff;font-size:11px;color:#fff;padding:2px 4px;pointer-events:none}
+.lu.d{left:12px;top:calc(12px + 96px)}.lu.l{right:12px;top:calc(12px + 96px)}
+.lu .lh{background:#142060;margin:-2px -4px 3px;padding:2px 6px;color:#ffe46b}.lu.l .lh{background:#8a1038}
+.lu i{display:inline-block;width:14px;color:#8fa6ff;font-style:normal}
+.card{position:absolute;bottom:44px;width:min(34%,300px);background:rgba(8,12,34,.88);border:2px solid #cfd8ff;color:#fff;padding:6px 10px;font-size:12px;pointer-events:none}
+.card .ct{color:#ffe46b;font-size:14px;margin-bottom:2px}
+.card.cl{left:12px;border-left:6px solid #3a56c4}.card.cr{right:12px;border-right:6px solid #c30452}
+@media(max-width:1000px){.lu,.bug{display:none}.card{width:44%}}
+@media(max-width:700px){.card{display:none}}
+.bug .stn{background:#142060;color:#ffe46b;padding:3px 8px;font-size:13px;letter-spacing:1px;border-bottom:1px solid #cfd8ff}
+.ps{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;pointer-events:none;z-index:5}
+/* 6초 루프: 투구 → 타격 → 만루홈런 → 관중 환호 */
+.ball{animation:ballk 6s linear infinite}
+@keyframes ballk{0%,30%{opacity:0;transform:translate(0,0)}31%{opacity:1;transform:translate(0,0) scale(.8)}40%,41%{opacity:1;transform:translate(0,44px) scale(1.3)}48%{transform:translate(6px,0) scale(1.1)}60%{transform:translate(22px,-70px) scale(.8)}74%{transform:translate(40px,-118px) scale(.55)}86%{opacity:1;transform:translate(52px,-136px) scale(.4)}88%,100%{opacity:0;transform:translate(52px,-136px) scale(.4)}}
+.pit{animation:pitk 6s linear infinite}
+@keyframes pitk{0%,24%{transform:translate(0,0)}29%{transform:translate(-1px,-2px)}32%{transform:translate(1px,1px)}38%,100%{transform:translate(0,0)}}
+.parm{transform-box:fill-box;transform-origin:50% 0;animation:parmk 6s linear infinite}
+@keyframes parmk{0%,24%{transform:rotate(0)}28%{transform:rotate(-150deg)}32%{transform:rotate(70deg)}38%,100%{transform:rotate(0)}}
+.bat{transform-box:fill-box;transform-origin:50% 100%;animation:batk 6s linear infinite}
+@keyframes batk{0%,36%{transform:rotate(-35deg)}40%{transform:rotate(-8deg)}41.5%{transform:rotate(95deg)}60%{transform:rotate(95deg)}62%,100%{transform:rotate(-35deg)}}
+.bt{animation:btk 6s linear infinite}
+@keyframes btk{0%,38%{transform:translate(0,0)}42%{transform:translate(1.5px,0)}58%{transform:translate(1.5px,0)}62%,100%{transform:translate(0,0)}}
+.run1{animation:r1k 6s linear infinite}.run2{animation:r2k 6s linear infinite}.run3{animation:r3k 6s linear infinite}
+@keyframes r1k{0%,43%{transform:translate(0,0)}50%{transform:translate(-88px,-37px)}58%{transform:translate(-176px,0)}66%,100%{transform:translate(-88px,42px)}}
+@keyframes r2k{0%,43%{transform:translate(0,0)}52%{transform:translate(-88px,36px)}62%,100%{transform:translate(0,78px)}}
+@keyframes r3k{0%,43%{transform:translate(0,0)}56%,100%{transform:translate(88px,42px)}}
+.of0{animation:of0k 6s ease-in-out infinite}.of1{animation:of1k 6s ease-in-out infinite}.of2{animation:of2k 6s ease-in-out infinite}
+@keyframes of0k{0%,44%{transform:translate(0,0)}80%,100%{transform:translate(8px,2px)}}
+@keyframes of1k{0%,44%{transform:translate(0,0)}80%,100%{transform:translate(-10px,-5px)}}
+@keyframes of2k{0%,44%{transform:translate(0,0)}80%,100%{transform:translate(14px,-4px)}}
+.crowd{animation:crowdk 6s linear infinite}
+@keyframes crowdk{0%,52%{transform:translateY(0)}54%{transform:translateY(-1.6px)}57%{transform:translateY(0)}60%{transform:translateY(-1.6px)}63%{transform:translateY(0)}66%{transform:translateY(-1.6px)}69%{transform:translateY(0)}72%{transform:translateY(-1.6px)}75%{transform:translateY(0)}78%{transform:translateY(-1.6px)}81%{transform:translateY(0)}84%{transform:translateY(-1.6px)}87%{transform:translateY(0)}90%{transform:translateY(-1.6px)}93%,100%{transform:translateY(0)}}
+.cf{opacity:0;animation:cfk 6s linear infinite}
+@keyframes cfk{0%,54%{opacity:0;transform:translateY(0)}56%{opacity:1}94%{opacity:1;transform:translateY(70px)}95%,100%{opacity:0;transform:translateY(70px)}}
+.g0{animation:tw 1.1s steps(2) infinite}.g1{animation:tw 1.7s steps(2) infinite}.g2{animation:tw 2.3s steps(2) infinite}
+@keyframes tw{50%{opacity:.2}}
+.fl{animation:flk 2.5s steps(3) infinite}
+@keyframes flk{50%{opacity:.65}}
+.sc0{animation:sc0k 6s steps(1) infinite}.sc1{opacity:0;animation:sc1k 6s steps(1) infinite}
+@keyframes sc0k{0%,56%{opacity:1}57%,100%{opacity:0}}
+@keyframes sc1k{0%,56%{opacity:0}57%,100%{opacity:1}}
+.hd{animation:hdk 6s steps(1) infinite}
+@keyframes hdk{0%,57%{opacity:1}58%,92%{opacity:0}93%,100%{opacity:1}}
+.walk{opacity:0;animation:walkk 6s steps(2) infinite}
+@keyframes walkk{0%,57%{opacity:0}58%,92%{opacity:1}93%,100%{opacity:0}}
+/* 팝업 윈도우 */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:50;padding:14px}
+.win{width:min(420px,94vw);max-height:88vh;display:flex;flex-direction:column;background:#cfc7a8;color:var(--ink);border:4px solid #000;box-shadow:8px 8px 0 #000}
+.win.wide{width:min(680px,96vw)}
+.wbar{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,#1b2a5c,#2b4aa0);color:#fff;padding:6px 10px;border-bottom:4px solid #000;letter-spacing:2px}
+.wx{font:inherit;background:#d8452f;color:#fff;border:3px solid #000;cursor:pointer;padding:0 8px;line-height:1.3}
+.wbody{padding:16px;overflow:auto;color:var(--ink)}
+.wbody .sub{color:#4b4630}
+.wbody .btn.mbtn{margin:12px auto}
+.wbody .hofrow{color:var(--ink)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pcard{border:4px solid #000;background:#0e2a18;padding:8px 4px 4px;text-align:center;cursor:pointer;color:#f3e9c6}
+.pcard.on{background:#f6c21b;color:#111;box-shadow:4px 4px 0 #000}
+.pcard b{display:block;margin-top:4px;font-size:18px}
+.roles{display:flex;flex-direction:column;gap:6px;margin-top:10px}.roles .opt{text-align:left;width:100%}
+.ents{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.ent{border:4px solid #000;background:#e6dfc4;padding:8px;cursor:pointer}.ent.on{background:#f6c21b;box-shadow:4px 4px 0 #000}.crows{display:flex;flex-direction:column;gap:8px}.crow{display:flex;gap:8px;flex:1}.cell{flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;border:3px solid #000;background:#0e2a18;color:#f3e9c6;padding:8px 12px;cursor:pointer;min-width:0}.cell:hover{background:#17402a}.cell span{font-size:12px;color:#9fd0a8}.cell b{font-weight:normal;display:flex;align-items:center;gap:6px}.csw{display:inline-block;width:22px;height:22px;border:2px solid #f3e9c6}.backdrop.b2{z-index:60;background:rgba(0,0,0,.45)}.win.sm{width:min(380px,92vw)}.plist{display:grid;grid-template-columns:1fr 1fr;gap:8px}.plist.sws{grid-template-columns:repeat(4,1fr)}.plist .opt{min-height:40px}.ncImg svg{max-width:100%;height:auto}.pgrid .ncard{width:100%;box-sizing:border-box}.pgrid>div:first-child:has(#cardBox){display:flex}#cardBox{flex:1;display:flex}#cardBox .ncard{flex:1;display:flex;flex-direction:column;justify-content:space-between;margin:0}#cardBox .ncImg{flex:1;display:flex;align-items:center;justify-content:center}.cr .opt{padding:3px 8px;font-size:12px;min-width:0!important}.cr .opt[style]{min-width:26px!important;padding:3px 0}.cr{display:flex;align-items:center;gap:8px;margin-top:8px}.cr>span{width:92px;white-space:nowrap;flex:none;font-size:13px}.cr>div{display:flex;flex-wrap:wrap;gap:4px}.ent .eh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}.ent .et{font-size:15px}.ent .eh span{font-size:13px}.ent .sub{color:#4b4630;font-size:11px;margin:0 0 6px}.ent .row{font-size:12px}
+@media(max-width:560px){.ents{grid-template-columns:1fr}}
+.wbody .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.wbody .cards label{text-align:center;color:#f3e9c6}.wbody .cards label:has(input:checked){color:var(--ink)}
+.ncImg img,.hfield img{max-width:100%;height:auto}
+.av{position:relative;margin:0 auto;flex:none}.av img{position:absolute;display:block;max-width:none!important;pointer-events:none}
+
+/* 2010 Korean mobile baseball skin — presentation only */
+:root{--paper:#fffdf0;--ink:#15243a;--gold:#ffd83d;--red:#f05a45;--grass:#39a64a;--navy:#174e91}
+html{background:#163d74}
+body{min-height:100vh;color:#f8fbff;font-size:14px;line-height:1.55;background:radial-gradient(circle at 18px 18px,rgba(255,255,255,.09) 0 2px,transparent 2px),linear-gradient(180deg,#65c9f0,#378ed2 34%,#2062a9);background-size:36px 36px,100% 100%;image-rendering:auto}
+body::after{background:repeating-linear-gradient(0deg,rgba(8,31,67,.07) 0 1px,transparent 1px 4px);opacity:.55}.app{max-width:1040px;padding:10px 10px 76px}.narrow{max-width:820px}
+.panel,.tbox,.sitem{color:#15243a;background:linear-gradient(#fff,#eef8ff 8%,#d7edfa);border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 3px #163f73,0 5px 0 #0d3769,0 8px 18px rgba(7,28,64,.3)}
+.panel{padding:13px 14px;margin:13px 0}.panel>h2{color:#fff;background:linear-gradient(#4fb8ef,#1767b7);border:2px solid #124b88;border-radius:9px 9px 5px 5px;box-shadow:inset 0 2px 0 rgba(255,255,255,.55);margin:-9px -10px 10px;padding:6px 10px;font-size:17px;text-shadow:0 2px #154d89}.sub{color:#526c85}.line{color:#153454;background:#fff;border:2px solid #72a7ce;border-radius:8px}
+.btn{min-height:44px;color:#183454;background:linear-gradient(#fff878,#ffd63d 52%,#f1a91e);border:2px solid #fff;border-radius:10px;box-shadow:0 0 0 2px #9b6412,0 4px 0 #75470c,inset 0 2px rgba(255,255,255,.8);padding:9px 14px;margin:6px 8px 7px 0;text-align:center;font-weight:700;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.btn:active{transform:translateY(3px);box-shadow:0 0 0 2px #9b6412,0 1px #75470c}.btn.alt{background:linear-gradient(#fff,#dcecf7 58%,#b5d0e3);box-shadow:0 0 0 2px #567895,0 4px #3c5d78}.btn.red,.btn.play{color:#fff;background:linear-gradient(#ff8a6e,#ed503d 54%,#bd2931);box-shadow:0 0 0 2px #912533,0 5px #6f1c29;text-shadow:0 2px #9d2930}.btn.play{font-size:19px;animation:playPulse 1.8s ease-in-out infinite}.btn.dis{filter:grayscale(.65);opacity:.5;animation:none}@keyframes playPulse{50%{filter:brightness(1.12);transform:translateY(-1px)}}
+.hud{background:linear-gradient(#f9fdff,#cfe8f8)}.hud .ovr{color:#fff;border:3px solid #fff;border-radius:12px;background:linear-gradient(#ff7b55,#dd3040);box-shadow:0 0 0 2px #8e2638;text-shadow:0 2px #8e2638}.hud .ovr b{color:#fff}.row{grid-template-columns:58px 1fr 32px;color:#25425d}.bar{height:13px;border:2px solid #315e85;border-radius:8px;background:#a8c2d4;overflow:hidden}.bar i{border-radius:6px;background:repeating-linear-gradient(90deg,#ffdc3f 0 8px,#f39d27 8px 10px);box-shadow:inset 0 2px rgba(255,255,255,.6)}
+.tag{border:2px solid #fff;border-radius:12px;background:linear-gradient(#ff8065,#dc3543)}.tag.g{color:#513500;background:linear-gradient(#fff27a,#f3b82d)}.topbar{color:#fff;border-bottom-color:#fff;background:#175a9d;border-radius:8px;padding:5px 8px}table{background:#fff;color:#25425d}th,td{border-color:#81a9c8}th{color:#fff;background:#2878bc}
+.hnav{position:sticky;top:6px;z-index:20;gap:5px;border:3px solid #fff;border-radius:14px;padding:5px;background:linear-gradient(#2b83c9,#145b9f);box-shadow:0 0 0 2px #103f73,0 4px 10px rgba(4,29,62,.3)}.hnav .hn{min-height:48px;color:#e9f7ff;border:2px solid #8fcaf0;border-radius:9px;background:linear-gradient(#2779bd,#155592)}.hnav .hn.on{color:#513900;border-color:#fff3a1;background:linear-gradient(#fff36e,#f4bd29)}.eqi{color:#183454;border:2px solid #70a2c9;border-radius:8px;background:#f7fcff}.eqi.on{border-color:#f0a927;background:#fff7c9}.eqi.on .eqi-main{background:rgba(255,255,255,.35)}.eq-upgrade{border-top-color:#90b8d3;background:rgba(255,255,255,.45)}.eq-upgrade .sub{color:#526c85}
+.av{filter:drop-shadow(0 4px 1px rgba(16,40,68,.28));transform-origin:50% 100%}.av img{image-rendering:auto}
+.ncard{border:4px solid #fff;border-radius:16px;box-shadow:0 0 0 3px var(--cf),0 6px #102f55,0 10px 20px rgba(8,30,63,.28);background:linear-gradient(155deg,#fff 0,var(--cf) 3%,var(--cf2) 38%,#102e51)}.ncImg{border-radius:12px;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.38),transparent 40%),repeating-linear-gradient(45deg,rgba(255,255,255,.08) 0 7px,transparent 7px 14px);overflow:hidden}.pcard{color:#183454;border:3px solid #fff;border-radius:13px;background:linear-gradient(#f8fdff,#cdeafa);box-shadow:0 0 0 2px #286899,0 4px #174a76}.pcard:hover,.pcard.on{color:#513900;background:linear-gradient(#fff783,#ffd033);transform:translateY(-3px)}.pcard .pixel-role-icon{filter:drop-shadow(0 5px 1px rgba(10,43,79,.28));image-rendering:pixelated}
+.ent{color:#183454!important;border:3px solid #fff;border-radius:11px!important;background:linear-gradient(#fff,#d9edf9)!important;box-shadow:0 0 0 2px #477da4}.ent.on{background:linear-gradient(#fff27d,#ffc928)!important;box-shadow:0 0 0 2px #a76d13,0 4px #75470c!important}.cell{color:#183454;border:2px solid #6294ba;border-radius:8px;background:#fff}.cell:hover{background:#e8f6ff}.cell span{color:#5c7690}
+.stage{background:linear-gradient(#4aaff0 0 34%,#55b94c 34%)}.stage svg{filter:saturate(1.18) brightness(1.1)}.vig{background:radial-gradient(ellipse at 50% 62%,transparent 58%,rgba(4,24,54,.35))}.topscrim{height:19%;background:linear-gradient(rgba(10,48,93,.55),transparent)}.l1{color:#fff;text-shadow:0 3px #124d8a,3px 5px #0b315c,-2px -2px #0b315c}.l2{color:#fff36b}.l3{color:#174a7a;background:linear-gradient(#fff,#bde8ff);border:3px solid #fff;border-radius:15px;box-shadow:0 0 0 3px #15518b,0 5px #0b3563;text-shadow:none;padding:7px 20px}.bug,.lu,.card{border-color:#fff;border-radius:7px;background:rgba(15,65,121,.92);box-shadow:0 0 0 2px #123c6b}.cut{display:none}
+.backdrop{background:rgba(10,35,70,.7);backdrop-filter:blur(2px)}.win{color:#183454;border:3px solid #fff;border-radius:15px;background:linear-gradient(#fff,#d7edfa);box-shadow:0 0 0 3px #123f75,0 9px #0b2d59;overflow:hidden}.wbar{background:linear-gradient(#4eb9ec,#1768b6);border-bottom:3px solid #124a84}.wbody,.wbody .hofrow{color:#183454}.wbody .sub{color:#526c85}.wx{border:2px solid #fff;border-radius:8px;background:linear-gradient(#ff8a70,#dd3544)}input[type=text],input[type=number],select{color:#183454;background:#fff;border:2px solid #5e91b9;border-radius:8px;min-height:44px}.cards label,.wbody .cards label{color:#183454;border:2px solid #6c9ec4;border-radius:9px;background:#fff}.cards label:has(input:checked),.wbody .cards label:has(input:checked){color:#513900;background:linear-gradient(#fff783,#ffd033)}.opt{min-height:40px;color:#183454;background:#fff;border:2px solid #6c9ec4;border-radius:8px}.opt.on{color:#513900;background:#ffd43a}
+@media(max-width:760px){body{font-size:13px}.app{padding:6px 7px 72px}.panel{padding:11px;margin:10px 0}.btn{min-height:46px}.hgrid,.sgrid,.hubgrid{grid-template-columns:1fr;gap:9px}.two{grid-template-columns:150px 1fr;gap:10px}.ncard{width:150px}.hnav{bottom:6px;top:auto}.pgrid{gap:8px}.pcard svg{width:96px;height:96px}}@media(max-width:430px){.two{grid-template-columns:1fr}.cards{grid-template-columns:1fr}.hnav .hn{font-size:12px;padding:6px 3px}.btn.mbtn{max-width:none}}@media(prefers-reduced-motion:reduce){.av,.pcard svg,.btn.play{animation:none!important}.stage *{animation-duration:1ms!important}}
+
+/* Static start prompt and a stronger 2010-era title/character-select treatment. */
+.blink,.l3{animation:none!important;opacity:1!important}
+.logo{top:2%;width:min(620px,94vw);left:50%;right:auto;transform:translateX(-50%);padding:10px 38px 12px;border:3px solid #fff;border-radius:14px;background:linear-gradient(rgba(35,135,205,.96),rgba(11,58,120,.96));box-shadow:0 0 0 3px #0a3569,0 6px 0 rgba(4,28,67,.72),inset 0 2px rgba(255,255,255,.45)}
+.logo::before,.logo::after{content:"★";position:absolute;top:50%;transform:translateY(-50%);color:#ffe94d;font-size:clamp(16px,3vw,30px);text-shadow:0 2px #9b5c13}.logo::before{left:12px}.logo::after{right:12px}
+.l1{font-size:clamp(21px,4vw,46px)}.l3{border-radius:9px;font-size:clamp(18px,3.2vw,34px)}.shint{padding:4px 9px;border-radius:6px;background:rgba(8,48,103,.8)}
+.position-win{width:min(720px,96vw);background:linear-gradient(#eaf8ff,#b9dff4)}.position-win .wbar{font-size:16px;color:#fff36b;text-align:center;background:linear-gradient(#267ec5,#0d4c96);box-shadow:inset 0 2px rgba(255,255,255,.35)}.position-win .wbody{padding:12px;background:linear-gradient(rgba(255,255,255,.75),rgba(165,214,239,.8))}.position-win .pgrid{max-width:430px;margin:0 auto 13px;gap:14px}
+.position-win .pcard{position:relative;min-height:145px;padding:8px 5px 6px;border-radius:10px;overflow:hidden;background:linear-gradient(#f7fcff 0 66%,#91cdea 66%);box-shadow:0 0 0 2px #235f91,0 5px #123e69}.position-win .pcard::before{content:"SELECT";position:absolute;left:0;right:0;top:6px;color:#4b7da5;font-size:9px;letter-spacing:3px}.position-win .pcard.on{background:linear-gradient(#fffbd0 0 66%,#ffc928 66%);box-shadow:0 0 0 3px #f08b19,0 5px #8c4f0b}.position-win .pcard.on::before{content:"★ SELECTED ★";color:#c7650a}.position-win .pcard b{position:relative;margin-top:0;padding:3px;color:#fff;text-shadow:0 2px #154d83;font-size:17px}.position-win .pcard.on b{color:#6b3d00;text-shadow:0 1px #fff4a5}
+.position-win .ents{gap:9px;margin-top:9px}.position-win .ent{position:relative;padding:8px;border-radius:8px!important;box-shadow:0 0 0 2px #477da4,0 4px #29577a}.position-win .ent.on{transform:translateY(-2px)}.position-win .ent .eh{margin-bottom:5px;padding-bottom:5px;border-bottom:2px solid #90b8d3}.position-win .ent.on .eh{border-color:#d89a16}.position-win .ent .et{color:#1768aa}.position-win .ent.on .et{color:#a54b0a}.position-win .ent .eh span{padding:1px 5px;border-radius:5px;color:#fff;background:#e34c49}.position-win .btn{display:block;min-width:170px;margin:15px auto 5px}
+@media(max-width:760px){.logo{padding:8px 32px 9px}.position-win .ents{grid-template-columns:1fr 1fr}.position-win .pcard{min-height:125px}}@media(max-width:430px){.logo::before,.logo::after{font-size:13px}.position-win .wbody{padding:9px}.position-win .ents{grid-template-columns:1fr}.position-win .ent .row{display:none}}
+
+/* Smooth 2010 mobile-game title animation; replaces the earlier pixel stadium art. */
+.stage>svg,.stage>.bug,.stage>.lu,.stage>.card{display:none}
+.mobile-title-scene{position:absolute;inset:0;overflow:hidden;background:linear-gradient(#61c8f1 0 20%,#dff7ff 20% 23%,#278f42 23% 100%)}
+.soft-crowd{position:absolute;left:-2%;right:-2%;top:18%;height:25%;border-bottom:8px solid #e8f0f8;background:radial-gradient(circle,#ffdd4f 0 4px,transparent 5px) 0 2px/24px 20px,radial-gradient(circle,#fff 0 4px,transparent 5px) 12px 10px/24px 20px,linear-gradient(#315a9e,#183c78);box-shadow:inset 0 -14px rgba(8,31,73,.28)}
+.soft-field{position:absolute;left:50%;bottom:-35%;width:min(110vh,980px);aspect-ratio:1;transform:translateX(-50%) rotate(45deg);border:10px solid rgba(255,255,255,.55);border-radius:48% 8% 48% 8%;background:linear-gradient(135deg,#cb914e 0 42%,#35a850 42% 58%,#cb914e 58%);box-shadow:0 0 0 18px #22883e,0 0 0 23px rgba(255,255,255,.5)}
+.soft-field .base{position:absolute;width:20px;height:20px;background:#fff;border:3px solid #b9c8d2;border-radius:3px;box-shadow:0 3px rgba(27,57,88,.25)}.soft-field .b1{right:17%;top:17%}.soft-field .b2{right:17%;bottom:17%}.soft-field .b3{left:17%;bottom:17%}.soft-field .home{left:17%;top:17%}.soft-field .mound{position:absolute;left:50%;top:50%;width:58px;height:58px;transform:translate(-50%,-50%);border-radius:50%;background:#d5a162;box-shadow:inset 0 4px rgba(255,255,255,.32)}
+.title-player{position:absolute;z-index:3;width:clamp(118px,22vw,210px);height:clamp(150px,28vw,266px);filter:drop-shadow(0 9px 5px rgba(6,32,65,.3))}.title-player .mobile-chibi{position:absolute;inset:0;width:100%;height:100%}.tp-p{left:11%;bottom:8%;animation:titlePitcher 4.2s ease-in-out infinite}.tp-h{right:9%;bottom:7%;animation:titleHitter 4.2s ease-in-out infinite}.tp-p .throw-arm{transform-box:fill-box;transform-origin:90% 75%;animation:throwArm 4.2s ease-in-out infinite}.tp-h .swing-arm{transform-box:fill-box;transform-origin:50% 70%;animation:swingBat 4.2s ease-in-out infinite}
+.soft-ball{position:absolute;z-index:4;left:31%;bottom:35%;width:15px;height:15px;border:2px solid #b9c4cf;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.28);animation:softPitch 4.2s ease-in-out infinite}.soft-ball::after{content:"";position:absolute;inset:3px;border-top:2px solid #e34a4a;border-radius:50%;transform:rotate(35deg)}.impact{position:absolute;z-index:5;right:28%;bottom:39%;color:#fff34f;font-size:clamp(25px,6vw,62px);font-weight:900;font-style:italic;-webkit-text-stroke:3px #e24b35;text-shadow:4px 5px #183f78;opacity:0;transform:scale(.3) rotate(-10deg);animation:impactPop 4.2s ease-out infinite}
+@keyframes titlePitcher{0%,18%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-5px) rotate(-4deg)}42%{transform:translateY(2px) rotate(3deg)}55%,90%{transform:translateY(0)}}@keyframes throwArm{0%,22%,100%{transform:rotate(0)}32%{transform:rotate(-55deg)}41%{transform:rotate(70deg)}52%{transform:rotate(0)}}@keyframes titleHitter{0%,42%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(-3deg)}60%{transform:translateY(1px) rotate(4deg)}72%{transform:translateY(0)}}@keyframes swingBat{0%,43%,100%{transform:rotate(0)}51%{transform:rotate(-25deg)}59%{transform:rotate(72deg)}73%{transform:rotate(0)}}@keyframes softPitch{0%,38%{opacity:0;left:31%;bottom:35%;transform:scale(.7)}40%{opacity:1}56%{opacity:1;left:66%;bottom:33%;transform:scale(1.2)}62%,100%{opacity:0;left:82%;bottom:65%;transform:scale(.5)}}@keyframes impactPop{0%,53%,100%{opacity:0;transform:scale(.3) rotate(-10deg)}57%{opacity:1;transform:scale(1.15) rotate(-5deg)}65%,82%{opacity:1;transform:scale(1) rotate(-5deg)}88%{opacity:0}}
+/* Position selection keeps its controls; only the role artwork changes. */
+.pcard .mobile-chibi,.pcard .gear-icon{animation:none!important}
+@media(max-width:600px){.soft-crowd{top:17%;height:22%}.soft-field{bottom:-10%;width:120vw}.title-player{width:142px;height:180px}.tp-p{left:0;bottom:10%}.tp-h{right:-2%;bottom:9%}.soft-ball{bottom:35%}.impact{right:20%;bottom:39%}.shint{bottom:2px}.pcard .mobile-chibi{width:105px;height:128px}}
+@media(prefers-reduced-motion:reduce){.title-player,.throw-arm,.swing-arm,.soft-ball,.impact,.pcard .mobile-chibi{animation:none!important}.soft-ball,.impact{display:none}}
+/* Broadcast title restored: full stadium, crowd, both lineups and walk-off sequence. */
+.stage>svg{display:block}.stage>.bug,.stage>.lu,.stage>.card{display:block}.cut{display:block}
+@media(max-width:1000px){.stage>.lu,.stage>.bug{display:none}.stage>.card{display:block}}
+@media(max-width:700px){.stage>.card{display:none}}
+@media(max-width:600px){.pcard .gear-icon{width:118px;height:112px}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+'use strict';
+/* ============ 데이터 ============ */
+const KBO=['LG 트윈스','두산 베어스','SSG 랜더스','키움 히어로즈','KT 위즈','한화 이글스','롯데 자이언츠','삼성 라이온즈','NC 다이노스','KIA 타이거즈'];
+const MLB=['뉴욕 양키스','보스턴 레드삭스','토론토 블루제이스','볼티모어 오리올스','탬파베이 레이스','클리블랜드 가디언스','디트로이트 타이거스','캔자스시티 로열스','미네소타 트윈스','시카고 화이트삭스','휴스턴 애스트로스','텍사스 레인저스','시애틀 매리너스','LA 에인절스','애슬레틱스','뉴욕 메츠','필라델피아 필리스','애틀랜타 브레이브스','마이애미 말린스','워싱턴 내셔널스','밀워키 브루어스','시카고 컵스','신시내티 레즈','피츠버그 파이리츠','세인트루이스 카디널스','LA 다저스','샌디에이고 파드리스','샌프란시스코 자이언츠','애리조나 다이아몬드백스','콜로라도 로키스'];
+/* win: 우승 성향, fame: 명성, pay: 연봉 수준. 0–100 */
+const TEAMS=[
+ ['LG 트윈스','KBO',78,82,80],['두산 베어스','KBO',74,80,72],['SSG 랜더스','KBO',76,70,88],['키움 히어로즈','KBO',58,50,48],['KT 위즈','KBO',66,62,68],
+ ['한화 이글스','KBO',48,60,70],['롯데 자이언츠','KBO',52,80,64],['삼성 라이온즈','KBO',68,78,74],['NC 다이노스','KBO',60,58,66],['KIA 타이거즈','KBO',72,84,70],
+ ['뉴욕 양키스','MLB',88,98,96],['보스턴 레드삭스','MLB',66,86,78],['토론토 블루제이스','MLB',64,60,66],['볼티모어 오리올스','MLB',68,54,48],['탬파베이 레이스','MLB',72,40,32],
+ ['클리블랜드 가디언스','MLB',64,50,42],['디트로이트 타이거스','MLB',56,58,55],['캔자스시티 로열스','MLB',52,46,44],['미네소타 트윈스','MLB',58,48,52],['시카고 화이트삭스','MLB',34,50,36],
+ ['휴스턴 애스트로스','MLB',80,70,74],['텍사스 레인저스','MLB',70,62,74],['시애틀 매리너스','MLB',60,58,58],['LA 에인절스','MLB',42,60,58],['애슬레틱스','MLB',36,40,28],
+ ['뉴욕 메츠','MLB',62,78,80],['필라델피아 필리스','MLB',72,70,78],['애틀랜타 브레이브스','MLB',82,74,72],['마이애미 말린스','MLB',44,36,34],['워싱턴 내셔널스','MLB',40,48,40],
+ ['밀워키 브루어스','MLB',66,52,50],['시카고 컵스','MLB',58,80,68],['신시내티 레즈','MLB',50,48,42],['피츠버그 파이리츠','MLB',38,42,30],['세인트루이스 카디널스','MLB',70,76,64],
+ ['LA 다저스','MLB',94,96,98],['샌디에이고 파드리스','MLB',68,64,76],['샌프란시스코 자이언츠','MLB',52,72,62],['애리조나 다이아몬드백스','MLB',54,44,46],['콜로라도 로키스','MLB',40,44,40]
+].map(([name,org,win,fame,pay])=>({name,org,win,fame,pay}));
+const UNIS=['연세대학교','고려대학교','동국대학교','건국대학교','성균관대학교','한양대학교','경희대학교','중앙대학교','인하대학교','영남대학교'];
+const REGIONS=['서울','부산','대구','인천','광주','대전','울산','세종','경기','강원','충북','충남','전북','전남','경북','경남','제주'];
+const CREATE_REGIONS=['서울','경기','인천','강원','충북','충남','대전','전북','전남','광주','대구','경북','경남','부산','제주'];
+const HS_BY_REGION={
+  서울:['덕수고','서울고','휘문고','충암고','장충고','신일고','선린인터넷고','성남고','배명고','경기고','배재고','경동고'],
+  경기:['유신고','야탑고','안산공고','청담고','소래고','라온고','장안고','인창고','율곡고','백송고'],
+  인천:['동산고','인천고','제물포고'],
+  강원:['강릉고','원주고','설악고','강원고','상동고'],
+  충북:['세광고','청주고'],
+  충남:['북일고','공주고'],
+  대전:['대전고','대전제일고'],
+  전북:['군산상일고','전주고','인상고','전북인공지능고'],
+  전남:['화순고','순천효천고'],
+  광주:['광주제일고','광주동성고','광주진흥고'],
+  대구:['경북고','대구상원고','대구고'],
+  경북:['경주고','포항제철고','도개고','예일메디텍고','의성고'],
+  경남:['마산용마고','마산고','김해고','물금고','창원공고','금남고'],
+  부산:['경남고','부산고','개성고','부경고','부산공고'],
+  제주:['제주고']
+};
+const FAV={서울:['LG 트윈스','두산 베어스','키움 히어로즈'],부산:['롯데 자이언츠'],울산:['롯데 자이언츠'],대구:['삼성 라이온즈'],경북:['삼성 라이온즈'],인천:['SSG 랜더스'],광주:['KIA 타이거즈'],전남:['KIA 타이거즈'],대전:['한화 이글스'],충남:['한화 이글스'],충북:['한화 이글스'],경기:['KT 위즈'],경남:['NC 다이노스']};
+const GAME_NAME='벤치에서 월드시리즈까지';
+const ROLE={SP:'선발투수',MR:'중간계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
+const PITCH_ROLES=['SP','MR','CL'],HIT_ROLES=['IF','OF','DH'];
+const ROLE_SUB={SP:'선발',MR:'중견',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
+const ROLE_DESC={SP:'긴 이닝을 책임지는 에이스',MR:'승부처를 이어주는 허리',CL:'9회, 경기를 끝내는 사람',IF:'유격수·3루·2루·1루',OF:'타격·주루·어깨',DH:'수비 없이 방망이로 승부'};
+const LV={HS:'고교야구',UNI:'대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',MIL:'군 복무'};
+const REQ={HS:42,UNI:52,KBO2:52,KBO1:60,A:52,AA:58,AAA:64,MLB:70,MIL:54};
+const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1};
+const isMin=l=>l==='A'||l==='AA'||l==='AAA';
+const isPro=l=>l==='KBO1'||l==='KBO2'||isMin(l)||l==='MLB';
+
+/* ============ 유틸 ============ */
+let H=[],P=null;
+const R=(a,b)=>a+Math.random()*(b-a),RI=(a,b)=>Math.floor(R(a,b+1)),C=(v,a,b)=>Math.max(a,Math.min(b,v));
+const G=()=>{let u=0;for(let i=0;i<6;i++)u+=Math.random();return (u-3)/0.7071};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const f1=n=>n.toFixed(1),f2=n=>n.toFixed(2);
+const rate=n=>n.toFixed(3).replace(/^0/,'');
+const EOK_PER_M=13.8; // $1M ≈ 13.8억 원 (1달러 = 1,380원)
+const SAL_CAP_M=70; // 오타니 다저스 10년·7억 달러 계약의 연평균. 연봉 상한.
+const SAL_KR=[[45,.06],[55,.3],[65,1.2],[75,6],[85,22],[95,32],[99,40]]; // 억 원. 고교~KBO·마이너
+const SAL_US=[[45,.004],[55,.02],[65,.09],[75,.76],[85,8],[95,40],[99,SAL_CAP_M]]; // $M. 75~85가 메이저리그 평균, 99가 상한
+function won(n){
+  n=Math.max(0,+n||0);
+  if(n>=10000)return (n/10000).toFixed(2)+'조 원';
+  if(n>=10)return Math.round(n).toLocaleString()+'억 원';
+  if(n>=1){const x=Math.round(n*10)/10;return (x%1?x.toFixed(1):String(Math.round(x)))+'억 원'}
+  const man=Math.round(n*10000);
+  return man>0?man.toLocaleString()+'만 원':'0원';
+}
+function usdText(eok){
+  const m=(+eok||0)/EOK_PER_M;
+  if(m>=1)return '$'+f1(m)+'M';
+  const k=Math.max(1,Math.round(m*1000));
+  return '$'+k.toLocaleString()+'k';
+}
+function abroad(){return !!(P&&P.org==='MLB')}
+function moneyPair(eok){return abroad()?`<span class="money-pair"><b>${won(eok)}</b><span class="usd">${usdText(eok)}</span></span>`:`<b>${won(eok)}</b>`}
+function priceLabel(eok){return abroad()?`${won(eok)} · ${usdText(eok)}`:won(eok)}
+function lerpKnots(o,knots){
+  o=C(o,knots[0][0],knots[knots.length-1][0]);
+  for(let i=1;i<knots.length;i++){
+    const a=knots[i-1],b=knots[i];
+    if(o<=b[0])return a[1]+(b[1]-a[1])*(o-a[0])/(b[0]-a[0]);
+  }
+  return knots[knots.length-1][1];
+}
+function yearlyPay(o,us){
+  const raw=us?Math.min(SAL_CAP_M,lerpKnots(o,SAL_US))*EOK_PER_M:Math.min(40,lerpKnots(o,SAL_KR));
+  return Math.round(raw*100)/100;
+}
+const app=()=>document.getElementById('app');
+function show(fn,wide){H=[];STAGEMODE=0;const h=fn();app().innerHTML=wide?h:`<div class="narrow">${h}</div>`;try{window.scrollTo(0,0)}catch(e){}if(HUBSHARE)setTimeout(drawShareCard,40)}
+function B(label,fn,cls=''){H.push(fn);return `<button class="btn ${cls}" onclick="H[${H.length-1}]()">${label}</button>`}
+const ovr=()=>Math.round(P.st.reduce((a,b)=>a+b,0)/5);
+const FAN_NICK=[
+  {h:['벤치의 유망주','아직 무명인 아이','글러브만 닦는 선수','연습생'],p:['벤치의 유망주','아직 무명인 아이','불펜의 막내','연습생']},
+  {h:['대학의 기대주','드래프트 후보','캠퍼스의 4번','성장 중인 타자'],p:['대학의 에이스','드래프트 후보','마운드의 기대주','성장 중인 투수']},
+  {h:['팀의 주전','방망이 귀신','1군의 얼굴','클린업'],p:['팀의 주전','마운드의 버팀목','1군의 얼굴','필승조']},
+  {h:['리그 상위권','국민 타자','간판 타자','4번의 사나이'],p:['리그 상위권','에이스','간판 투수','마운드의 지배자']},
+  {h:['빅리그의 주인공','코리안 특급','슈퍼스타','아메리카의 강타자'],p:['빅리그의 주인공','코리안 특급','슈퍼스타','마운드의 에이스']},
+  {h:['살아있는 전설','역사를 쓰는 선수','시대의 선수','레전드'],p:['살아있는 전설','역사를 쓰는 투수','시대의 에이스','레전드']}
+];
+function fanNick(){
+  const o=ovr(),tier=o>=95?5:o>=85?4:o>=75?3:o>=65?2:o>=55?1:0;
+  if(P.fanNick&&P.fanTier===tier)return P.fanNick;
+  const pool=(P.pitcher?FAN_NICK[tier].p:FAN_NICK[tier].h);
+  const seed=[...String(P.name)].reduce((a,c)=>a+c.charCodeAt(0),tier*13+1);
+  P.fanNick=pool[seed%pool.length];P.fanTier=tier;
+  return P.fanNick;
+}
+function batOrder(){
+  if(P.pitcher)return '투수';
+  const con=P.st[0],pow=P.st[1],eye=P.st[2],spd=P.st[3],def=P.st[4],o=ovr();
+  const best=Math.max(con,pow,eye,spd,def);
+  if(o<48)return (P.role==='IF'&&def>=con?8:9)+'번 타자';
+  if(spd===best&&spd>=54)return '1번 타자';
+  if(pow===best&&pow>=con+3&&pow>=58)return '4번 타자';
+  if(o>=72&&con+eye>=pow+spd-6)return '3번 타자';
+  if(con>=pow&&spd>=50)return '2번 타자';
+  if(pow>=58)return '5번 타자';
+  if(o>=62)return '3번 타자';
+  if(o>=55)return '6번 타자';
+  if(o>=50)return '7번 타자';
+  return '8번 타자';
+}
+const TEAM_AWARD={'한국시리즈 우승':1,'한국시리즈 준우승':1,'월드시리즈 우승':1,'월드시리즈 준우승':1,'고교 전국대회 우승':1,'대학리그 우승':1,'WBC 우승':1,'WBC 4강':1,'프리미어12 우승':1,'프리미어12 4강':1,'올림픽 금메달':1,'올림픽 은메달':1,'올림픽 동메달':1,'아시안게임 금메달':1,'U-18 월드컵 우승':1,'U-23 월드컵 우승':1};
+function awardSplit(){
+  const personal=[],team=[];
+  Object.keys(P.ach||{}).forEach(k=>{const label=k+(P.ach[k]>1?' ×'+P.ach[k]:'');(TEAM_AWARD[k]?team:personal).push(label)});
+  return {personal,team};
+}
+function awardTags(list){return list.length?list.map(t=>`<span class="tag g">${t}</span>`).join(''):'<span class="sub">없음</span>'}
+function foldBp(){
+  if(!P||P.bpFold)return;
+  const bp=+P.bp||0;
+  if(bp)P.money=Math.round(((+P.money||0)+bp*0.01)*100)/100;
+  P.bp=0;P.bpFold=true;
+}
+function spend(eok){
+  if((+P.money||0)+1e-9<eok)return false;
+  P.money=Math.round((P.money-eok)*100)/100;
+  return true;
+}
+const A=k=>{P.ach[k]=(P.ach[k]||0)+1};
+const fame=d=>{P.fame=Math.max(0,P.fame+d)};
+const mental=d=>{P.mental=C(P.mental+d,0,100)};
+const bump=(i,d)=>{P.st[i]=C(P.st[i]+d,15,99)};
+const bumpMain=d=>bump(RI(0,2),d);
+const tier=t=>t>.66?'우승 후보':t>.4?'중위권':'리빌딩 중';
+const kboSal=()=>yearlyPay(ovr(),false);
+const mlbSal=()=>yearlyPay(ovr(),true)/EOK_PER_M;
+const lvLabel=()=>P.lv==='HS'?`고교야구 ${P.grade}학년`:P.lv==='UNI'?`대학야구 ${P.uniYear}학년`:P.lv==='MIL'?`군 복무(${P.milType})`:LV[P.lv];
+const panel=(h,b)=>`<div class="panel"><h2>${h}</h2>${b}</div>`;
+
+function rollStats(kind,role){
+  const pitcher=kind==='P';
+  const labels=pitcher?['구위','제구','변화구','체력','회복력']:['컨택','파워','선구안','주루','수비'];
+  const st=labels.map(()=>RI(34,50));
+  if(role==='CL'){st[0]+=6;st[3]-=4}
+  if(role==='MR'){st[2]+=3;st[3]-=1}
+  if(role==='SP'){st[3]+=5}
+  if(role==='OF'){st[3]+=5;st[4]+=1;st[0]+=3}
+  if(role==='IF'){st[4]+=5;st[1]+=3}
+  if(role==='DH'){st[1]+=7;st[0]+=3;st[4]-=8;st[3]-=4}
+  const pot=Math.round(C(58+Math.abs(G())*16+R(0,6),58,97));
+  return {labels,st:st.map(v=>C(v,20,70)),pot};
+}
+const potGrade=p=>p>=88?'S':p>=80?'A':p>=70?'B':'C';
+function defCust(){return {skin:0,hcol:0,style:0,cap:0,body:1,theme:2,num:RI(1,99),nick:'',hand:'우투우타'}}
+function newPlayer(cr){
+  const car=()=>({g:0,w:0,l:0,sv:0,hd:0,ip:0,k:0,er:0,ab:0,h:0,hr:0,rbi:0,sb:0});
+  P={name:cr.name||'무명의 유망주',region:cr.region,role:cr.role,pitcher:cr.kind==='P',kind:cr.kind,labels:cr.labels.slice(),st:cr.st.slice(),mental:50,pot:cr.pot,cust:Object.assign({},cr.cust),
+     age:16,y:2027,grade:1,uniYear:1,lv:'HS',team:cr.highSchool||cr.region+' 모교',org:'',tstr:Math.random(),
+     hist:[],ach:{},money:0,fame:0,kboYears:0,kbo1Years:0,mlbYears:0,proYears:0,
+     mil:'none',milLeft:0,milType:'',prevLv:'',deferred:false,contract:0,faYears:9,deal:null,
+     injured:null,rehab:0,restFlag:false,hot:0,retire:false,married:false,news:[],draftOrder:shuffle(KBO),done:false,
+     bp:40,log:[],car:{KBO:car(),MLB:car()},played:false,shield:false,shopMsg:''};
+}
+
+/* ============ 타이틀 / 메뉴 / 선수 생성 / 허브 ============ */
+const clean=s=>String(s==null?'':s).replace(/[<>&"'`\\]/g,'');
+const BALL=['....kkkk....','..kkwwwwkk..','.kwwrwwrwwk.','.kwrwwwwrwk.','kwwrwwwwrwwk','kwwrwwwwrwwk','kwwrwwwwrwwk','kwwrwwwwrwwk','.kwrwwwwrwk.','.kwwrwwrwwk.','..kkwwwwkk..','....kkkk....'];
+function ballSvg(px=6){const col={k:'#17140d',w:'#f3e9c6',r:'#d8452f'};let s=`<svg width="${12*px}" height="${12*px}" viewBox="0 0 12 12" shape-rendering="crispEdges">`;BALL.forEach((row,y)=>[...row].forEach((c,x)=>{if(c!=='.')s+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${col[c]}"/>`}));return s+'</svg>'}
+const FIELD=`<svg viewBox="0 0 160 100" width="270" shape-rendering="crispEdges" style="border:4px solid #f3e9c6"><rect width="160" height="100" fill="#2b7a3d"/><rect y="0" width="160" height="12" fill="#256b35"/><rect y="24" width="160" height="12" fill="#256b35"/><rect y="48" width="160" height="12" fill="#256b35"/><rect y="72" width="160" height="12" fill="#256b35"/><polygon points="80,10 132,52 80,94 28,52" fill="#b58b4a"/><polygon points="80,30 110,52 80,74 50,52" fill="#2b7a3d"/><rect x="76" y="6" width="8" height="8" fill="#f3e9c6"/><rect x="128" y="48" width="8" height="8" fill="#f3e9c6"/><rect x="24" y="48" width="8" height="8" fill="#f3e9c6"/><rect x="76" y="88" width="8" height="8" fill="#f3e9c6"/><rect x="77" y="49" width="6" height="6" fill="#b58b4a"/></svg>`;
+
+/* ----- 픽셀 아바타 & 네임카드 ----- */
+const SKIN=['#fbd5b3','#f7c79d','#d5a074','#af7452','#895940','#6b4230'],HAIRC=['#4a3830','#a87a52'],HAIRN=['검은색','밝은색'];
+const STYLES=['짧은머리','스포츠','곱슬','가르마','삭발','투블럭','리젠트','댄디컷'];
+/* ----- 유니폼 PNG 레이어: uniforms/<id>.png (512×512, 투명 배경) · id, 게임 내 구단명, 리그, 포인트 컬러(모자 등 보조색) ----- */
+const UNI_PATH='uniforms/';
+const UNIS_DEF=[
+ ['kbo_lg','LG 트윈스','KBO','#c30452'],['kbo_kt','KT 위즈','KBO','#17140d'],['kbo_ssg','SSG 랜더스','KBO','#d8452f'],['kbo_nc','NC 다이노스','KBO','#1c2a6b'],['kbo_doosan','두산 베어스','KBO','#17224d'],
+ ['kbo_kia','KIA 타이거즈','KBO','#d8452f'],['kbo_lotte','롯데 자이언츠','KBO','#1c2a6b'],['kbo_samsung','삼성 라이온즈','KBO','#1b4fa0'],['kbo_hanwha','한화 이글스','KBO','#e8681c'],['kbo_kiwoom','키움 히어로즈','KBO','#7a1f35'],
+ ['mlb_bal','볼티모어 오리올스','MLB AL','#f2701f'],['mlb_bos','보스턴 레드삭스','MLB AL','#d8283a'],['mlb_nyy','뉴욕 양키스','MLB AL','#14234d'],['mlb_tb','탬파베이 레이스','MLB AL','#1b2a5c'],['mlb_tor','토론토 블루제이스','MLB AL','#1b4fd0'],
+ ['mlb_cws','시카고 화이트삭스','MLB AL','#17140d'],['mlb_cle','클리블랜드 가디언스','MLB AL','#1c2a6b'],['mlb_det','디트로이트 타이거스','MLB AL','#17224d'],['mlb_kc','캔자스시티 로열스','MLB AL','#1b4fd0'],['mlb_min','미네소타 트윈스','MLB AL','#1c2a6b'],
+ ['mlb_hou','휴스턴 애스트로스','MLB AL','#f2701f'],['mlb_laa','LA 에인절스','MLB AL','#d8283a'],['mlb_oak','애슬레틱스','MLB AL','#2b6a3a'],['mlb_sea','시애틀 매리너스','MLB AL','#1fa89a'],['mlb_tex','텍사스 레인저스','MLB AL','#1b4fd0'],
+ ['mlb_atl','애틀랜타 브레이브스','MLB NL','#1c2a6b'],['mlb_mia','마이애미 말린스','MLB NL','#1fa89a'],['mlb_nym','뉴욕 메츠','MLB NL','#1b4fa0'],['mlb_phi','필라델피아 필리스','MLB NL','#d8283a'],['mlb_wsh','워싱턴 내셔널스','MLB NL','#d8283a'],
+ ['mlb_chc','시카고 컵스','MLB NL','#1b4fd0'],['mlb_cin','신시내티 레즈','MLB NL','#d8283a'],['mlb_mil','밀워키 브루어스','MLB NL','#1c2a6b'],['mlb_pit','피츠버그 파이리츠','MLB NL','#f6c21b'],['mlb_stl','세인트루이스 카디널스','MLB NL','#d8283a'],
+ ['mlb_ari','애리조나 다이아몬드백스','MLB NL','#17140d'],['mlb_col','콜로라도 로키스','MLB NL','#6b3fa0'],['mlb_lad','LA 다저스','MLB NL','#1b4fd0'],['mlb_sd','샌디에이고 파드리스','MLB NL','#6b4a2a'],['mlb_sf','샌프란시스코 자이언츠','MLB NL','#e8681c']
+];
+const UNI_BY_ID={},UNI_BY_TEAM={};UNIS_DEF.forEach((u,i)=>{UNI_BY_ID[u[0]]={id:u[0],team:u[1],lg:u[2],c:u[3],i};UNI_BY_TEAM[u[1]]=u[0]});
+UNI_BY_ID.basic={id:'basic',team:'기본',lg:'KBO',c:'#2f43a3',i:-1};
+/* 프로 구단 소속이면 그 구단 유니폼, 고교·대학이면 uniforms/basic.png */
+function uniId(cu,team){return UNI_BY_TEAM[team]||'basic'}
+/* 아바타 레이어 배치 (스테이지 512×821 기준 px)
+   · 몸 레이어(팔→유니폼)는 512×512, 신발 레이어는 512×580 캔버스(바지 밑단 아래로 튀어나옴), 머리 레이어(얼굴→아이블랙→수염→헤어)는 512×576 캔버스. 같은 종류끼리는 캔버스 크기·정렬이 동일하므로 PNG만 교체하면 됨
+   · SH: 머리 레이어 축척, BY: 몸 레이어가 시작되는 y, sx: 체형별 몸 가로폭 배율 */
+const AVL={W:512,H:889,SH:.72,BY:309,HW:512,HH:576,BH:512,FH:580,sx:[.88,.94,1,1.06]};
+const LYR='layers/';
+const CARDTH=[{n:'브론즈',c:'#c9803f',c2:'#5e3513'},{n:'실버',c:'#d6dae0',c2:'#5b626d'},{n:'골드',c:'#f6c21b',c2:'#7a5d00'},{n:'다이아',c:'#6fd3ff',c2:'#1f4a8a'}];
+const SPR=['..cccccccc..','.cccccccccc.','.kkkkkkkkkk.','.hssssssssh.','.hsessssesh.','..ssssssss..','..sssmmsss..','....ssss....','..uuuuuuuu..','.uuuuuuuuuu.','suuuuuuuuuus','suuuuuuuuuus','.uuuuuuuuuu.','..wwwwwwww..','..pppppppp..','..ppp..ppp..','..ppp..ppp..','..kkk..kkk..'];
+function mixc(c,t,a){const h=x=>[1,3,5].map(i=>parseInt(x.slice(i,i+2),16)),A=h(c),B=h(t);return '#'+A.map((v,i)=>Math.round(v+(B[i]-v)*a).toString(16).padStart(2,'0')).join('')}
+const AVC={};
+/* PNG 레이어 합성: 신발 → 팔 → 유니폼 → 얼굴 → 아이블랙 → 헤어 (아래→위) */
+function avatar(cu,px=5,team){
+  const uid=uniId(cu,team),un=UNI_BY_ID[uid];
+  const sk=C(cu.skin|0,0,5),bt=C(cu.body==null?1:cu.body,0,3),st=((cu.style|0)%8+8)%8;
+  const tone=(cu.hcol|0)>=1?'light':'dark',eb=!!cu.eyeblack;
+  const key='pl'+[sk,bt,st,tone,eb,uid,px].join('|');
+  if(AVC[key])return AVC[key];
+  const sheet=un.lg==='KBO'?'kbo':un.lg==='MLB AL'?'al':'nl';
+  const W=px<10?56:px<15?170:160;
+  const pc=(x,y,w,h)=>`left:${(x/AVL.W*100).toFixed(3)}%;top:${(y/AVL.H*100).toFixed(3)}%;width:${(w/AVL.W*100).toFixed(3)}%;height:${(h/AVL.H*100).toFixed(3)}%`;
+  const bw=AVL.W*AVL.sx[bt],body=pc((AVL.W-bw)/2,AVL.BY,bw,AVL.BH),feet=pc((AVL.W-bw)/2,AVL.BY,bw,AVL.FH);
+  const uniS=uid==='basic'?1.030:1,ubw=bw*uniS,ubh=AVL.BH*uniS;
+  const uni=pc((AVL.W-ubw)/2,AVL.BY+(AVL.BH-ubh)/2,ubw,ubh);
+  const hw=AVL.HW*AVL.SH,head=pc((AVL.W-hw)/2,0,hw,AVL.HH*AVL.SH);
+  const im=(src,pos)=>`<img src="${src}" style="${pos}" alt="">`;
+  const html=`<div class="av" style="width:${W}px;height:${Math.round(W*AVL.H/AVL.W)}px">`
+    +im(`${LYR}shoes/shoes_${sheet}.png`,feet)
+    +im(`${LYR}arms/arms_${sheet}_${sk}.png`,body)
+    +im(`${UNI_PATH}${uid}.png`,uni)
+    +im(`${LYR}head/face_${sk}.png`,head)
+    +(eb?im(`${LYR}head/eyeblack.png`,head):'')
+    +im(`${LYR}head/hair_${tone}_${st}.png`,head)
+    +'</div>';
+  AVC[key]=html;return html;
+}
+function cardHtml(c,opt){
+  const cu=c.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2];
+  return `<div class="ncard" style="--cf:${th.c};--cf2:${th.c2}"><div class="ncTop"><span>${ROLE[c.role]||''}</span><span>#${cu.num}</span></div><div class="ncImg">${avatar(cu,15,c.team)}</div><div class="ncName">${c.name||'이름 미정'}</div><div class="ncNick">${cu.nick?'“'+cu.nick+'”':'&nbsp;'}</div><div class="ncBot"><span>${c.region||''}</span><span>${cu.hand}</span></div>${opt?`<div class="ncStat">OVR ${opt.ovr} · POT ${opt.pot}</div>`:''}</div>`;
+}
+
+/* ----- 저장 / 불러오기 / 로그 ----- */
+function hasSave(){try{return !!localStorage.getItem('b2ws_save')}catch(e){return false}}
+function save(){try{localStorage.setItem('b2ws_save',JSON.stringify(P))}catch(e){}}
+function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem('b2ws_save'));hub()}catch(e){try{alert('저장 데이터를 불러오지 못했습니다.')}catch(_){}menu()}}
+function L(m){P.log.push(`${P.y}년 · ${m}`);if(P.log.length>300)P.log.shift()}
+function hofRead(){try{return JSON.parse(localStorage.getItem('b2ws_hof')||'[]')}catch(e){return []}}
+const SETKEY='b2ws_set_v1';
+let SET={crt:true,rm:false},HUBSET=false,HUBSHARE=false,HUBCOFFEE=false,HUBRETIRE=false,SETCONF='',PREP_SEL=[],PREP_OPEN=false;
+const COFFEE_ACCOUNT='000-000-000000',CONTACT_EMAIL='janedoe@nowhere';
+const PREP_INJ=[-.025,0,.045,.095,.16,.24];
+try{Object.assign(SET,JSON.parse(localStorage.getItem(SETKEY)||'{}'))}catch(e){}
+function applySet(){try{document.documentElement.classList.toggle('no-crt',!SET.crt);document.documentElement.classList.toggle('rm',!!SET.rm)}catch(e){}}
+applySet();
+function toggleSet(k){SET[k]=!SET[k];try{localStorage.setItem(SETKEY,JSON.stringify(SET))}catch(e){}applySet();hub()}
+function closeHubModals(){HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';hub()}
+function careerShareText(){
+  if(!P)return '';
+  const o=ovr(),g=potGrade(P.pot),ti=titleOf();
+  return `⚾ 「${GAME_NAME}」\n${P.name} · ${ROLE[P.role]} · OVR ${o} · ${g}급 유망주\n${lvLabel()} · ${P.team} · ${P.y}년 (${P.age}세)\n${ti}\nKBO 1군 ${P.kbo1Years||0}시즌 · MLB ${P.mlbYears||0}시즌 · 보유 ${won(P.money)}\n`;
+}
+function fmtCarLine(c){
+  if(!c||!c.g)return '';
+  return P.pitcher?`${c.w}승 ${c.l}패 ${c.sv}세이브 ${c.hd}홀드 · 평균자책 ${c.ip?f2(c.er*9/c.ip):'-'} · ${c.k}탈삼진 · ${c.ip}이닝`:`타율 ${c.ab?rate(c.h/c.ab):'-'} · ${c.hr}홈런 · ${c.rbi}타점 · ${c.sb}도루 · ${c.ab}타석`;
+}
+function shareCardFrontHtml(){
+  const cu=P.cust||defCust(),o=ovr();
+  const stats=P.labels.map((l,i)=>bar(l,P.st[i])).join('')+bar('멘탈',P.mental);
+  return `<div class="scard scard-front"><div class="scard-visual">${avatar(cu,11,P.team)}</div><div class="scard-info"><b>${P.name}</b><p>${ROLE[P.role]||''}</p><p>#${cu.num}</p><p>${P.team}</p><p class="scard-ovr">OVR ${o}</p>${stats}</div></div>`;
+}
+function shareCardBackHtml(){
+  const ti=titleOf();
+  const teams=(P.hist||[]).length?(P.hist||[]).map(h=>`<p>${h.team} · ${h.lv} (${h.y}년)</p>`).join(''):'<p class="sub">아직 시즌 이력 없음</p>';
+  let cs='';
+  if(P.car.KBO.g>0)cs+=`<p><b>KBO</b> (${P.car.KBO.g}시즌)<br>${fmtCarLine(P.car.KBO)}</p>`;
+  if(P.car.MLB.g>0)cs+=`<p><b>MLB</b> (${P.car.MLB.g}시즌)<br>${fmtCarLine(P.car.MLB)}</p>`;
+  if(!cs)cs='<p class="sub">프로 통산 기록 없음</p>';
+  const aw=awardSplit();
+  const awards=`<div class="scard-awards"><div><p class="scard-lbl">개인 수상</p>${awardTags(aw.personal)}</div><div><p class="scard-lbl">팀 수상</p>${awardTags(aw.team)}</div></div>`;
+  return `<div class="scard scard-back"><p class="scard-quote">“${ti}”</p><div class="scard-teams">${teams}</div><div class="scard-cstat">${cs}</div>${awards}</div>`;
+}
+function wrapText(x,text,x0,y,maxW,lh){
+  let line='';
+  for(const ch of String(text)){
+    const test=line+ch;
+    if(x.measureText(test).width>maxW&&line){x.fillText(line,x0,y);line=ch;y+=lh}else line=test;
+  }
+  if(line)x.fillText(line,x0,y);
+  return y+lh;
+}
+function drawShareCardTo(x,W,H,side){
+  const cu=P.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2],o=ovr();
+  x.fillStyle='#0f2a1a';x.fillRect(0,0,W,H);
+  x.strokeStyle=th.c;x.lineWidth=Math.max(6,W/54);x.strokeRect(W*.05,H*.04,W*.9,H*.92);
+  if(side==='back'){
+    const ti=titleOf();
+    x.fillStyle='#f6c21b';x.font=`${Math.round(W/26)}px sans-serif`;x.textAlign='center';
+    let y=wrapText(x,`“${ti}”`,W*.1,H*.12,W*.8,Math.round(H*.036));
+    y+=H*.02;
+    x.textAlign='left';x.font=`${Math.round(W/34)}px sans-serif`;
+    (P.hist||[]).forEach(h=>{x.fillStyle='#cfe3d0';x.fillText(`${h.team} · ${h.lv} (${h.y}년)`,W*.1,y);y+=H*.045});
+    if(!(P.hist||[]).length){x.fillStyle='#9fc7a6';x.fillText('시즌 이력 없음',W*.1,y);y+=H*.05}
+    y+=H*.03;
+    x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;
+    if(P.car.KBO.g>0){
+      x.fillText(`KBO (${P.car.KBO.g}시즌)`,W*.1,y);y+=H*.038;
+      x.font=`${Math.round(W/34)}px sans-serif`;x.fillStyle='#9fc7a6';
+      y=wrapText(x,fmtCarLine(P.car.KBO),W*.1,y,W*.84,Math.round(H*.032))+H*.01;
+    }
+    if(P.car.MLB.g>0){
+      x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;
+      x.fillText(`MLB (${P.car.MLB.g}시즌)`,W*.1,y);y+=H*.038;
+      x.font=`${Math.round(W/34)}px sans-serif`;x.fillStyle='#9fc7a6';
+      y=wrapText(x,fmtCarLine(P.car.MLB),W*.1,y,W*.84,Math.round(H*.032));
+    }
+    if(!P.car.KBO.g&&!P.car.MLB.g){x.fillStyle='#9fc7a6';x.font=`${Math.round(W/34)}px sans-serif`;x.fillText('프로 통산 기록 없음',W*.1,y);y+=H*.04}
+    const aw=awardSplit(),lh=Math.round(H*.03);
+    y=Math.min(y+H*.03,H*.72);
+    x.textAlign='left';x.fillStyle='#f6c21b';x.font=`bold ${Math.round(W/32)}px sans-serif`;
+    x.fillText('개인 수상',W*.1,y);x.fillText('팀 수상',W*.52,y);y+=lh;
+    x.fillStyle='#cfe3d0';x.font=`${Math.round(W/36)}px sans-serif`;
+    const pTxt=aw.personal.join(' · ')||'없음',tTxt=aw.team.join(' · ')||'없음';
+    wrapText(x,pTxt,W*.1,y,W*.38,lh);
+    wrapText(x,tTxt,W*.52,y,W*.38,lh);
+    return;
+  }
+  x.fillStyle='#06130b';x.fillRect(W*.08,H*.06,W*.84,H*.28);
+  x.fillStyle='#fff';x.font=`bold ${Math.round(W/10)}px sans-serif`;x.textAlign='center';
+  x.fillText(P.name,W/2,H*.36);
+  x.font=`${Math.round(W/28)}px sans-serif`;x.fillStyle='#f3e9c6';
+  x.fillText(ROLE[P.role]||'',W/2,H*.41);
+  x.fillText('#'+cu.num,W/2,H*.45);
+  x.fillText(P.team,W/2,H*.49);
+  x.fillStyle='#f6c21b';x.font=`bold ${Math.round(W/7)}px sans-serif`;x.fillText('OVR '+o,W/2,H*.56);
+  const labels=(P.labels||[]).concat(['멘탈']);
+  const vals=P.st.concat([P.mental]);
+  let y=H*.6;
+  labels.forEach((lb,i)=>{const v=vals[i]||0;x.fillStyle='#9fc7a6';x.font=`${Math.round(W/32)}px sans-serif`;x.textAlign='left';x.fillText(lb,W*.12,y);
+    x.fillStyle='#06130b';x.fillRect(W*.38,y-H*.018,W*.5,H*.026);x.fillStyle='#f6c21b';x.fillRect(W*.38,y-H*.018,W*.5*(v/100),H*.026);
+    x.fillStyle='#fff';x.textAlign='right';x.fillText(String(Math.round(v)),W*.92,y);y+=H*.062});
+}
+function drawShareCard(){
+  const f=document.getElementById('shareCvFront'),b=document.getElementById('shareCvBack');
+  if(f&&P)drawShareCardTo(f.getContext('2d'),540,756,'front');
+  if(b&&P)drawShareCardTo(b.getContext('2d'),540,756,'back');
+}
+function shareCardBlob(cb){
+  const W=540,H=756,gap=24,cv=document.createElement('canvas');
+  cv.width=W*2+gap;cv.height=H;
+  const x=cv.getContext('2d');
+  x.fillStyle='#050d08';x.fillRect(0,0,cv.width,cv.height);
+  drawShareCardTo(x,W,H,'front');
+  x.save();x.translate(W+gap,0);drawShareCardTo(x,W,H,'back');x.restore();
+  cv.toBlob(b=>cb(b),'image/png');
+}
+function shareCardImage(){
+  shareCardBlob(b=>{
+    if(!b){try{alert('카드를 만들지 못했습니다.')}catch(_){}return}
+    const file=new File([b],`${(P.name||'player').replace(/\s/g,'_')}-cards.png`,{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],text:careerShareText()}).catch(()=>{});
+      return;
+    }
+    const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),4000);
+    try{alert('앞·뒷면 카드 PNG를 저장했습니다.')}catch(_){}
+  });
+}
+function hubShareModal(){
+  const cl=H.length;H.push(closeHubModals);
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>커리어 카드</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><div class="share-card-row">${shareCardFrontHtml()}${shareCardBackHtml()}</div><canvas id="shareCvFront" class="share-cv-hid" width="540" height="756"></canvas><canvas id="shareCvBack" class="share-cv-hid" width="540" height="756"></canvas><div class="share-card-actions">${B('이미지 저장',shareCardImage)}${B('닫기',closeHubModals,'alt')}</div></div></div></div>`;
+}
+function hubSettingsModal(){
+  const row=(k,t,d)=>{const ix=H.length;H.push(()=>toggleSet(k));return `<button type="button" class="stg-row ${SET[k]?'on':''}" onclick="H[${ix}]()"><span><b>${t}</b><small>${d}</small></span><i class="stg-sw"><em></em></i></button>`};
+  let data;
+  if(SETCONF==='save')data=`<p class="sub">저장된 커리어를 삭제할까요? 되돌릴 수 없습니다.</p><div>${B('삭제',()=>{try{localStorage.removeItem('b2ws_save')}catch(e){}SETCONF='';closeHubModals();menu()},'red')}${B('취소',()=>{SETCONF='';hub()},'alt')}</div>`;
+  else if(SETCONF==='all')data=`<p class="sub">저장·명예의 전당 기록을 모두 지울까요?</p><div>${B('전부 삭제',()=>{try{localStorage.removeItem('b2ws_save');localStorage.removeItem('b2ws_hof')}catch(e){}SETCONF='';closeHubModals();menu()},'red')}${B('취소',()=>{SETCONF='';hub()},'alt')}</div>`;
+  else{
+    data=`<p class="sub" style="margin-top:8px"><b>데이터</b></p><div>${B('커리어 저장 삭제',()=>{if(hasSave()){SETCONF='save';hub()}},hasSave()?'alt':' dis')}${B('전체 데이터 삭제',()=>{SETCONF='all';hub()},'alt')}</div>`;
+  }
+  const cl=H.length;H.push(closeHubModals);
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win sm" onclick="event.stopPropagation()"><div class="wbar"><span>설정</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${row('crt','CRT 스캔라인','화면에 레트로 TV 줄무늬 효과')}${row('rm','동작 줄이기','깜빡임·타이틀 애니메이션 끄기')}${data}<p class="sub" style="margin-top:12px"><b>문의</b><br><a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a></p></div></div></div>`;
+}
+function copyCoffeeAccount(){
+  const done=()=>{try{alert('계좌번호를 복사했습니다.')}catch(_){}};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(COFFEE_ACCOUNT).then(done,()=>prompt('계좌번호',COFFEE_ACCOUNT));
+  else prompt('계좌번호',COFFEE_ACCOUNT);
+}
+function hubRetireModal(){
+  const cl=H.length;H.push(()=>{HUBRETIRE=false;hub()});
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win sm" onclick="event.stopPropagation()"><div class="wbar"><span>지금 은퇴하기</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p>지금 은퇴하면 이 커리어가 여기서 끝납니다.</p><div>${B('은퇴한다',()=>{HUBRETIRE=false;P.retire=true;SEAS_MODE='';SEAS_RES=null;P.playBanner=null;ending()},'red')}${B('계속한다',()=>{HUBRETIRE=false;hub()},'alt')}</div></div></div></div>`;
+}
+function hubCoffeeModal(){
+  const cl=H.length;H.push(()=>{HUBCOFFEE=false;hub()});
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win sm" onclick="event.stopPropagation()"><div class="wbar"><span>개발자에게 커피 사주기</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p>커피 한 잔이 다음 업데이트에 쓰입니다.</p><p class="acct">${COFFEE_ACCOUNT}</p>${B('계좌 복사',copyCoffeeAccount)}${B('닫기',()=>{HUBCOFFEE=false;hub()},'alt')}</div></div></div>`;
+}
+function topIcon(kind){
+  const a='viewBox="0 0 24 24" aria-hidden="true"';
+  if(kind==='share')return `<svg ${a}><path d="M14 3.5h6.5V10M20.5 3.5 11 13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 13.2V19a1.5 1.5 0 0 1-1.5 1.5H5.5A1.5 1.5 0 0 1 4 19V9A1.5 1.5 0 0 1 5.5 7.5H11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+  if(kind==='set')return `<svg ${a}><path fill="currentColor" d="M19.4 13.1c.1-.4.1-.7.1-1.1s0-.7-.1-1.1l1.8-1.4a.5.5 0 0 0 .1-.6l-1.7-3a.5.5 0 0 0-.6-.2l-2.1.8a6.4 6.4 0 0 0-1.9-.9l-.3-2.2a.5.5 0 0 0-.5-.4h-3.4a.5.5 0 0 0-.5.4l-.3 2.2c-.6.2-1.2.6-1.8.9l-2.2-.8a.5.5 0 0 0-.6.2l-1.7 3a.5.5 0 0 0 .1.6l1.8 1.4c-.1.4-.1.7-.1 1.1s0 .7.1 1.1l-1.8 1.4a.5.5 0 0 0-.1.6l1.7 3c.1.2.4.3.6.2l2.2-.8c.5.4 1.1.7 1.8.9l.3 2.2c0 .2.3.4.5.4h3.4c.2 0 .5-.2.5-.4l.3-2.2c.6-.2 1.2-.6 1.9-.9l2.1.8c.2.1.5 0 .6-.2l1.7-3a.5.5 0 0 0-.1-.6l-1.8-1.4zM12 15.4A3.4 3.4 0 1 1 12 8.6a3.4 3.4 0 0 1 0 6.8z"/></svg>`;
+  return `<svg ${a}><path d="M4 11.2 12 4l8 7.2V20a1 1 0 0 1-1 1h-5.2v-6.2H10.2V21H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linejoin="round"/></svg>`;
+}
+function hubTopbar(){
+  const noShare=!P;
+  const sh=H.length;H.push(()=>{if(noShare)return;HUBCOFFEE=false;HUBSET=false;HUBSHARE=true;hub()});
+  const st=H.length;H.push(()=>{HUBCOFFEE=false;HUBSHARE=false;HUBSET=true;hub()});
+  const mn=H.length;H.push(menu);
+  const cf=H.length;H.push(()=>{HUBSET=false;HUBSHARE=false;HUBCOFFEE=true;hub()});
+  return `<div class="topbar"><div class="topbar-brand">${hubLogo()}<span class="topbar-name">${GAME_NAME}</span></div><div class="topbar-actions"><button class="btn icon alt coffee" onclick="H[${cf}]()" title="개발자에게 커피 사주기" aria-label="개발자에게 커피 사주기">☕</button><button class="btn icon${noShare?' dis':''}" onclick="H[${sh}]()" ${noShare?'disabled':''} title="공유" aria-label="공유">${topIcon('share')}</button><button class="btn icon alt" onclick="H[${st}]()" title="설정" aria-label="설정">${topIcon('set')}</button><button class="btn icon alt" onclick="H[${mn}]()" title="메인 메뉴" aria-label="메인 메뉴">${topIcon('menu')}</button></div></div>`;
+}
+function hubLogo(){
+  return `<img class="hub-logo" src="logo.png" width="40" height="40" alt="${GAME_NAME}">`;
+}
+function hofBanner(){
+  const l=hofRead();
+  const list=!l.length?'<span class="sub" style="color:#6b5230">아직 명예의 전당에 오른 선수가 없습니다.</span>':l.slice(0,3).map((r,i)=>`<span class="hof-entry"><b>#${i+1}</b>${r.name} <span class="sub">${r.grade} · ${r.score}점</span></span>`).join('');
+  const shop=P.shopMsg?`<span class="hof-shopmsg">${P.shopMsg}</span>`:'';
+  return `<div class="hof-banner"><span class="hof-title">🏆 명예의 전당</span><div class="hof-list">${list}</div>${shop}</div>`;
+}
+
+/* ----- 메인 화면: 잠실야구장 야간 경기 (LG 트윈스 vs 두산 베어스) + 팝업 윈도우 ----- */
+let STAGEMODE=0;
+if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('keydown',e=>{
+  if(STAGEMODE===1&&(e.key==='Enter'||e.key===' ')){e.preventDefault();menu()}
+  else if(STAGEMODE===2&&e.key==='Escape')title();
+});
+const psc=y=>.75+(y-70)*.011;
+function sp(x,feet,cap,uni,sleeve,cls,extra,sc){
+  sc=sc||psc(feet);
+  const sk='#f2c9a0',dk='#17140d',pt='#e6e2d2';
+  return `<g transform="translate(${(x-2.5*sc).toFixed(1)} ${(feet-10*sc).toFixed(1)})"><g class="${cls||''}"><g transform="scale(${sc.toFixed(2)})"><rect x="1" y="0" width="3" height="2" fill="${cap}"/><rect x="4" y="1" width="1" height="1" fill="${dk}"/><rect x="1" y="2" width="3" height="2" fill="${sk}"/><rect x="1" y="4" width="3" height="3" fill="${uni}"/><rect x="0" y="5" width="1" height="2" fill="${sleeve}"/><rect x="4" y="5" width="1" height="2" fill="${sleeve}"/><rect x="1" y="7" width="3" height="1" fill="${pt}"/><rect x="1" y="8" width="1" height="1" fill="${pt}"/><rect x="3" y="8" width="1" height="1" fill="${pt}"/><rect x="1" y="9" width="1" height="1" fill="${dk}"/><rect x="3" y="9" width="1" height="1" fill="${dk}"/>${extra||''}</g></g></g>`;
+}
+function sceneSvg(){
+  let sd=11;const rnd=()=>{sd=(sd*9301+49297)%233280;return sd/233280};
+  const RED=['#c30452','#e6407a','#ffffff','#f3e9c6','#8a1038','#ff7aa8'],NAVY=['#1c2a6b','#3a56c4','#ffffff','#dfe6ff','#101a4a','#8fa6ff'],NEU=['#f6c21b','#6fb3ff','#bdbdbd'],SK=['#f2c9a0','#e0ac80','#c68642'];
+  const wy=x=>76+Math.pow((x-200)/200,2)*28;           /* 외야 펜스 곡선 */
+  const paths={};const add=(c,d)=>{(paths[c]||(paths[c]=[])).push(d)};
+  const person=(x,y,mid)=>{
+    const q=rnd();let pal;
+    if(mid)pal=q<.12?NEU:(x<200?RED:NAVY);
+    else if(x<190)pal=q<.1?NEU:RED;else if(x>210)pal=q<.1?NEU:NAVY;else pal=q<.1?NEU:(rnd()<.5?RED:NAVY);
+    add(pal[Math.floor(rnd()*pal.length)],`M${x.toFixed(1)} ${(y+1).toFixed(1)}h2v2h-2z`);
+    add(SK[Math.floor(rnd()*3)],`M${x.toFixed(1)} ${y.toFixed(1)}h2v1h-2z`);
+  };
+  for(let x=1;x<399;x+=2.7){
+    const w=wy(x);
+    /* 하단 티어 / 상단 티어 */
+    for(let y=w-20;y<w-3;y+=3.4)if(rnd()>.04)person(x,y);
+    for(let y=w-52;y<w-28;y+=3.6)if(rnd()>.04)person(x,y);
+  }
+  /* 양쪽 측면 스탠드 */
+  for(let y=118;y<198;y+=3.4)for(let x=1;x<36;x+=2.7){if(rnd()>.05)person(x,y,true);if(rnd()>.05)person(399-x-2,y,true)}
+  const crowd=Object.keys(paths).map(c=>`<path d="${paths[c].join('')}" fill="${c}"/>`).join('');
+  let sticks='';
+  for(let i=0;i<170;i++){
+    const x=rnd()*396+1,w=wy(x),y=rnd()<.5?w-20+rnd()*16:w-52+rnd()*22;
+    const c=x<200?(rnd()<.5?'#ff9bc0':'#ffffff'):(rnd()<.5?'#9fb4ff':'#ffffff');
+    sticks+=`<rect class="g${i%3}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="1" height="3" fill="${c}" style="animation-delay:-${(rnd()*1.5).toFixed(2)}s"/>`;
+  }
+  let cf='';const cc=['#ffffff','#f6c21b','#ff5c8a','#6f8cff'];
+  for(let i=0;i<50;i++){const x=rnd()*396;cf+=`<rect class="cf" x="${x.toFixed(1)}" y="${(wy(x)-48+rnd()*40).toFixed(1)}" width="2" height="2" fill="${cc[i%4]}" style="animation-delay:-${(rnd()*.5).toFixed(2)}s"/>`}
+  let arc='M0 '+wy(0).toFixed(1);for(let x=10;x<=400;x+=10)arc+=' L'+x+' '+wy(x).toFixed(1);
+  const wall=arc+' L400 240 L0 240 Z';
+  let ads='';const ac=['#c30452','#1c2a6b','#f6c21b','#f3e9c6','#2b7a3d','#6fb3ff'];
+  for(let i=0;i<20;i++){const x=i*20;ads+=`<rect x="${x}" y="${(wy(x+10)).toFixed(1)}" width="19" height="4.5" fill="${ac[i%6]}"/>`}
+  let grass='';{let y=wy(200)+8,h=4,k=0;while(y<240){grass+=`<rect y="${y.toFixed(1)}" width="400" height="${(h+.6).toFixed(1)}" fill="${k%2?'#1c6630':'#247a3b'}"/>`;y+=h;h*=1.13;k++}}
+  let towers='';
+  [26,374].forEach(x=>{towers+=`<circle cx="${x}" cy="4" r="30" fill="url(#gl)"/>`;for(let r=0;r<2;r++)for(let c=0;c<5;c++)towers+=`<rect class="fl" x="${x-17+c*7}" y="${1+r*4}" width="5" height="2.5" fill="#fffbe0"/>`});
+  let roof='';for(let x=0;x<400;x+=8)roof+=`<rect class="fl" x="${x+2}" y="3" width="3" height="1.5" fill="#fff3b0" opacity=".6"/>`;
+  const cap1='#c30452',uni1='#f5f5f5',slv1='#c30452',cap2='#1c2a6b',uni2='#2f43a3',slv2='#1c2a6b';
+  const arm='<rect class="parm" x="4" y="4" width="1" height="3" fill="#f2c9a0"/>';
+  const bat='<rect class="bat" x="5" y="-1" width="1" height="7" fill="#c9a06a"/>';
+  const F=[['LF',84,104,'sa'],['CF',200,94,'sb'],['RF',316,104,'sc'],['SS',160,127,''],['2B',241,125,''],['3B',130,168,''],['1B',270,168,'']];
+  let fl='';
+  F.forEach(([,x,y,c])=>{fl+=sp(x,y,cap2,uni2,slv2,c==='sa'?'of0':c==='sb'?'of2':c==='sc'?'of1':'')});
+  return `<svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#02040f"/><stop offset="1" stop-color="#16265c"/></linearGradient>
+<radialGradient id="gl"><stop offset="0" stop-color="#fffbe0" stop-opacity=".6"/><stop offset="1" stop-color="#fffbe0" stop-opacity="0"/></radialGradient>
+<linearGradient id="gs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".55"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+<clipPath id="cl"><path d="${arc} L400 0 L0 0 Z"/><rect x="0" y="116" width="37" height="84"/><rect x="363" y="116" width="37" height="84"/></clipPath>
+</defs>
+<rect width="400" height="240" fill="#0b0f26"/>
+<rect width="400" height="64" fill="url(#sky)"/>
+<rect y="0" width="400" height="9" fill="#10173a"/>${roof}
+<path d="${arc} L400 0 L0 0 Z" fill="#0d1230"/>
+<rect x="0" y="116" width="37" height="84" fill="#0d1230"/><rect x="363" y="116" width="37" height="84" fill="#0d1230"/>
+<g clip-path="url(#cl)"><g class="crowd">${crowd}${sticks}</g>${cf}</g>
+<path d="${arc.replace(/^M0 [\d.]+/,m=>m)} L400 0 L0 0 Z" fill="none"/>
+<rect x="0" y="${(wy(200)-26).toFixed(1)}" width="400" height="2" fill="#0a0e24" opacity=".8"/>
+${towers}
+<path d="${wall}" fill="#16452a"/>
+<rect x="0" y="${(wy(200)-1).toFixed(1)}" width="0" height="0"/>${ads}
+<path d="${arc}" fill="none" stroke="#f6c21b" stroke-width="1"/>
+<rect x="190" y="${(wy(200)+.3).toFixed(1)}" width="20" height="4" fill="#f3e9c6"/><text x="200" y="${(wy(200)+3.4).toFixed(1)}" text-anchor="middle" font-size="3.4" fill="#111">125</text>
+<path d="${arc.replace(/(\d+) (\d+\.\d)/g,(m,a,c)=>a+' '+(+c+5.5).toFixed(1))} L400 240 L0 240 Z" fill="#7a5a3a"/>
+<path d="${arc.replace(/(\d+) (\d+\.\d)/g,(m,a,c)=>a+' '+(+c+9).toFixed(1))} L400 240 L0 240 Z" fill="#1d6a31"/>${grass}
+<rect width="400" height="240" fill="url(#gs)" opacity=".0"/>
+<polyline points="0,108 200,198 400,108" fill="none" stroke="#f3e9c6" stroke-width="1"/>
+<ellipse cx="200" cy="165" rx="96" ry="46" fill="#b58b4a"/>
+<polygon points="200,184 266,158 200,132 134,158" fill="#247a3b"/>
+<ellipse cx="200" cy="197" rx="27" ry="11" fill="#b58b4a"/>
+<ellipse cx="200" cy="153" rx="10" ry="4" fill="#a37a3e"/><rect x="197" y="152" width="6" height="1" fill="#f3e9c6"/>
+<rect x="285" y="153" width="7" height="4" fill="#f3e9c6"/><rect x="108" y="153" width="7" height="4" fill="#f3e9c6"/><rect x="197" y="116" width="6" height="4" fill="#f3e9c6"/>
+<polygon points="196,193 204,193 204,196 200,199 196,196" fill="#f3e9c6"/>
+<rect x="183" y="188" width="14" height="1" fill="#f3e9c6" opacity=".8"/><rect x="183" y="188" width="1" height="16" fill="#f3e9c6" opacity=".8"/><rect x="196" y="188" width="1" height="16" fill="#f3e9c6" opacity=".8"/>
+<rect x="203" y="188" width="14" height="1" fill="#f3e9c6" opacity=".8"/><rect x="203" y="188" width="1" height="16" fill="#f3e9c6" opacity=".8"/><rect x="216" y="188" width="1" height="16" fill="#f3e9c6" opacity=".8"/>
+${fl}
+${sp(288,154,cap1,uni1,slv1,'run1')}${sp(200,118,cap1,uni1,slv1,'run2')}${sp(112,154,cap1,uni1,slv1,'run3')}
+${sp(200,156,cap2,uni2,slv2,'pit',arm)}
+${sp(200,222,cap2,uni2,slv2,'',null,2.1)}
+${sp(200,244,'#111','#222','#111','',null,2.5)}
+${sp(176,208,cap1,uni1,slv1,'bt',bat,2.1)}
+<rect class="ball" x="199" y="152" width="1.8" height="1.8" fill="#fff"/>
+</svg>`;
+}
+function stageHud(){
+  const L=['CF 김태오','2B 이도겸','LF 정하준','1B 윤서후','DH 임강현','3B 송이안','RF 홍지후','SS 남도윤','C 권시우'];
+  const D=['CF 신하람','SS 한라온','LF 문지안','1B 류시안','DH 박다온','2B 배윤호','RF 조해든','3B 오세찬','C 서이든'];
+  const tb=(a,c)=>`<div class="lu ${c}"><div class="lh">${c==='d'?'두산 베어스':'LG 트윈스'} 라인업</div>${a.map((n,i)=>`<div><i>${i+1}</i>${n}</div>`).join('')}</div>`;
+  return `<div class="bug"><div class="stn">잠실야구장</div><div class="r"><b class="lg">L</b><span>LG</span><span class="sw"><i class="sc0">2</i><i class="sc1">6</i></span></div><div class="r"><b class="dd">D</b><span>DOO</span><span class="sw"><i style="position:static">3</i></span></div><div class="inn"><span class="hd">9회말 · 2사 만루</span><span class="walk">끝내기 만루홈런!</span></div></div>`
+  +``;
+}
+function mobileChibi(kind,cls=''){
+  const pitcher=kind==='P';
+  return `<svg class="mobile-chibi ${cls}" viewBox="0 0 150 190" aria-hidden="true">
+    <ellipse cx="75" cy="181" rx="43" ry="8" fill="rgba(12,42,75,.28)"/>
+    <g class="chibi-body">
+      <path d="M48 104 Q75 88 102 104 L108 151 Q76 166 42 151Z" fill="${pitcher?'#2877c7':'#ef4b4f'}" stroke="#163c69" stroke-width="5"/>
+      <path d="M58 151 L55 176 L72 176 L76 153 M91 151 L96 176 L112 176 L103 146" fill="#f4f7fb" stroke="#163c69" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M54 176h20v7H48q-3-5 6-7M94 176h20l8 7H94Z" fill="#17334f"/>
+      <circle cx="75" cy="70" r="37" fill="#ffd1aa" stroke="#163c69" stroke-width="5"/>
+      <path d="M40 67 Q43 25 77 25 Q106 26 111 64 Q91 48 43 58Z" fill="#3b2b27"/>
+      <path d="M39 53 Q74 29 112 53 L107 36 Q75 18 44 37Z" fill="${pitcher?'#2169b3':'#dc3945'}" stroke="#163c69" stroke-width="5"/>
+      <path d="M104 49q17 3 19 10q-13 5-25 1" fill="${pitcher?'#2169b3':'#dc3945'}" stroke="#163c69" stroke-width="4"/>
+      <circle cx="61" cy="71" r="4" fill="#23344b"/><circle cx="89" cy="71" r="4" fill="#23344b"/>
+      <path d="M64 87q11 8 22 0" fill="none" stroke="#b3544e" stroke-width="4" stroke-linecap="round"/>
+      ${pitcher?`<g class="throw-arm"><path d="M47 111 Q20 105 17 79" fill="none" stroke="#ffd1aa" stroke-width="16" stroke-linecap="round"/><ellipse cx="18" cy="72" rx="17" ry="20" fill="#744724" stroke="#163c69" stroke-width="5"/><path d="M10 61l16 23M5 73l25-4" stroke="#d49a55" stroke-width="3"/></g><path d="M101 111q22 10 28 28" fill="none" stroke="#ffd1aa" stroke-width="15" stroke-linecap="round"/>`:`<g class="swing-arm"><path d="M48 110q17 13 34 2M102 109Q87 121 76 116" fill="none" stroke="#ffd1aa" stroke-width="14" stroke-linecap="round"/><rect x="91" y="9" width="12" height="116" rx="6" fill="#dca158" stroke="#633d22" stroke-width="4" transform="rotate(25 97 67)"/></g>`}
+      <text x="75" y="135" text-anchor="middle" fill="#fff" font-size="22" font-weight="900">${pitcher?'P':'H'}</text>
+    </g>
+  </svg>`;
+}
+function chibiGearIcon(kind){
+  if(kind==='P')return `<svg class="gear-icon glove-icon" viewBox="0 0 180 170" aria-hidden="true">
+    <ellipse cx="91" cy="150" rx="61" ry="11" fill="rgba(17,49,82,.2)"/>
+    <path d="M46 126C25 108 22 84 34 70c7-8 17-8 26-2-5-20 2-34 15-35 8 0 14 5 18 14 2-22 10-33 24-31 13 2 17 14 15 33 8-14 20-19 30-12 13 9 10 29-1 48 13 4 20 15 16 28-6 20-29 35-53 42-25 7-55-10-78-29Z" fill="#a96732" stroke="#173c67" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M60 69c21 15 31 37 30 65M93 48c9 20 11 49 4 83M132 50c-1 23-10 48-28 77M45 93c28 0 51 14 60 35M142 86c-20 2-33 15-39 40" fill="none" stroke="#efb568" stroke-width="6" stroke-linecap="round"/>
+    <path d="M42 126q36-4 62 17" fill="none" stroke="#74401f" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="71" cy="102" r="5" fill="#26384c"/><circle cx="100" cy="105" r="5" fill="#26384c"/><path d="M78 119q9 7 18 0" fill="none" stroke="#6e321f" stroke-width="5" stroke-linecap="round"/>
+    <path d="M39 61q15-12 25 3" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".45"/>
+  </svg>`;
+  return `<svg class="gear-icon bat-icon" viewBox="0 0 180 170" aria-hidden="true">
+    <ellipse cx="90" cy="151" rx="62" ry="10" fill="rgba(17,49,82,.2)"/>
+    <g transform="rotate(-34 90 86)"><path d="M78 143q-6-2-6-9l3-64q1-17 8-42 3-12 15-12t15 12q5 26 4 43l-4 63q0 7-7 9Z" fill="#e9b45f" stroke="#173c67" stroke-width="7" stroke-linejoin="round"/><path d="M84 132h28l-1 17q-14 8-29 0Z" fill="#cf6d3b" stroke="#173c67" stroke-width="6"/><path d="M90 25q10-7 17 2" fill="none" stroke="#fff4b8" stroke-width="6" stroke-linecap="round" opacity=".65"/><circle cx="91" cy="73" r="5" fill="#26384c"/><circle cx="108" cy="73" r="5" fill="#26384c"/><path d="M94 87q7 6 14 0" fill="none" stroke="#8d4b2c" stroke-width="5" stroke-linecap="round"/></g>
+    <path d="M31 55l7 10 12 2-9 8 2 12-12-6-11 6 2-12-9-8 12-2Z" fill="#ffe34c" stroke="#e48031" stroke-width="4"/><circle cx="149" cy="46" r="9" fill="#fff" stroke="#d34848" stroke-width="3"/><path d="M144 39q7 7 10 14M142 51q8-1 14-8" fill="none" stroke="#d34848" stroke-width="2"/>
+  </svg>`;
+}
+function mobileTitleScene(){
+  return `<div class="mobile-title-scene" aria-hidden="true"><div class="soft-crowd"></div><div class="soft-field"><i class="base b1"></i><i class="base b2"></i><i class="base b3"></i><i class="base home"></i><div class="mound"></div></div><div class="title-player tp-p">${mobileChibi('P')}</div><div class="title-player tp-h">${mobileChibi('H')}</div><i class="soft-ball"></i><div class="impact">HIT!</div></div>`;
+}
+function stagePage(win){
+  show(()=>{
+    const k=H.length;if(!win)H.push(menu);
+    let m='';
+    if(win){
+      const w=win(),ix=H.length;H.push(w.close||title);
+      m=`<div class="backdrop" onclick="H[${ix}]()"><div class="win ${w.cls||''}" onclick="event.stopPropagation()"><div class="wbar"><span>${w.title}</span><button class="wx" onclick="H[${ix}]()">✕</button></div><div class="wbody">${w.body}</div></div></div>${w.extra||''}`;
+    }
+    return `<div class="stage" ${win?'':`onclick="H[${k}]()" style="cursor:pointer"`}>${sceneSvg()}<div class="cut"></div><div class="vig"></div><div class="topscrim"></div>${stageHud()}<div class="logo"><div class="l1">${GAME_NAME}</div></div>${win?'':'<div class="ps"><span class="l3 blink">▶ 시작하기</span></div>'}${win?'':'<div class="shint">화면을 클릭하거나 Enter 키를 누르세요</div>'}</div>${m}`;
+  },true);
+  STAGEMODE=win?2:1;
+}
+function title(){stagePage(null)}
+function menu(){
+  stagePage(()=>{
+    let info='';
+    if(hasSave()){try{const s=JSON.parse(localStorage.getItem('b2ws_save'));info=`<p class="sub" style="text-align:center">저장된 선수: ${s.name} · ${s.age}세 · ${LV[s.lv]||s.lv}</p>`}catch(e){}}
+    return {title:'메인 메뉴',body:`${B('새 게임',newGame,'mbtn')}${hasSave()?B('이어하기',loadGame,'mbtn'):'<button class="btn mbtn dis" disabled>이어하기</button>'}${B('명예의 전당',hofScreen,'mbtn')}${info}<p class="sub" style="text-align:center">창 바깥을 누르면 메인 화면으로 돌아갑니다.</p>`};
+  });
+}
+function hofScreen(){
+  const l=hofRead();
+  stagePage(()=>({title:'HALL OF FAME',cls:'wide',body:(l.length?`<div class="hofgrid">${l.map((r,i)=>`<div class="hofrow">${r.card||''}<div><b style="color:#a02a1a;font-size:20px">#${i+1} · ${r.grade}등급</b><br>${r.title}<br><span class="sub">${r.name} (${r.role}) · ${r.score}점<br>KBO ${r.kbo||0}시즌 · MLB ${r.mlb||0}시즌</span></div></div>`).join('')}</div>`:'<p>아직 은퇴한 선수가 없습니다. 첫 전설을 만들어 보세요.</p>')+B('← 메뉴로',menu,'alt')}));
+}
+
+/* ----- 선수 생성 (이름 · 출신 · 난이도) ----- */
+let CR={};
+const DIFFS=[{k:'쉬움'},{k:'보통'},{k:'어려움'}];
+const DIFF_IDX=[.25,0,-.25],DIFF_POT=[6,0,-6],DIFF_CASH=[.3,.18,.08];
+function newGame(force){
+  if(hasSave()&&force!==true){
+    stagePage(()=>({title:'NEW GAME',close:menu,body:`<p style="text-align:center">저장된 게임이 있습니다.<br>새로 시작하면 기존 저장이 덮어씌워집니다.</p><div style="text-align:center">${B('새로 시작',()=>newGame(true),'mbtn')}${B('취소',menu,'alt mbtn')}</div>`}));
+    return;
+  }
+  CR={name:'',region:'서울',diff:1};
+  createScreen();
+}
+function readCreate(){
+  CR.name=clean(document.getElementById('nm').value).trim().slice(0,8);
+  CR.region=document.getElementById('rg').value;
+  if(!CREATE_REGIONS.includes(CR.region))CR.region='서울';
+  const d=document.querySelector('input[name=diff]:checked');
+  CR.diff=d?(parseInt(d.value)||0):1;
+  if(CR.diff<0||CR.diff>2)CR.diff=1;
+}
+function createScreen(){
+  stagePage(()=>({title:'선수 생성',body:`<p>이름</p><input type="text" id="nm" maxlength="8" value="${CR.name}" placeholder="예) 김도윤">
+    <p style="margin-top:12px">출신 (고교 소재지)</p><select id="rg">${CREATE_REGIONS.map(r=>`<option ${r===CR.region?'selected':''}>${r}</option>`).join('')}</select>
+    <p style="margin-top:12px">난이도</p><div class="cards">${DIFFS.map((d,i)=>`<label><input type="radio" name="diff" value="${i}" ${CR.diff===i?'checked':''}>${d.k}</label>`).join('')}</div>
+    <div style="text-align:center;margin-top:14px">${B('다음 ▶',()=>{readCreate();CR.kind='';CR.role='';CR.st=null;posePage()})}</div>`}));
+}
+function pixSvg(kind){
+  const N=32,grid=Array.from({length:N},()=>Array(N).fill(null));
+  const put=(x,y,c)=>{if(x>=0&&y>=0&&x<N&&y<N)grid[y][x]=c};
+  if(kind==='P'){
+    const K='#17100a',B='#9a6330',Lc='#bd8247',D='#74451e';
+    const u=[.62,-.78],v=[.78,.62],base=[13,17.5];
+    const shapes=[];
+    shapes.push({a:[16,25],b:[25,20],r:3,c:[Lc,B,D]});                          /* 엄지 */
+    [[-1.5,12],[-.5,14],[.5,13],[1.5,10.5]].forEach(([k,len])=>{
+      const s0=[base[0]+v[0]*k*4.9,base[1]+v[1]*k*4.9];
+      shapes.push({a:s0,b:[s0[0]+u[0]*len,s0[1]+u[1]*len],r:2.6,c:[Lc,B,D]});     /* 손가락 */
+    });
+    shapes.push({a:[11,21],b:[18,22.5],r:7.6,c:[Lc,B,D]});                       /* 손바닥 */
+    shapes.push({a:[7,26.5],b:[15,28.5],r:3,c:['#7a4d26','#5e3a17','#4a2c10']}); /* 손목 스트랩 */
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const px=x+.5,py=y+.5;
+      shapes.forEach(sh=>{
+        const dx=sh.b[0]-sh.a[0],dy=sh.b[1]-sh.a[1],L2=dx*dx+dy*dy;
+        let t=((px-sh.a[0])*dx+(py-sh.a[1])*dy)/L2;t=Math.max(0,Math.min(1,t));
+        const cx=sh.a[0]+t*dx,cy=sh.a[1]+t*dy,d=Math.hypot(px-cx,py-cy);
+        if(d>sh.r)return;
+        if(d>sh.r-1){put(x,y,K);return}
+        const side=((px-cx)*dy-(py-cy)*dx)/Math.sqrt(L2),w=side/sh.r;
+        put(x,y,w<-.35?sh.c[0]:w>.35?sh.c[2]:sh.c[1]);
+      });
+    }
+    put(15,18,K);put(16,19,K);
+  }else{
+    const K='#3a210c',base='#e1b073',lt='#f2d49b',dk='#b97f3c';
+    const x0=4.5,y0=27.5,x1=26,y1=6,dx=x1-x0,dy=y1-y0,L2=dx*dx+dy*dy;
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+      const px=x+.5,py=y+.5;
+      let t=((px-x0)*dx+(py-y0)*dy)/L2;t=Math.max(0,Math.min(1,t));
+      const cx=x0+t*dx,cy=y0+t*dy,d=Math.hypot(px-cx,py-cy);
+      let r=t<.5?1.5+t*.6:t<.8?1.8+(t-.5)*5.4:3.4+(t-.8)*1.2;
+      if(t===0)r=2.4;                                         /* 손잡이 끝 knob */
+      if(d>r+1.1)continue;
+      if(d>r){put(x,y,K);continue}
+      const side=((px-cx)*dy-(py-cy)*dx)/Math.sqrt(L2); /* 부호: 방향의 한쪽 */
+      const u=side/r;
+      put(x,y,u<-.35?dk:u>.35?lt:base);
+    }
+  }
+  let L='';
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++)if(grid[y][x])L+=`<rect x="${x}" y="${y}" width="1" height="1" fill="${grid[y][x]}"/>`;
+  return `<svg class="pixel-role-icon" viewBox="0 0 32 32" width="124" height="124" shape-rendering="crispEdges" aria-hidden="true" style="display:block;margin:0 auto;image-rendering:pixelated">${L}</svg>`;
+}
+function norm45(st){
+  st=st.slice();let d=225-st.reduce((a,b)=>a+b,0),g=0;
+  while(d!==0&&g++<2000){const i=RI(0,4),sg=d>0?1:-1;if(st[i]+sg>=20&&st[i]+sg<=70){st[i]+=sg;d-=sg}}
+  return st;
+}
+function pickKind(k){
+  CR.kind=k;CR.role='';CR.st=null;CR.opts={};
+  (k==='P'?PITCH_ROLES:HIT_ROLES).forEach(x=>{const r=rollStats(k,x);CR.opts[x]={labels:r.labels,st:norm45(r.st),pot:r.pot}});
+  posePage();
+}
+function pickRole(role){
+  const o=CR.opts&&CR.opts[role];if(!o)return;
+  CR.role=role;CR.labels=o.labels;CR.st=o.st;CR.pot=o.pot;posePage();
+}
+function posePage(){
+  const pc=(k,name)=>`<div class="pcard ${CR.kind===k?'on':''}" onclick="pickKind('${k}')">${pixSvg(k)}<b>${name}</b></div>`;
+  const roles=CR.kind==='P'?PITCH_ROLES:CR.kind==='H'?HIT_ROLES:[];
+  const ents=roles.length?roles.map(x=>{const o=CR.opts[x];return `<div class="ent ${CR.role===x?'on':''}" onclick="pickRole('${x}')"><div class="eh"><b class="et">${ROLE_SUB[x]}</b><span>OVR <b>45</b></span></div>${o.labels.map((l,i)=>bar(l,o.st[i])).join('')}</div>`}).join(''):'<p class="sub" style="grid-column:1/-1;text-align:center">투수 또는 타자를 선택하세요.</p>';
+  stagePage(()=>({title:'포지션 선택',cls:'wide',body:`<div class="pgrid">${pc('P','투수')}${pc('H','타자')}</div><div class="ents">${ents}</div><div style="text-align:center;margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${B('◀ 이전',createScreen,'alt')}${B('다음 ▶',()=>{CR.cust=randCust();customPage()},CR.st&&CR.role?'':'dis')}</div>`}));
+}
+function readCustText(){const u=document.getElementById('no'),h=document.getElementById('hd');if(u)CR.cust.num=C(parseInt(u.value)||0,0,99);if(h)CR.cust.hand=h.value}
+function setC(k,v){CR.cust[k]=v;customPage()}
+const CFIELDS=[
+ {k:'num',n:'등번호',t:'num'},
+ {k:'hand',n:'투타',t:'list',L:['우투우타','좌투좌타','우투좌타','좌투우타'],v:'str'},
+ {k:'body',n:'체형',t:'list',L:['마른형','보통','건장','거구']},
+ {k:'skin',n:'피부색',t:'list',L:SKIN,sw:1},
+ {k:'style',n:'머리 스타일',t:'list',L:STYLES},
+ {k:'hcol',n:'머리색',t:'list',L:HAIRC,sw:1},
+ {k:'eyeblack',n:'아이블랙',t:'list',L:['없음','있음']}
+];
+function customPage(editKey){
+  const cu=CR.cust,hx=f=>{H.push(f);return H.length-1};
+  stagePage(()=>{
+    const cell=f=>{
+      const ix=hx(()=>customPage(f.k)),v=cu[f.k];
+      const val=f.t==='num'?'#'+v:f.sw?`<i class="csw" style="background:${f.L[v||0]}"></i>`:(f.v==='str'?v:f.L[v||0]);
+      return `<div class="cell" onclick="H[${ix}]()"><span>${f.n}</span><b>${val}</b></div>`;
+    };
+    const GR=[['num','hand'],['skin'],['style','hcol'],['eyeblack']];
+    const rows=GR.map(g=>`<div class="crow">${g.map(k=>cell(CFIELDS.find(f=>f.k===k))).join('')}</div>`).join('');
+    let extra='';
+    const f=CFIELDS.find(x=>x.k===editKey);
+    if(f){
+      const cl=hx(()=>customPage());
+      let body;
+      if(f.t==='num'){
+        const ok=hx(()=>{const u=document.getElementById('no');CR.cust.num=C(parseInt(u&&u.value)||0,0,99);customPage()});
+        body=`<p>등번호 (0~99)</p><input type="number" id="no" min="0" max="99" value="${cu.num}"><div style="text-align:center;margin-top:12px"><button class="btn" onclick="H[${ok}]()">확인</button></div>`;
+      }else{
+        body=`<div class="plist ${f.sw?'sws':''}">`+f.L.map((a,i)=>{
+          const on=f.v==='str'?cu[f.k]===a:(cu[f.k]||0)===i;
+          const ix=hx(()=>{CR.cust[f.k]=f.v==='str'?a:i;customPage()});
+          return `<button class="opt ${on?'on':''}" onclick="H[${ix}]()" ${f.sw?`style="background:${a}"`:''}>${f.sw?'&nbsp;':a}</button>`;
+        }).join('')+'</div>';
+      }
+      extra=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win sm" onclick="event.stopPropagation()"><div class="wbar"><span>${f.n}</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${body}</div></div></div>`;
+    }
+    return {title:'커스터마이즈',cls:'wide',body:`<div class="pgrid"><div><div id="cardBox">${cardHtml(CR,{ovr:45,pot:'?'})}</div></div><div class="crows">${rows}</div></div><div style="text-align:center;margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${B('◀ 이전',posePage,'alt')}${B('다음 ▶',schoolPage)}</div>`,extra};
+  });
+}
+function schoolPage(){
+  stagePage(()=>{
+    const pool=HS_BY_REGION[CR.region]||[];
+    const choices=shuffle(pool.slice()).slice(0,Math.min(3,pool.length));
+    const pick=s=>{H.push(()=>{CR.highSchool=s;beginCareer()});return H.length-1};
+    const list=choices.map(s=>`<button class="btn mbtn" style="display:block;max-width:320px;margin:10px auto" onclick="H[${pick(s)}]()">${s}</button>`).join('');
+    return {title:'고교 선택',body:`<p class="sub" style="text-align:center">${CR.region} · 입학할 고교를 선택하세요.</p>${list||'<p class="sub" style="text-align:center">선택 가능한 학교가 없습니다.</p>'}${B('← 커스터마이즈',()=>customPage(),'alt mbtn')}`};
+  });
+}
+function randCust(){
+  const c=defCust();
+  c.skin=RI(0,5);c.hcol=RI(0,1);c.style=RI(0,7);c.body=1;c.theme=2;c.nick='';c.eyeblack=0;
+  c.hand=Math.random()<.75?'우투우타':['좌투좌타','우투좌타','좌투우타'][RI(0,2)];
+  return c;
+}
+function beginCareer(){
+  HUBTAB='main';
+  if(!CR.st||!CR.role||!CR.highSchool)return;
+  CR.pot=C(CR.pot+DIFF_POT[CR.diff],45,99);if(!CR.cust)CR.cust=randCust();
+  newPlayer(CR);
+  P.diff=CR.diff;P.money=DIFF_CASH[CR.diff];P.bp=0;P.bpFold=true;
+  const g=potGrade(P.pot);
+  L(`고교 야구부 입단 — ${P.team} (난이도 ${DIFFS[CR.diff].k})`);
+  show(()=>panel('2027년 봄',`<p><b>${P.team}</b> 야구장. 후보 선수 명단 맨 아래에 <b>${P.name}</b>의 이름이 적혀 있다.</p><p>“쟤는 벤치나 지켜라.” 감독님은 눈길도 주지 않았다.</p><p>그래도 매일 밤 글러브를 닦으며 다짐한다. 언젠가 <b>한국시리즈</b>를 거쳐, <b>월드시리즈</b> 무대에 서겠다고.</p><p class="sub">${ROLE[P.role]} · ${P.region} 출신 · 스카우트 사전 평가: ${g}급 유망주 · 난이도 ${DIFFS[CR.diff].k}</p>${B('라커룸으로',hub)}`));
+}
+
+/* ----- 허브: 상점 | 선수 정보·플레이 | 커리어 STAT·LOG ----- */
+const SHOP=[
+ {id:'weight',n:'웨이트·러닝 패키지',d:'체력/주루 +3',p:.12,fn:()=>bump(3,3)},
+ {id:'coach',n:'전담 코치 레슨',d:'핵심 능력 +3',p:.25,fn:()=>bumpMain(3)},
+ {id:'tech',n:'트랙맨·랩소도 분석',d:'핵심 능력 2개 +2',p:.35,fn:()=>{bumpMain(2);bumpMain(2)}},
+ {id:'mind',n:'멘탈 코치 상담',d:'멘탈 +8',p:.15,fn:()=>mental(8)},
+ {id:'rehab',n:'재활·케어 센터',d:'다음 시즌 부상 확률 감소',p:.2,fn:()=>{P.shield=true}},
+ {id:'diet',n:'영양 식단·보충제',d:'다음 시즌 컨디션 상승',p:.08,fn:()=>{P.hot+=.25}},
+ {id:'pr',n:'에이전트·SNS 홍보',d:'명성 +2',p:.45,fn:()=>fame(2)}
+];
+function buy(id){
+  const s=SHOP.find(x=>x.id===id);
+  if(!spend(s.p)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
+  s.fn();P.shopMsg=`${s.n} 구매 완료!`;L(`상점 — ${s.n} 구매 (${priceLabel(s.p)})`);hub();
+}
+function shopPanel(){
+  return `<div class="panel"><h2>상점</h2><p class="sub">보유 ${moneyPair(P.money)}</p>${SHOP.map(s=>`<div class="item"><b>${s.n}</b><br><span class="sub">${s.d}</span><br>${B(priceLabel(s.p),()=>buy(s.id),P.money>=s.p?'':'dis')}</div>`).join('')}<p class="sub">상점 금액은 시즌 연봉으로 쌓인 돈을 씁니다.</p></div>`;
+}
+function centerPanel(ny,na){
+  const o=ovr();
+  return `<div class="panel"><h2>선수 정보</h2><div class="two">${cardHtml(P,{ovr:o,pot:potGrade(P.pot)})}<div>${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div></div><p style="margin-top:12px"><b>${P.name}</b> · ${ROLE[P.role]} · ${P.region} 출신</p><p class="sub">${lvLabel()} · ${P.team}</p><p class="sub">다음 시즌 ${ny}년 (${na}세)${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''} · 명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}</p>${B('▶ 게임 플레이하기',playNext,'play')}</div>`;
+}
+function careerPanel(){
+  const f=c=>{if(!c.g)return '<span class="sub">기록 없음</span>';return P.pitcher?`${c.w}승 ${c.l}패 ${c.sv}세이브 ${c.hd}홀드<br>평균자책 ${c.ip?f2(c.er*9/c.ip):'-'} · ${c.k}탈삼진 · ${c.ip}이닝`:`타율 ${c.ab?rate(c.h/c.ab):'-'} · ${c.hr}홈런<br>${c.rbi}타점 · ${c.sb}도루`};
+  const aw=awardSplit();
+  let pro='';
+  if(P.car.KBO.g>0)pro+=`<p><b>KBO</b> (${P.car.KBO.g}시즌)<br>${f(P.car.KBO)}</p>`;
+  if(P.car.MLB.g>0)pro+=`<p><b>MLB</b> (${P.car.MLB.g}시즌)<br>${f(P.car.MLB)}</p>`;
+  if(!pro)pro='<p class="sub">프로 리그 통산 기록 없음</p>';
+  return `<div class="panel"><h2>커리어 스탯</h2>${pro}<p class="sub">통산 수입 ${won(P.money)}</p><div class="scard-awards"><div><p class="sub">개인 수상</p>${awardTags(aw.personal)}</div><div><p class="sub">팀 수상</p>${awardTags(aw.team)}</div></div></div>`;
+}
+function logPanel(){
+  const lines=P.hist.slice().reverse().map(h=>{
+    const tag=h.tags&&h.tags.length?' · '+h.tags.join(', '):'';
+    return `<p>${h.y}년 (${h.age}세) · ${h.lv} · ${h.team} — ${h.line}${tag}</p>`;
+  }).join('');
+  return `<div class="panel"><h2>시즌 로그</h2><div class="log">${lines||'<p class="sub log-empty">아직 시즌 기록이 없습니다.</p>'}</div></div>`;
+}
+let HUBTAB='main';
+const TABS=['shop','main','rec'],TABN={shop:['상점','상점'],main:['메인','메인'],rec:['기록','기록']};
+function setTab(t){HUBTAB=t;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPLUX=false}hub()}
+function heroPanel(){
+  const cu=P.cust;
+  const rt=H.length;H.push(()=>{HUBRETIRE=true;hub()});
+  return `<div class="panel hp"><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><div class="hcap-top"><div class="hcap-id"><b>${P.name}</b></div><span class="sub">${ROLE[P.role]} · ${P.age}세 · ${batOrder()} · ${cu.hand}</span></div><div class="fan-row"><div class="fan-nick">“${fanNick()}”</div><button class="btn alt retire-now" onclick="H[${rt}]()">지금 은퇴하기</button></div></div></div>`;
+}
+function ovrDeltaMark(){
+  let d=P.lastOvrDelta;
+  if(d==null&&P.lastDelta){
+    const prev=P.st.map((v,i)=>v-(P.lastDelta[i]||0));
+    d=ovr()-Math.round(prev.reduce((a,b)=>a+b,0)/5);
+  }
+  if(d==null)return '';
+  const n=Math.round(d);
+  if(!n)return '<em class="flat">±0</em>';
+  return `<em class="${n>0?'up':'dn'}">${n>0?'▲':'▼'}${Math.abs(n)}</em>`;
+}
+function mainTab(ny,na){
+  const o=ovr(),last=P.hist.length?P.hist[P.hist.length-1]:null;
+  const c=coachAdvice();
+  const stats=`<div class="panel hp"><div class="ovrrow"><div><span class="sub">OVR</span><b>${o}${ovrDeltaMark()}</b></div><div><span class="sub">최근 시즌</span><b class="sm2">${last?last.lv:'-'}</b></div><div><span class="sub">최고 OVR</span><b>${Math.max(P.peak||0,o)}</b></div></div>
+    ${P.labels.map((l,i)=>bar(l,P.st[i],P.lastDelta&&P.lastDelta[i])).join('')}${bar('멘탈',P.mental,P.lastMen)}${bar('명성',Math.min(P.fame,10)*10)}
+    <p class="sub" style="margin-top:10px">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}보유 ${moneyPair(P.money)}</p></div>`;
+  const play=`<div class="panel hp"><div class="tbox team-play-row"><div><b>${P.team}</b><br><span class="sub">${lvLabel()} · ${na}세 · ${P.mil==='exempt'?'병역특례':P.mil==='done'?'병역필':P.mil==='none'?'병역 미필':'복무 중'}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
+  const coach=`<div class="panel hp"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
+  return `<div class="hgrid">${heroPanel()}${stats}${play}${coach}</div>`;
+}
+const EQUIP=[
+ {id:'helmet',n:()=>'헬멧',d:'부상 확률 -1.2% / 레벨'},
+ {id:'glove',n:()=>'글러브',d:()=>P.pitcher?'제구 성장 +0.3 / 레벨':'수비 성장 +0.3 / 레벨'},
+ {id:'spike',n:()=>'스파이크',d:'주루·체력 성장 +0.3 / 레벨'},
+ {id:'weapon',n:()=>P.pitcher?'피칭 장비':'배트',d:()=>P.pitcher?'구위 성장 +0.3 / 레벨':'컨택 성장 +0.3 / 레벨'},
+ {id:'gear',n:()=>'트레이닝 기어',d:'전 능력 성장 +0.1 / 레벨'},
+ {id:'recov',n:()=>'회복 장비',d:'시즌 멘탈 +2 / 레벨'}
+];
+const EQ_MAX=5,eqCost=l=>Math.round((.1+.08*l)*100)/100,CUST_COST=.05;
+let SHOPSEL=0,SHOPLUX=false,SHOPCU=null,SHOPEDIT=null;
+const txt=v=>typeof v==='function'?v():v;
+function eqLv(id){return (P.eq&&P.eq[id])||0}
+function eqBuy(id){
+  const l=eqLv(id),c=eqCost(l);
+  if(l>=EQ_MAX)return hub();
+  if(!spend(c)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
+  P.eq=P.eq||{};P.eq[id]=l+1;
+  const e=EQUIP.find(x=>x.id===id);P.shopMsg=`${txt(e.n)} Lv.${l+1} 업그레이드 완료!`;L(`상점 — ${txt(e.n)} Lv.${l+1}`);hub();
+}
+function custSave(){
+  const same=JSON.stringify(SHOPCU)===JSON.stringify(P.cust);
+  if(same||!spend(CUST_COST)){P.shopMsg=same?'바뀐 내용이 없습니다.':'보유 금액이 부족합니다.';return hub()}
+  P.cust=Object.assign({},SHOPCU);P.shopMsg='외형 변경 완료!';L('상점 — 외형 변경');hub();
+}
+function shopTab(){
+  if(!SHOPCU)SHOPCU=Object.assign({},P.cust);
+  const hx=f=>{H.push(f);return H.length-1};
+  const cu=SHOPCU;
+  /* 왼쪽: 장비 업그레이드 */
+  if(SHOPSEL<0||SHOPSEL>=EQUIP.length)SHOPSEL=0;
+  const eqList=EQUIP.map((e,i)=>{
+    const ix=hx(()=>{SHOPSEL=i;hub()}),sl=eqLv(e.id),sel=i===SHOPSEL;
+    const up=sel?`<div class="eq-upgrade"><span class="sub">Lv.${sl} / ${EQ_MAX}</span><div class="pips">${Array.from({length:EQ_MAX},(_,j)=>`<i class="${j<sl?'f':''}"></i>`).join('')}</div>${sl>=EQ_MAX?'<p class="sub">최대 레벨입니다.</p>':`<p class="sub">다음 레벨: ${txt(e.d)}</p>${B(`업그레이드 · ${priceLabel(eqCost(sl))}`,()=>eqBuy(e.id),P.money>=eqCost(sl)?'':'dis')}`}</div>`:'';
+    return `<div class="eqi ${sel?'on':''}"><div class="eqi-main" onclick="H[${ix}]()"><div><b>${txt(e.n)}</b><br><span class="sub">${txt(e.d)}</span></div><span class="lv">Lv.${sl}</span></div>${up}</div>`;
+  }).join('');
+  const left=`<div class="panel shop-eq-panel"><h2>장비 업그레이드</h2><div class="eql">${eqList}</div></div>`;
+  const lux=`<div class="panel lux"><div class="luxh"><b>럭셔리 박스</b><span class="sub">시즌 소모품 · ${SHOP.length}종</span></div><div style="text-align:center;margin-top:10px">${B('럭셔리 박스 열기',()=>{SHOPLUX=true;hub()})}</div></div>`;
+  const hero=`<div class="panel hp"><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><b>${P.name}</b><span class="sub">보유 ${moneyPair(P.money)}</span></div></div>`;
+  const mid=`<div class="shop-col shop-mid-col">${hero}${lux}</div>`;
+  /* 오른쪽: 커스터마이제이션 */
+  const cell=f=>{
+    const ix=hx(()=>{SHOPEDIT=f.k;hub()}),v=cu[f.k];
+    const val=f.t==='num'?'#'+v:f.sw?`<i class="csw" style="background:${f.L[v||0]}"></i>`:(f.v==='str'?v:f.L[v==null?1:v]);
+    return `<div class="cell" onclick="H[${ix}]()"><span>${f.n}</span><b>${val}</b></div>`;
+  };
+  const GR=[['num','hand'],['body','skin'],['style','hcol'],['eyeblack']];
+  const rows=GR.map(g=>`<div class="crow">${g.map(k=>cell(CFIELDS.find(f=>f.k===k))).join('')}</div>`).join('');
+  const rs=hx(()=>{SHOPCU=Object.assign({},P.cust);hub()}),sv=hx(custSave);
+  const dirty=JSON.stringify(cu)!==JSON.stringify(P.cust);
+  const right=`<div class="panel shop-cust-panel"><h2>커스터마이제이션</h2><div class="crows lock">${rows}</div><p class="sub" style="margin-top:10px">저장 1회 ${priceLabel(CUST_COST)} · 보유 ${priceLabel(P.money)}</p><div class="lkbtn"><button class="btn alt ${dirty?'':'dis'}" onclick="H[${rs}]()">초기화</button><button class="btn ${dirty&&P.money>=CUST_COST?'':'dis'}" onclick="H[${sv}]()">저장</button></div></div>`;
+  /* 편집 팝업 */
+  let extra='';
+  const f=CFIELDS.find(x=>x.k===SHOPEDIT);
+  if(f){
+    const cl=hx(()=>{SHOPEDIT=null;hub()});
+    let body;
+    if(f.t==='num'){
+      const ok=hx(()=>{const u=document.getElementById('no');SHOPCU.num=C(parseInt(u&&u.value)||0,0,99);SHOPEDIT=null;hub()});
+      body=`<p>등번호 (0~99)</p><input type="number" id="no" min="0" max="99" value="${cu.num}"><div style="text-align:center;margin-top:12px"><button class="btn" onclick="H[${ok}]()">확인</button></div>`;
+    }else{
+      body=`<div class="plist ${f.sw?'sws':''}">`+f.L.map((a,i)=>{
+        const on=f.v==='str'?cu[f.k]===a:(cu[f.k]||0)===i;
+        const ix=hx(()=>{SHOPCU[f.k]=f.v==='str'?a:i;SHOPEDIT=null;hub()});
+        return `<button class="opt ${on?'on':''}" onclick="H[${ix}]()" ${f.sw?`style="background:${a}"`:''}>${f.sw?'&nbsp;':a}</button>`;
+      }).join('')+'</div>';
+    }
+    extra=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win sm" onclick="event.stopPropagation()"><div class="wbar"><span>${f.n}</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${body}</div></div></div>`;
+  }
+  if(SHOPLUX){
+    const cl=hx(()=>{SHOPLUX=false;hub()});
+    const luxBody=SHOP.map(x=>`<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${x.d}</span></div>${B(priceLabel(x.p),()=>buy(x.id),P.money>=x.p?'':'dis')}</div>`).join('');
+    extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>럭셔리 박스</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">시즌 소모품 · 보유 ${moneyPair(P.money)}</p>${luxBody}</div></div></div>`;
+  }
+  return `<div class="sgrid"><div class="shop-col">${left}</div>${mid}<div class="shop-col">${right}</div></div>${extra}`;
+}
+function recTab(){return careerPanel()+logPanel()}
+function hub(){
+  foldBp();save();P.peak=Math.max(P.peak||0,ovr());
+  const ny=P.y+(P.played?1:0),na=P.age+(P.played?1:0);
+  if(!TABS.includes(HUBTAB))HUBTAB='main';
+  if(P.offers&&P.offers.length&&!SEAS_MODE&&!PREP_OPEN)SEAS_MODE='offer';
+  show(()=>{
+    const topb=hubTopbar();
+    const body=HUBTAB==='shop'?shopTab():HUBTAB==='rec'?recTab():mainTab(ny,na);
+    const nav=`<div class="hnav">${TABS.map(t=>B(`<small>${TABN[t][0]}</small>${TABN[t][1]}`,()=>setTab(t),'hn'+(t===HUBTAB?' on':''))).join('')}</div>`;
+    const mod=(HUBSET?hubSettingsModal():'')+(HUBSHARE?hubShareModal():'')+(HUBCOFFEE?hubCoffeeModal():'')+(HUBRETIRE?hubRetireModal():'')+(PREP_OPEN?prepOverlay():'')+(SEAS_MODE?seasonOverlay():'');
+    return topb+hofBanner()+body+nav+mod;
+  },true);
+}
+function playNext(){P.snap={st:P.st.slice(),men:P.mental};P.playBanner=null;P.shopMsg='';SHOPCU=null;SHOPEDIT=null;closeHubModals();nextSeason(!P.played)}
+
+/* ============ HUD / 훈련 ============ */
+function bar(l,v,d){
+  const n=d==null?0:Math.round(d);
+  const mark=n?`<em class="${n>0?'up':'dn'}">${n>0?'▲':'▼'}${Math.abs(n)}</em>`:'<em></em>';
+  return `<div class="row"><span>${l}</span><div class="bar"><i style="width:${Math.round(C(v,0,100))}%"></i></div><b>${Math.round(v)}</b>${mark}</div>`;
+}
+function hud(){return `<div class="panel hud"><div><div style="float:left;margin-right:10px">${avatar(P.cust,3,P.team)}</div><b>${P.name}</b> <span class="sub">${ROLE[P.role]} · ${P.age}세 · ${batOrder()}</span><br><span class="sub">${P.y}년 · ${lvLabel()}<br>${P.team}</span></div><div class="ovr">OVR<b>${ovr()}</b></div><div class="bars">${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div><div class="meta2 sub">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''}</div></div>`}
+function flavor(){
+  switch(P.lv){
+    case 'HS':return '3월 주말리그부터 5월 황금사자기, 여름 청룡기·대통령배·봉황대기, 10월 전국체전까지. 달력대로 시즌이 흘러간다.';
+    case 'UNI':return '대학 리그와 연습경기, 그리고 가을의 드래프트. 시간은 많지 않다.';
+    case 'KBO2':return '퓨처스리그의 새벽 훈련. 1군 엔트리 한 자리가 이렇게 멀 줄이야.';
+    case 'KBO1':return '개막전의 함성. 이제 야구장 전광판에 내 이름이 뜬다.';
+    case 'MLB':return '메이저리그의 아침 클럽하우스. 영어와 야구, 둘 다 쉽지 않다.';
+    case 'MIL':return '상무 훈련소의 아침 점호. 야구 실력은 쉬지 않고 흘러간다.';
+    default:return '마이너리그의 긴 버스 이동. 빅리그까지 한 계단씩.';
+  }
+}
+function prepInjExtra(){
+  const trains=PREP_SEL.filter(i=>i!==6);
+  if(!PREP_SEL.length)return 0;
+  if(PREP_SEL.includes(6)&&!trains.length)return PREP_INJ[0];
+  return PREP_INJ[Math.min(trains.length,5)]||0;
+}
+function coachAdvice(){
+  const rows=P.labels.map((l,i)=>[l,P.st[i],i]).sort((a,b)=>a[1]-b[1]||a[2]-b[2]);
+  const high=P.labels.map((l,i)=>[l,P.st[i],i]).sort((a,b)=>b[1]-a[1]||a[2]-b[2])[0];
+  return {low:rows[0],high,foci:[rows[0][2],rows[1][2]],text:`기본기가 먼저다. ${rows[0][0]}부터 끌어올려라.`};
+}
+function closePrep(){PREP_OPEN=false;PREP_SEL=[];hub()}
+function openPrepCamp(){HUBTAB='main';PREP_OPEN=true;hub()}
+function prepOverlay(){
+  const news=P.news.length?`<div class="prep-news">${P.news.map(n=>`<p>▶ ${n}</p>`).join('')}</div>`:'';
+  const chips=P.labels.map((l,i)=>prepChip(l,i)).join('')+prepChip('멘탈',5)+prepChip('휴식·재활',6,'alt');
+  const go=PREP_SEL.length?B('▶ 시즌 시작',commitPrep,'play'):`<button class="btn play dis" disabled>▶ 시즌 시작</button>`;
+  const cl=H.length;H.push(closePrep);
+  return `<div class="backdrop prep-backdrop b2"><div class="win prep-win" onclick="event.stopPropagation()"><div class="wbar"><span>훈련 캠프</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${news}<p class="prep-meta sub">${P.y}년 · ${P.age}세 · ${lvLabel()} · <b>${P.team}</b></p><p>${flavor()}</p><p class="sub">여러 항목을 골라 동시에 훈련할 수 있습니다. 많이 고를수록 <b style="color:#ff9b8a">부상 위험</b>이 올라갑니다.</p><div class="prep-chips">${chips}</div><p class="sub">${prepInjLabel()}</p><div class="prep-go">${go}</div></div></div></div>`;
+}
+function prepInjLabel(){
+  const ex=prepInjExtra(),tr=PREP_SEL.filter(i=>i!==6).length;
+  if(PREP_SEL.includes(6)&&!tr)return '휴식 · 부상 위험 감소';
+  if(!tr)return '훈련 항목을 선택하세요';
+  const p=Math.round(Math.max(0,ex)*100);
+  return tr>1?`집중 ${tr}개 · 부상 위험 +${p}%p`:p?`부상 위험 +${p}%p`:'표준 부상 위험';
+}
+function togglePrep(i){
+  if(i===6){PREP_SEL=PREP_SEL.includes(6)?[]:[6]}
+  else{
+    PREP_SEL=PREP_SEL.filter(x=>x!==6);
+    const j=PREP_SEL.indexOf(i);
+    if(j>=0)PREP_SEL.splice(j,1);else PREP_SEL.push(i);
+  }
+  hub();
+}
+function prepChip(label,i,cls=''){
+  const on=PREP_SEL.includes(i),rec=i<5&&coachAdvice().foci.includes(i),ix=H.length;
+  H.push(()=>togglePrep(i));
+  return `<button type="button" class="btn prep-chip${on?' on':''}${rec?' rec':''} ${cls}" onclick="H[${ix}]()">${rec?'★ ':''}${label}</button>`;
+}
+function commitPrep(){
+  if(!PREP_SEL.length)return;
+  PREP_OPEN=false;
+  const trains=PREP_SEL.filter(i=>i!==6),multi=trains.length,rest=PREP_SEL.includes(6);
+  const co=coachAdvice(),followed=[];
+  P.restFlag=rest&&!trains.length||rest;
+  if(!trains.length){mental(RI(4,7))}
+  else{
+    const boost=multi>2?RI(1,3):multi>1?RI(2,4):RI(2,5);
+    trains.forEach(i=>{
+      if(i<5){
+        const extra=co.foci.includes(i)?2:0;
+        if(extra)followed.push(P.labels[i]);
+        bump(i,boost+extra);
+      }else if(i===5)mental(RI(3,7));
+    });
+    if(rest)mental(2);
+  }
+  if(followed.length)L(`코치의 계획: ${followed.join('·')} 훈련을 따라 성장이 더 빨랐다.`);
+  P.prepInjExtra=prepInjExtra();
+  P.mod={inj:0,perf:0,growth:0};
+  P.planPicks=[];
+  P.eventNote='';
+  P.seasNews=[];
+  grow();
+  const ne=natEvent();if(ne)return runEvent(ne);
+  if(Math.random()<.62){
+    const c=EV.filter(e=>e.w());
+    if(c.length){
+      const bad=c.filter(e=>e.bad),good=c.filter(e=>!e.bad);
+      const pool=bad.length&&(!good.length||Math.random()<.48)?bad:(good.length?good:c);
+      return runEvent(pick(pool));
+    }
+  }
+  beginPlan();
+}
+function trainScreen(){
+  if(P.lv==='MIL'&&P.milType==='현역'){
+    return show(()=>hud()+panel(`군 복무 ${3-P.milLeft}년차`,`<p>총 대신 글러브를 들 수 있는 날을 기다린다. 틈틈이 몸을 만들지만 감각은 점점 무뎌진다.</p>${B('복무를 이어간다',()=>{P.st=P.st.map(s=>Math.max(15,s-RI(0,2)));mental(3);playSeason()})}`));
+  }
+  openPrepCamp();
+}
+function grow(){
+  const a=P.age;
+  P.st=P.st.map(s=>{const c=C((P.pot-s)/25,.25,1.4);let d;
+    if(a<=18)d=R(1.5,5)*c;else if(a<=21)d=R(1,4)*c;else if(a<=26)d=R(0,2.5)*c;else if(a<=30)d=R(-1,1);else if(a<=34)d=R(-2.6,.2);else d=R(-3.8,-.8);
+    return C(Math.round((s+d)*10)/10,15,99)});
+  const q=k=>(P.eq&&P.eq[k])||0,add=(i,v)=>{if(v)P.st[i]=C(Math.round((P.st[i]+v)*10)/10,15,99)};
+  add(0,.3*q('weapon'));add(P.pitcher?1:4,.3*q('glove'));add(3,.3*q('spike'));
+  if(q('gear'))for(let i=0;i<5;i++)add(i,.1*q('gear'));
+  if(q('recov'))mental(2*q('recov'));
+}
+function injure(sev){
+  P.injured=sev;
+  if(sev==='major'){bump(RI(0,4),-RI(1,3))}
+  if(sev==='surg'){if(P.pitcher){bump(0,-RI(2,4));bump(1,-RI(1,3))}else{bump(1,-RI(2,4));bump(3,-RI(1,3))}}
+}
+
+/* ============ 이벤트 ============ */
+const EV=[
+{w:()=>P.lv==='HS',t:'스탠드에 앉은 프로 스카우트들',x:'오늘 경기 포수 뒤편에 스피드건과 수첩을 든 스카우트가 여덟 명이나 앉았다. 시선이 따갑다.',c:[
+ ['이를 악물고 전력으로 붙는다','명성·기량 상승 / 부상 위험',()=>{if(Math.random()<.6){fame(2);bumpMain(2);return '눈도장 쾅! 스카우트 수첩에 이름이 크게 적혔다. (명성+2, 기량 상승)'}injure('minor');return '힘이 너무 들어갔다. 경기 후 통증이 찾아왔다… (경미한 부상)'}],
+ ['평소처럼 내 야구를 한다','멘탈 상승',()=>{mental(4);return '담담하게 자기 야구를 했다. 멘탈이 단단해졌다. (멘탈+4)'}]]},
+{w:()=>P.lv==='HS',t:'여름 합숙, 지옥의 3주',x:'감독님이 선언했다. “이번 여름, 우리는 포기하지 않는다.”',c:[
+ ['끝까지 버틴다','체력·기량·멘탈 상승 / 부상 위험',()=>{if(Math.random()<.72){bump(3,3);bumpMain(2);mental(3);return '이를 악물고 버텼다. 체력과 기량이 눈에 띄게 올랐다.'}injure('minor');return '버티다 몸이 먼저 비명을 질렀다. (경미한 부상)'}],
+ ['개인 레슨을 병행한다','기량 상승',()=>{bumpMain(3);return '전담 레슨 덕에 폼이 안정됐다. (기량+3)'}]]},
+{w:()=>P.lv==='UNI',t:'대학 감독의 프로 인맥',x:'감독님이 프로 구단 스카우트 팀장과 식사 자리를 마련해 주었다.',c:[
+ ['적극적으로 어필한다','명성·멘탈 상승',()=>{fame(2);mental(2);return '자신 있게 포부를 밝혔다. 이름이 스카우트 사이에 돌기 시작했다. (명성+2)'}],
+ ['성적으로 보여주겠다고 한다','기량 상승',()=>{bumpMain(2);return '말보다 결과로. 훈련에 더 매진했다. (기량+2)'}]]},
+{w:()=>isPro(P.lv),t:'비활동기간, 어디서 몸을 만들까',x:'시즌이 끝났다. 겨울을 어떻게 보낼까.',c:[
+ ['괌·오키나와 합동 캠프','체력·멘탈 상승',()=>{bump(3,3);mental(2);return '따뜻한 곳에서 체력을 쌓았다. (체력+3)'}],
+ ['미국 사설 트레이닝 센터','기량·명성 상승',()=>{bumpMain(3);bumpMain(2);fame(1);return '트랙맨·랩소도 데이터로 몸을 뜯어고쳤다. (기량 상승)'}],
+ ['고향 집에서 엄마 밥 먹으며 쉰다','멘탈 크게 상승',()=>{mental(6);return '든든하게 먹고 푹 쉬었다. (멘탈+6)'}]]},
+{w:()=>isPro(P.lv),t:'코치의 폼 수정 제안',x:'“지금 폼으로는 한계가 있어. 이렇게 바꿔보자.”',c:[
+ ['받아들인다','기량 크게 상승 / 폼이 꼬일 위험',()=>{if(Math.random()<.55){bumpMain(4);return '새 폼이 맞아떨어졌다! (기량+4)'}bumpMain(-2);return '폼이 꼬였다. 감을 되찾는 데 시간이 걸린다. (기량-2)'}],
+ ['내 스타일을 고수한다','멘탈 상승',()=>{mental(3);return '자신을 믿기로 했다. (멘탈+3)'}]]},
+{w:()=>isPro(P.lv)&&P.fame>=2,t:'야구 예능 출연 제의',x:'유명 예능 PD에게 연락이 왔다. 한 번 나가면 이름이 확 알려진다.',c:[
+ ['출연한다','명성 상승 / 멘탈이 흔들릴 수 있음',()=>{fame(3);if(Math.random()<.3){mental(-3);return '화제가 됐지만 “야구나 잘하라”는 댓글도 많았다. (명성+3, 멘탈 소폭 하락)'}mental(2);return '인기 폭발! 팬이 눈에 띄게 늘었다. (명성+3)'}],
+ ['정중히 거절한다','멘탈 상승',()=>{mental(2);return '야구에 집중하기로 했다. (멘탈+2)'}]]},
+{w:()=>P.lv==='KBO1'||P.lv==='AAA'||P.lv==='MLB',t:'라이벌의 등장',x:'동기 중 한 명이 먼저 리그를 폭격하고 있다. 기자들이 비교하기 시작했다.',c:[
+ ['정면승부로 넘어선다','기량·명성 상승 / 멘탈 하락 위험',()=>{if(Math.random()<.5){bumpMain(3);fame(1);return '자극이 약이 됐다. (기량+3)'}mental(-4);return '의식하다 오히려 꼬였다. (멘탈-4)'}],
+ ['내 페이스를 지킨다','멘탈 상승',()=>{mental(3);return '남 신경 쓰지 않고 루틴을 지켰다. (멘탈+3)'}]]},
+{w:()=>isPro(P.lv)&&P.age>=25&&P.age<=34&&!P.married,t:'결혼 소식',x:'오래 만난 연인이 말했다. “이제 우리 결혼할까?”',c:[
+ ['결혼한다','멘탈 크게 상승',()=>{P.married=true;mental(8);return '가정을 이뤘다. 마음이 한결 안정됐다. (멘탈+8)'}],
+ ['야구에만 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '조금만 더 야구에 집중하기로 했다. (기량+1)'}]]},
+{w:()=>isPro(P.lv)&&!P.injured,t:'팔꿈치·무릎에 이상 신호',x:'트레이너가 고개를 갸웃한다. “이거 좀 위험한데…”',c:[
+ ['참고 뛴다','시즌 성적 상승 / 대형 부상 위험',()=>{P.hot+=.5;if(Math.random()<.4){injure('major');return '성적은 좋았지만 결국 탈이 났다… (대형 부상)'}return '아슬아슬했지만 버텼다. 성적이 좋았다. (시즌 퍼포먼스 상승)'}],
+ ['엔트리 말소하고 재활한다','부상 위험 감소',()=>{P.restFlag=true;mental(1);return '무리하지 않고 몸을 챙겼다. (부상 위험 감소)'}]]},
+{w:()=>P.lv==='KBO1'&&P.fame>=3,t:'내 응원가가 생겼다',x:'팬들이 직접 만든 응원가가 경기장에 울려 퍼진다. 3루 응원석이 들썩인다.',c:[
+ ['손을 번쩍 들어 화답한다','멘탈·명성 상승',()=>{mental(5);fame(1);return '팬들과 하나가 된 순간. (멘탈+5, 명성+1)'}],
+ ['덤덤히 경기에 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '프로는 결과로 말한다. (기량+1)'}]]},
+{w:()=>P.org==='MLB',t:'언어의 장벽',x:'클럽하우스 농담을 반쯤 못 알아듣는다. 통역이 있어도 미묘한 분위기는 전달되지 않는다.',c:[
+ ['영어 공부에 매달린다','멘탈·명성 상승',()=>{mental(5);fame(1);return '조금씩 말이 트이자 동료들과 가까워졌다. (멘탈+5)'}],
+ ['한국인 통역·선배와 어울린다','멘탈 소폭 상승',()=>{mental(2);return '편안함을 택했다. 적응은 천천히. (멘탈+2)'}]]},
+{w:()=>P.org==='MLB',t:'도미니카 동료의 조언',x:'옆 라커의 베테랑이 말했다. “너 그 그립/스윙, 이렇게 바꿔봐. 내가 해봤는데…”',c:[
+ ['귀 기울여 듣는다','기량 상승 / 안 맞을 수도 있음',()=>{if(Math.random()<.65){bumpMain(3);mental(2);return '새로운 접근이 통했다. (기량+3)'}bumpMain(-1);return '나랑은 안 맞았다… (기량-1)'}],
+ ['내 방식대로 간다','멘탈 상승',()=>{mental(2);return '신념을 지켰다. (멘탈+2)'}]]}
+];
+function choiceOf(c){return typeof c[1]==='function'?{l:c[0],d:'',fn:c[1]}:{l:c[0],d:c[1],fn:c[2]}}
+function bannerHtml(){return P.playBanner&&P.playBanner.text?`<p class="form-line ${P.playBanner.ok?'ok':'bad'}">${P.playBanner.text}</p>`:''}
+function setBanner(text,ok){
+  const line=String(text||'').replace(/\s+/g,' ').trim();
+  if(!line)return;
+  P.playBanner={ok:!!ok,text:line.length>48?line.slice(0,46)+'…':line};
+}
+function bannerOk(line){
+  if(/위험 감소/.test(line))return true;
+  return !/탈락|불참|출전하지|오르지|기약|중하위|하락|실패|꼬였|부진|아쉽|결장|접었|부상|통증/.test(line);
+}
+let SEAS_MODE='',SEAS_EV=null,SEAS_RES=null;
+function runEvent(e){
+  SEAS_MODE='event';SEAS_EV=e;PREP_OPEN=false;HUBTAB='main';hub();
+}
+function seasonShell(title,body){
+  return `<div class="backdrop prep-backdrop b2"><div class="win prep-win" onclick="event.stopPropagation()"><div class="wbar"><span>${title}</span></div><div class="wbody">${body}</div></div></div>`;
+}
+function seasonOverlay(){
+  if(SEAS_MODE==='event'&&SEAS_EV){
+    const e=SEAS_EV;
+    const opts=e.c.map(c=>{
+      const ch=choiceOf(c);
+      return B(`<b>${ch.l}</b>${ch.d?`<span class="sub">${ch.d}</span>`:''}`,()=>{const r=ch.fn();L(`${e.t} — ${r}`);P.eventNote=r;setBanner(r,bannerOk(r));if(e.nat&&NAT_Q.length)return runEvent(NAT_Q.shift());beginPlan()},'choice');
+    }).join('');
+    return seasonShell(e.t,`${bannerHtml()}<p class="sub">${e.nat?'국제대회':'시즌 이벤트'}</p><p>${e.x}</p><div class="opts">${opts}</div>`);
+  }
+  if(SEAS_MODE==='hs')return hsOverlay();
+  if(SEAS_MODE==='plan'){
+    const st=PLAN_STEP,step=PLAN[st];
+    const pips=PLAN.map((q,i)=>`<span class="${i<st?'done':i===st?'now':''}">${q.tag}</span>`).join('');
+    const nw=P.seasNews&&P.seasNews[st]?`<div class="season-news"><b>${P.seasNews[st].tag}</b> · ${P.seasNews[st].h}</div>`:'';
+    const note=st===0&&P.eventNote?`<p class="sub">직전 선택 — ${P.eventNote}</p>`:'';
+    const opts=step.ch.map((c,i)=>B(`<b>${c.l}</b><span class="sub">${c.d}</span>`,()=>choosePlan(i),'choice')).join('');
+    return seasonShell(step.title,`${bannerHtml()}<p class="sub">${P.y}년 · ${lvLabel()} · ${P.team} · 시즌 플랜 ${st+1}/3</p><div class="plan-steps">${pips}</div>${nw}${note}<p>${step.text}</p><div class="opts">${opts}</div>`);
+  }
+  if(SEAS_MODE==='result')return resultOverlay();
+  if(SEAS_MODE==='offer')return offerOverlay();
+  return '';
+}
+/* 한국 선수가 나가는 국제대회.
+   병역법 시행령 제68조의11: 예술·체육요원은 올림픽 3위 이상, 아시안게임 1위만.
+   WBC(2006년 한시 조치 후 2008년부터 제외)·프리미어12·연령별 월드컵은 특례 없음.
+   한 해에 성인 대표 대회가 둘이면 순서대로 고른다. 성인 대회에 뽑히면 연령별 대회는 넘어간다. */
+const U23_YEARS=[2028,2030,2032,2034];
+let NAT_Q=[];
+function natDuty(){return P.mil==='exempt'&&P.milYear&&P.y>P.milYear&&P.y-P.milYear<=5}
+function natBlocked(){return P.lv==='MIL'&&P.milType!=='상무'}
+function grantMil(){
+  if(P.mil!=='none')return '';
+  P.mil='exempt';P.milYear=P.y;
+  return ' 예술·체육요원으로 편입됐다. 기초군사훈련 4주와 봉사 544시간이 현역을 대신하고, 5년간 국가대표 차출에 응해야 한다.';
+}
+function natDecline(){
+  if(natDuty()){fame(-2);mental(-2);return '병역 특례 뒤 5년 안에는 대표팀 차출을 거절하기 어렵다. 여론이 싸늘하다. (명성-2, 멘탈-2)'}
+  P.restFlag=true;return '소속팀 일정을 지켰다. (부상 위험 감소)';
+}
+function natRoll(team,bar){return team+(ovr()-bar)/18+(P.mental-50)/120+Math.random()*1.05}
+function natWear(){if(Math.random()<.05)injure('minor')}
+function cupResult(p,winKey,winFame,semiKey,semiFame,name){
+  if(p>2.2){A(winKey);fame(winFame);mental(3);return `${name} 우승. 태극기가 가장 높이 올랐다. (명성+${winFame})`}
+  if(p>1.55){if(semiKey)A(semiKey);fame(semiFame);mental(1);return `${name} 4강. 세계 무대에서 이름을 알렸다. (명성+${semiFame})`}
+  if(p>.95){fame(1);return `${name} 8강 탈락. 경험은 남았다. (명성+1)`}
+  mental(-2);return `${name} 1라운드 탈락. 뼈아픈 패배였다. (멘탈-2)`;
+}
+const NAT_CAL=[
+ {y:2027,tier:'youth',t:'2027 U-18 야구 월드컵',when:'9.17–9.26 · 중국 핑탄',
+  rule:'',
+  x:'아시아 예선을 통과한 고등학교 대표가 핑탄에 모인다. 가을 대회라 주말리그·봉황대기와 일정이 겹친다.',
+  hint:'명성 상승',ok:()=>P.lv==='HS'&&P.age<=18&&ovr()>=52,
+  play(){natWear();return cupResult(natRoll(.9,52),'U-18 월드컵 우승',3,null,2,'U-18 월드컵')}},
+ {y:2029,tier:'youth',t:'2029 U-18 야구 월드컵',when:'개최지 추후 확정 · 2년 주기',
+  rule:'',
+  x:'고3 마지막 여름과 가을 사이다. 세계 18세 이하 무대에 설 수 있는 마지막 해다.',
+  hint:'명성 상승',ok:()=>P.lv==='HS'&&P.age<=18&&ovr()>=52,
+  play(){natWear();return cupResult(natRoll(.9,54),'U-18 월드컵 우승',3,null,2,'U-18 월드컵')}},
+ {y:2027,tier:'senior',t:'2027 프리미어12',when:'11월 · 16개국',
+  rule:'',
+  x:'WBSC 프리미어12가 16개국으로 늘어난다. 아시아 1위에게 2028 LA 올림픽 출전권이 주어진다.',
+  hint:'명성 상승 · 올림픽 티켓은 팀 성적',ok:()=>seniorOk(66,38),
+  play(){natWear();return cupResult(natRoll(.8,66),'프리미어12 우승',5,'프리미어12 4강',2,'프리미어12')}},
+ {y:2028,tier:'senior',t:'2028 LA 올림픽 야구',when:'7월 · 다저스타디움',
+  rule:'동메달 이상이면 예술·체육요원.',
+  x:'야구가 올림픽에 돌아온다. 본선은 6개국이고, 한국은 프리미어12 아시아 1위이거나 최종 예선을 거쳐 본선에 올랐다. 고교 에이스라도 컨디션이 빼어나면 명단에 넣을 수 있다.',
+  hint:'동메달 이상이면 병역 특례',ok:()=>P.lv==='HS'?ovr()>=64:seniorOk(72,38),
+  play(){natWear();const p=natRoll(.85,70);
+    if(p>2.35){A('올림픽 금메달');fame(8);mental(5);return '올림픽 금메달. 다저스타디움에 애국가가 울린다.'+grantMil()+' (명성+8)'}
+    if(p>1.8){A('올림픽 은메달');fame(5);mental(3);return '올림픽 은메달. 금에는 못 미쳤지만 시상대에 올랐다.'+grantMil()+' (명성+5)'}
+    if(p>1.25){A('올림픽 동메달');fame(4);mental(2);return '올림픽 동메달. 2승만으로도 메달이 가능한 대진이었다.'+grantMil()+' (명성+4)'}
+    mental(-2);return '메달권 밖에서 대회를 마쳤다. (멘탈-2)'}},
+ {y:2030,tier:'senior',t:'2030 WBC',when:'3월 · 개최 도시 추후 확정',
+  rule:'',
+  x:'4년 만의 월드베이스볼클래식. 스프링캠프 대신 대표팀 캠프다.',
+  hint:'명성 상승',ok:()=>seniorOk(68,38),
+  play(){natWear();return cupResult(natRoll(.7,68),'WBC 우승',6,'WBC 4강',3,'WBC')}}
+];
+[2034,2038,2042,2046,2050].forEach(y=>NAT_CAL.push({y,tier:'senior',t:`${y} WBC`,when:'3월 · 4년 주기',
+  rule:'',
+  x:'월드베이스볼클래식. 세계 최정상 투수들을 상대한다.',
+  hint:'명성 상승',ok:()=>seniorOk(68,38),
+  play(){natWear();return cupResult(natRoll(.7,68),'WBC 우승',6,'WBC 4강',3,'WBC')}}));
+function agSpec(y,when,x){
+  return {y,tier:'senior',t:`${y} 아시안게임 야구`,when,rule:'금메달이면 병역 특례.',x,
+    hint:'금메달이면 병역 특례',ok:agOk,
+    play(){natWear();const bump=C((ovr()-64)/50,0,.35),r=Math.random()-bump;
+      if(r<.52){A('아시안게임 금메달');fame(4);mental(4);return '금메달. 애국가가 운동장을 한 바퀴 돈다.'+grantMil()+' (명성+4)'}
+      if(r<.8){fame(1);return '은메달. (명성+1)'}
+      fame(1);return '동메달. 시상대에 올랐다. (명성+1)'}};
+}
+NAT_CAL.push(agSpec(2030,'11.4–11.19 · 카타르 도하, 알라이얀','도하 아시안게임. 야구는 알라이얀 구장에서 열린다. 25세 이하가 주축이고, 금메달만이 군 문제를 푼다.'));
+NAT_CAL.push(agSpec(2034,'리야드 · 대회 주기','리야드 아시안게임. 1994년 이후 아시안게임 야구는 계속 열려 왔다. 아직 미필이라면 이번 금메달이 현실적인 길이다.'));
+[2038,2042,2046,2050].forEach(y=>NAT_CAL.push(agSpec(y,'개최지 추후 확정 · 4년 주기','아시안게임 야구. 와일드카드 자리가 아니라면 어린 선수 위주다. 금메달만 예술·체육요원으로 이어진다.')));
+[2031,2035,2039,2043,2047,2051].forEach(y=>NAT_CAL.push({y,tier:'senior',t:`${y} 프리미어12`,when:y===2031?'4년 주기 · 개최지 추후 확정':'4년 주기',
+  rule:'',
+  x:'세계랭킹 상위국이 모이는 WBSC 프리미어12.',
+  hint:'명성 상승',ok:()=>seniorOk(66,38),
+  play(){natWear();return cupResult(natRoll(.8,66),'프리미어12 우승',5,'프리미어12 4강',2,'프리미어12')}}));
+U23_YEARS.forEach(y=>NAT_CAL.push({y,tier:'youth',t:`${y} U-23 야구 월드컵`,when:'2년 주기 · 개최지 추후 확정',
+  rule:'',
+  x:'23세 이하 대표. 대학, 퓨처스, 상무, 어린 1군이 한 팀이 된다.',
+  hint:'명성 상승',ok:u23Ok,
+  play(){natWear();return cupResult(natRoll(.75,58),'U-23 월드컵 우승',2,null,1,'U-23 월드컵')}}));
+function seniorOk(min,maxAge){
+  if(natBlocked()||P.age>maxAge||P.age<17)return false;
+  if(P.lv==='HS')return ovr()>=min+12;
+  if(P.lv==='MIL')return P.milType==='상무'&&ovr()>=min;
+  if((P.lv==='KBO1'||P.lv==='MLB'||P.lv==='AAA')&&ovr()>=min)return true;
+  return ['KBO2','UNI','AA','A'].includes(P.lv)&&ovr()>=min+8;
+}
+function agOk(){
+  if(natBlocked()||P.lv==='HS')return false;
+  if(P.lv==='MIL'&&P.milType!=='상무')return false;
+  if(P.age<=25)return ['KBO1','KBO2','UNI','MLB','AAA','AA','A','MIL'].includes(P.lv)&&ovr()>=64;
+  return P.age<=34&&(P.lv==='KBO1'||P.lv==='MLB'||P.lv==='MIL')&&ovr()>=70&&(P.fame>=2||ovr()>=76);
+}
+function u23Ok(){
+  if(natBlocked()||P.age>23)return false;
+  if(P.lv==='HS')return ovr()>=58;
+  if(P.lv==='UNI'||P.lv==='KBO2'||isMin(P.lv))return ovr()>=56;
+  if(P.lv==='KBO1'||P.lv==='MLB')return P.age<=23&&ovr()>=66;
+  return P.lv==='MIL'&&P.milType==='상무'&&ovr()>=60;
+}
+function mkNat(e){
+  const duty=natDuty();
+  return {nat:true,t:e.t,x:`${e.when}${e.rule?`<br><span class="sub">${e.rule}</span>`:''}<br>${e.x}`,c:[
+    ['대표팀에 합류한다',e.hint,()=>e.play()],
+    [duty?'차출을 거절한다':'소속팀 일정을 지킨다',duty?'특례 후 5년 의무 · 명성 하락':'부상 위험 감소',natDecline]]};
+}
+function natEvent(){
+  const due=NAT_CAL.filter(e=>e.y===P.y&&e.ok());
+  const senior=due.filter(e=>e.tier==='senior');
+  NAT_Q=(senior.length?senior:due).slice(0,2).map(mkNat);
+  return NAT_Q.shift()||null;
+}
+
+/* ============ 시즌 중 선택 (개막 / 중반 / 막판) ============ */
+let PLAN_STEP=0;
+const PLAN=[
+ {tag:'개막',title:'개막 레이스',text:'시즌 첫 달이다. 어떤 페이스로 출발할까.',ch:[
+  {l:'전력으로 나선다',d:'성적 ↑ · 부상 위험 ↑',fx:{perf:1.2,inj:.03}},
+  {l:'페이스를 조절한다',d:'무난한 출발',fx:{}},
+  {l:'몸 관리에 집중한다',d:'부상 위험 ↓ · 성장 ↑ · 성적 소폭 ↓',fx:{inj:-.03,growth:.25,perf:-.4}}]},
+ {tag:'중반',title:'시즌 중반의 갈림길',text:'일정이 빽빽하다. 감독에게 뭐라고 할까.',ch:[
+  {l:'출전을 더 달라고 한다',d:'기회 ↑ · 멘탈 ↓',fx:{perf:.35,mor:-4}},
+  {l:'영상 분석에 파묻힌다',d:'성적 ↑ · 성장 소폭 ↑ · 멘탈 ↓',fx:{perf:.45,growth:.15,mor:-3}},
+  {l:'회복 주간을 잡는다',d:'부상 위험 ↓ · 멘탈 ↑ · 성적 소폭 ↓',fx:{inj:-.03,mor:4,perf:-.3}}]},
+ {tag:'막판',title:'막판 스퍼트',text:'남은 경기가 시즌을 가른다. 어떻게 마무리할까.',ch:[
+  {l:'올인한다',d:'성적 ↑ · 부상 위험 ↑',fx:{perf:1.4,inj:.04}},
+  {l:'팀 플레이에 집중한다',d:'성적 소폭 ↑ · 부상 위험 소폭 ↑',fx:{perf:.35,inj:.01}},
+  {l:'무리하지 않는다',d:'부상 위험 ↓ · 멘탈 ↑',fx:{inj:-.04,mor:3}}]}
+];
+function newsFor(step){
+  const N=P.name,T=P.team,perf=(P.mod&&P.mod.perf)||0,d=ovr()-(REQ[P.lv]||50);
+  if(step===0)return {tag:'개막',h:d>=8?pick([`${N}, ${T}의 간판으로 시즌을 연다`,`개막전부터 시선은 ${N}에게 쏠린다`]):d>=0?pick([`${N}, ${T} 개막 엔트리에서 기회를 노린다`,`올해 ${N}은 한 걸음 더 나아갈 수 있을까`]):pick([`${N}, 벤치에서 ${T}의 시즌을 지켜본다`,`아직 이름보다 등번호가 먼저인 ${N}`])};
+  if(step===1)return {tag:'중반',h:perf>.5?pick([`${T}, 좋은 출발. ${N}도 흐름을 탔다`,`전반기 ${T}는 상승세. ${N}이 중심에 있다`]):perf<-.2?pick([`${T}, 주춤한 초반. ${N}에게 반등이 필요하다`,`쉽게 풀리지 않는 전반기. ${N}은 이를 악문다`]):pick([`${T}, 팽팽한 중반. ${N}은 자기 페이스를 지킨다`,`승패가 갈리지 않는 중반. ${N}의 선택이 남았다`])};
+  return {tag:'막판',h:perf>1?pick([`${T}, 가을을 노린다. ${N}이 열쇠다`,`막판까지 순위 싸움. ${N}의 방망이(공)가 필요하다`]):perf>0?pick([`${T}, 남은 경기가 전부다`,`중위권 싸움. ${N}은 아직 할 일이 남았다`]):pick([`${T}, 자존심을 건 막판. ${N}은 포기하지 않았다`,`순위는 멀어도 ${N}은 마지막까지 뛴다`])};
+}
+/* 고교 시즌은 2026 KBSA 일정표를 기준으로 매년 같은 시기에 진행 */
+const HS_TOURS=[
+ {id:'wl1',tag:'3월',title:'주말리그 전반기',when:'3.7–4.26',host:'대한야구소프트볼협회',place:'13개 권역 · 토·일',
+  text:'고교야구 주말리그가 개막한다. 학업과 경기를 같이 하고, 전반기 성적이 5월 황금사자기 출전권을 가른다.',
+  ch:[
+   {l:'주말마다 선발로 뛴다',d:'리그 성적 ↑ · 부상 위험 ↑',fx:{form:2,perf:.25,inj:.02}},
+   {l:'컨디션에 맞춰 출전한다',d:'무난한 전반기',fx:{form:1,perf:.1}},
+   {l:'몸과 학업을 우선한다',d:'출전 ↓ · 부상 위험 ↓ · 성장 ↑',fx:{form:0,inj:-.02,growth:.2,perf:-.15}}],
+  play(c){
+   const g=(c.fx.form||0)+(ovr()-44)/10+Math.random()*1.3;
+   P.hsRun.q.gold=g>1.85;
+   const round=g>2.7?'권역 상위':g>1.85?'본선 턱걸이':'중하위권';
+   P.hsRun.results.push({name:'주말리그 전반기',round});
+   return P.hsRun.q.gold?`전반기 ${round}. 황금사자기 출전권을 따냈다.`:`전반기 ${round}. 황금사자기에는 오르지 못했다.`;
+  }},
+ {id:'emart',tag:'이마트',title:'신세계 이마트배',when:'3.25–4.13',host:'대한야구소프트볼협회·이마트',place:'밀양 · 목동 · SSG랜더스필드',
+  text:'상금이 큰 봄 전국대회다. 주말리그 전반기와 일정이 겹친다.',
+  ch:[
+   {l:'대회에 전력을 쏟는다',d:'성적 ↑ · 주말리그 피로 ↑',fx:{push:.9,perf:.35,inj:.03}},
+   {l:'주말리그와 나눠 뛴다',d:'양쪽을 모두 관리',fx:{push:.2,perf:.1}},
+   {l:'주말리그에 집중하고 일찍 뺀다',d:'대회 성적 ↓ · 부상 위험 ↓',fx:{push:-.5,inj:-.02,growth:.1}}],
+  play(c){return hsCup('신세계 이마트배',c.fx.push||0);}},
+ {id:'gold',tag:'사자',title:'황금사자기',nth:y=>80+(y-2026),when:'5.2–5.16',host:'동아일보·스포츠동아',place:'목동 · 신월',
+  text:'전반기 주말리그 왕중왕전. 권역을 통과한 팀만 목동과 신월에 모인다.',gate:'gold',
+  ch:[
+   {l:'개막부터 풀가동한다',d:'토너먼트 ↑ · 부상 위험 ↑',fx:{push:.9,perf:.4,inj:.03}},
+   {l:'중요 경기만 지킨다',d:'안정적인 운영',fx:{push:.25,perf:.15}},
+   {l:'에이스를 아낀다',d:'성적 ↓ · 부상 위험 ↓',fx:{push:-.35,inj:-.02}}],
+  play(c){return hsCup(hsTourName(this),c.fx.push||0);}},
+ {id:'wl2',tag:'후반',title:'주말리그 후반기',when:'5.23–6.21',host:'대한야구소프트볼협회',place:'13개 권역 · 토·일',
+  text:'후반기 주말리그다. 여기서의 순위가 여름 청룡기 출전으로 이어진다.',
+  ch:[
+   {l:'후반기를 장악한다',d:'리그 성적 ↑ · 부상 위험 ↑',fx:{form:2,perf:.2,inj:.02}},
+   {l:'꾸준히 출전한다',d:'무난한 후반기',fx:{form:1}},
+   {l:'여름을 대비해 쉰다',d:'출전 ↓ · 부상 위험 ↓',fx:{form:0,inj:-.02,growth:.15,perf:-.1}}],
+  play(c){
+   const g=(c.fx.form||0)+(ovr()-44)/10+(P.hsRun.deep?0.6:0)+Math.random()*1.2;
+   P.hsRun.q.dragon=g>1.7;
+   const round=g>2.6?'권역 1위':g>1.7?'본선권':'중하위권';
+   P.hsRun.results.push({name:'주말리그 후반기',round});
+   return P.hsRun.q.dragon?`후반기 ${round}. 청룡기 티켓이 생겼다.`:`후반기 ${round}. 청룡기는 다음을 기약한다.`;
+  }},
+ {id:'dragon',tag:'청룡',title:'청룡기',nth:y=>81+(y-2026),when:'6.27–7.11',host:'조선일보·스포츠조선',place:'목동 · 신월',
+  text:'여름의 첫 큰 무대. 주말리그를 통과한 팀들의 선수권대회다.',gate:'dragon',
+  ch:[
+   {l:'더위 속에서 전력으로',d:'토너먼트 ↑ · 부상 위험 ↑',fx:{push:.85,perf:.35,inj:.03}},
+   {l:'로테이션을 지킨다',d:'안정적인 운영',fx:{push:.2,perf:.1}},
+   {l:'한여름이라 아낀다',d:'성적 ↓ · 부상 위험 ↓',fx:{push:-.4,inj:-.03,growth:.1}}],
+  play(c){return hsCup(hsTourName(this),c.fx.push||0);}},
+ {id:'pres',tag:'대통',title:'대통령배',nth:y=>60+(y-2026),when:'7.18–7.30',host:'중앙일보',place:'경북 포항',
+  text:'포항으로 내려가는 여름 대회. 중앙일보가 주최하고, 시즌 성적이 좋은 팀이 이름을 올린다.',gate:'pres',
+  ch:[
+   {l:'원정에서도 전력이다',d:'토너먼트 ↑ · 부상 위험 ↑',fx:{push:.8,perf:.3,inj:.025}},
+   {l:'자기 역할을 한다',d:'무난한 대회',fx:{push:.15}},
+   {l:'봉황대기를 보고 조절한다',d:'성적 ↓ · 체력 비축',fx:{push:-.45,inj:-.02,growth:.1}}],
+  play(c){return hsCup(hsTourName(this),c.fx.push||0);}},
+ {id:'phoenix',tag:'봉황',title:'봉황대기',nth:y=>54+(y-2026),when:'8.6–8.29',host:'한국일보',place:'목동 · 신월 · 구의',
+  text:'한 해 고교야구에서 규모가 가장 큰 대회. 8월 한 달을 목동에서 보낸다.',gate:'phoenix',
+  ch:[
+   {l:'대회 기간 내내 뛴다',d:'토너먼트 ↑ · 부상 위험 ↑',fx:{push:1,perf:.45,inj:.04}},
+   {l:'중요 라운드에 집중한다',d:'안정적인 운영',fx:{push:.3,perf:.15}},
+   {l:'긴 일정이라 아낀다',d:'성적 ↓ · 부상 위험 ↓',fx:{push:-.3,inj:-.02}}],
+  play(c){return hsCup(hsTourName(this),c.fx.push||0);}},
+ {id:'nat',tag:'체전',title:'전국체전 고등부',nth:y=>107+(y-2026),when:'10.16–10.22',host:'대한체육회',place:'개최 시도 · 18세 이하부',
+  text:'가을 전국체육대회. 학교가 아니라 시도 대표로 출전하는 단판 토너먼트다.',gate:'nat',
+  ch:[
+   {l:'도 대표 에이스로 나선다',d:'성적 ↑ · 명성 ↑ · 부상 위험 ↑',fx:{push:.7,perf:.25,inj:.02,fame:1}},
+   {l:'대표팀에서 역할을 한다',d:'무난한 체전',fx:{push:.15,fame:0}},
+   {l:'시즌 막바지라 관리한다',d:'성적 ↓ · 부상 위험 ↓',fx:{push:-.35,inj:-.02}}],
+  play(c){return `${P.region} 유니폼을 입고 나섰다. ${hsCup(P.region+' 대표 · 전국체전',c.fx.push||0)}`;}}
+];
+function hsTourName(s){const n=s.nth?s.nth(P.y):0;return n?`제${n}회 ${s.title}`:s.title}
+function hsQualified(s){
+  const r=P.hsRun||{};
+  if(s.gate==='gold')return !!r.q.gold;
+  if(s.gate==='dragon')return !!r.q.dragon;
+  if(s.gate==='pres')return !!(r.deep||r.form>=2||ovr()>=54);
+  if(s.gate==='phoenix')return !!(r.form>=1||r.deep||ovr()>=50);
+  if(s.gate==='nat')return !!(r.deep||ovr()>=56||(P.fame||0)>=2);
+  return true;
+}
+function hsPower(push){return (ovr()-46)/9+(P.hsRun.form||0)*.4+(push||0)+(P.mod&&P.mod.perf||0)*.12+Math.random()*1.3}
+function hsCup(name,push){
+  const p=hsPower(push);let round;
+  if(p>3.55){round='우승';A('고교 전국대회 우승');fame(2);mental(3);P.hsRun.form+=1.2;P.hsRun.deep=true}
+  else if(p>2.65){round='4강';fame(1);mental(1);P.hsRun.form+=.6;P.hsRun.deep=true}
+  else if(p>1.75){round='8강';P.hsRun.form+=.3;P.hsRun.deep=true}
+  else if(p>.95){round='16강'}
+  else{round='예선 탈락';mental(-1)}
+  P.hsRun.results.push({name,round});
+  return `${name} ${round}.`;
+}
+function hsApply(fx){
+  fx=fx||{};
+  P.mod=P.mod||{inj:0,perf:0,growth:0};
+  P.mod.inj+=(fx.inj||0);P.mod.perf+=(fx.perf||0);P.mod.growth+=(fx.growth||0);
+  if(fx.mor)mental(fx.mor);
+  if(fx.form)P.hsRun.form+=fx.form;
+}
+function hsOverlay(){
+  const st=P.hsRun.step,s=HS_TOURS[st],ok=hsQualified(s);
+  const pips=HS_TOURS.map((q,i)=>`<span class="${i<st?'done':i===st?'now':''}">${q.tag}</span>`).join('');
+  const head=hsTourName(s);
+  const note=P.eventNote?`<p class="sub">지난 일정 — ${P.eventNote}</p>`:'';
+  const body=ok?s.text:`${head} 대회가 열리지만, 우리 팀은 출전권이 없다. ${s.place}의 경기는 중계로 보게 된다.`;
+  const choices=ok?s.ch:[
+   {l:'주중 훈련에 매달린다',d:'성장 ↑ · 부상 위험 ↓',fx:{growth:.15,inj:-.01}},
+   {l:'스카우트 연습경기에 나선다',d:'명성 · 멘탈',fx:{fame:1,mor:1}},
+   {l:'쉬면서 다음 대회를 노린다',d:'멘탈 ↑ · 부상 위험 ↓',fx:{mor:3,inj:-.02}}
+  ];
+  const opts=choices.map((c,i)=>B(`<b>${c.l}</b><span class="sub">${c.d}</span>`,()=>chooseHs(i),'choice')).join('');
+  return seasonShell(head,`${bannerHtml()}<p class="sub">${P.y}년 ${s.when} · ${s.host}<br>${s.place} · ${st+1}/${HS_TOURS.length}</p><div class="plan-steps long">${pips}</div><div class="season-news"><b>${s.tag}</b> · ${head}</div>${note}<p>${body}</p><div class="opts">${opts}</div>`);
+}
+function chooseHs(i){
+  const s=HS_TOURS[P.hsRun.step],ok=hsQualified(s);
+  const choices=ok?s.ch:[
+   {l:'주중 훈련에 매달린다',fx:{growth:.15,inj:-.01}},
+   {l:'스카우트 연습경기에 나선다',fx:{fame:1,mor:1}},
+   {l:'쉬면서 다음 대회를 노린다',fx:{mor:3,inj:-.02}}
+  ];
+  const c=choices[i];
+  hsApply(c.fx);
+  if(c.fx&&c.fx.fame)fame(c.fx.fame);
+  let line;
+  if(ok)line=s.play(c);
+  else{P.hsRun.results.push({name:hsTourName(s),round:'불참'});line=`${hsTourName(s)}는 출전하지 못했다.`}
+  P.planPicks.push(c.l);P.eventNote=line;L(`${hsTourName(s)} — ${line}`);setBanner(line,bannerOk(line));
+  P.hsRun.step++;
+  if(P.hsRun.step>=HS_TOURS.length){
+    const g=P.mod.growth||0;
+    if(g>0){const n=Math.max(1,Math.round(g*4));for(let k=0;k<n;k++)bump(RI(0,4),1);L('시즌 중 몸 관리가 성장으로 이어졌다.')}
+    return playSeason();
+  }
+  hub();
+}
+function beginPlan(){
+  if(P.lv==='MIL'&&P.milType==='현역')return playSeason();
+  if(!P.mod)P.mod={inj:0,perf:0,growth:0};
+  P.planPicks=P.planPicks||[];
+  if(P.lv==='HS'){
+    P.hsRun={step:0,form:0,deep:false,q:{},results:[]};
+    SEAS_MODE='hs';SEAS_EV=null;PREP_OPEN=false;HUBTAB='main';
+    hub();
+    return;
+  }
+  PLAN_STEP=0;
+  P.seasNews=[newsFor(0)];
+  SEAS_MODE='plan';SEAS_EV=null;PREP_OPEN=false;HUBTAB='main';
+  hub();
+}
+function choosePlan(i){
+  const c=PLAN[PLAN_STEP].ch[i],fx=c.fx||{};
+  P.mod=P.mod||{inj:0,perf:0,growth:0};
+  P.mod.inj+=(fx.inj||0);P.mod.perf+=(fx.perf||0);P.mod.growth+=(fx.growth||0);
+  if(fx.mor)mental(fx.mor);
+  P.planPicks.push(c.l);L(`${PLAN[PLAN_STEP].title} — ${c.l}`);
+  setBanner(`${c.l} — ${(fx.perf||0)<0||(fx.inj||0)>0.02?'흐름이 좋지 않다':'잘하고 있다'}`,(fx.perf||0)>=0&&(fx.inj||0)<=0.02);
+  if(PLAN_STEP>=2){
+    const g=P.mod.growth||0;
+    if(g>0){const n=Math.max(1,Math.round(g*4));for(let k=0;k<n;k++)bump(RI(0,4),1);L('시즌 중 몸 관리가 성장으로 이어졌다.')}
+    return playSeason();
+  }
+  PLAN_STEP++;
+  P.seasNews.push(newsFor(PLAN_STEP));
+  SEAS_MODE='plan';
+  hub();
+}
+
+/* ============ 시즌 시뮬 ============ */
+function statline(lg,idx,gf){
+  const min=isMin(lg)||lg==='KBO2'||lg==='MIL';
+  const sc=lg==='HS'?.45:lg==='UNI'?.55:min?.9:1, hit=lg==='HS'||lg==='UNI'?1.12:1;
+  if(P.pitcher){
+    const sp=P.role==='SP';
+    const ip=Math.max(0,Math.round((sp?R(150,188):P.role==='MR'?R(60,80):R(52,70))*gf*sc*(.85+P.st[3]/330)));
+    const era=C(4.35-idx*.95+G()*.3,.9,9.5),k9=C(7.2+idx*1.5+(P.st[0]-60)/22,3.5,14);
+    const k=Math.round(ip*k9/9),er=era*ip/9;
+    if(sp){const dec=Math.round(ip/6*.65),wp=C(.5+idx*.08+G()*.05,.15,.9),w=Math.round(dec*wp),l=dec-w;return {line:`${w}승 ${l}패 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd:0,ip,k,er}}
+    if(P.role==='CL'){const sv=idx>-.2?Math.round(C(R(8,24)+idx*7,0,50)*gf*sc):RI(0,4);return {line:`${sv}세이브 ERA ${f2(era)} ${k}K ${ip}이닝`,w:0,l:0,sv,hd:0,ip,k,er}}
+    const hd=idx>-.2?Math.round(C(R(10,26)+idx*6,0,42)*gf*sc):RI(0,5),w=Math.round(hd/5),l=Math.round(hd/7);
+    return {line:`${w}승 ${l}패 ${hd}홀드 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd,ip,k,er};
+  }
+  const pa=Math.round(560*gf*sc),ab=Math.round(pa*.9);
+  const avg=C(.262+idx*.034+(P.st[0]-60)/1100,.17,.39);
+  const rf=P.role==='IF'?.85:P.role==='DH'?1.15:1.05;
+  const hr=Math.round(C((P.st[1]/100)*30*(1+idx*.3)*rf*gf*sc*hit,0,62));
+  const rbi=Math.round(hr*1.9+pa*.045*(1+idx*.25));
+  const sb=Math.round(C((P.st[3]-40)/2.5,0,45)*gf*sc*(1+idx*.1));
+  const ops=C(.705+idx*.085+(P.st[2]-60)/700,.35,1.3);
+  const h=Math.round(ab*avg);
+  return {line:`타율 ${rate(avg)} ${hr}홈런 ${rbi}타점 ${sb}도루 OPS ${rate(ops)}`,ab,h,hr,rbi,sb};
+}
+function awards(lg,idx,gf){
+  const a=[],r=Math.random;
+  if(lg==='HS'&&idx>2.1&&!P.ach['고교 최고 유망주'])a.push('고교 최고 유망주');
+  if(lg==='KBO1'){
+    if(P.kbo1Years===1&&P.proYears<=5&&idx>.7&&gf>.6)a.push('KBO 신인왕');
+    if(idx>2.6&&r()<.7)a.push('KBO MVP');
+    if(idx>1.8&&r()<.75)a.push('KBO 골든글러브');
+    if(idx>1.2&&r()<.8)a.push('KBO 올스타');
+    if(idx>2.2&&r()<.6)a.push('KBO 타이틀홀더');
+  }
+  if(lg==='MLB'){
+    if(P.mlbYears===1&&idx>1&&gf>.6)a.push('MLB 신인왕');
+    if(idx>2.6&&r()<.6)a.push('MLB MVP·사이영상급');
+    if(idx>1.4&&r()<.75)a.push('MLB 올스타');
+    if(idx>1.1&&(P.pitcher?P.st[1]>=75:(P.st[4]>=72||P.st[1]>=75))&&r()<.5)a.push('골드글러브·실버슬러거');
+  }
+  a.forEach(k=>A(k));return a;
+}
+function postseason(t,league){
+  let rounds;
+  if(league==='KBO'){
+    if(t<.5)return {t:`정규시즌 ${RI(6,10)}위 — 가을야구 실패`};
+    rounds=t>.8?['한국시리즈']:t>.7?['플레이오프','한국시리즈']:t>.6?['준플레이오프','플레이오프','한국시리즈']:['와일드카드','준플레이오프','플레이오프','한국시리즈'];
+  }else{
+    if(t<.6)return {t:`가을야구 실패 (지구 ${RI(2,5)}위)`};
+    rounds=['디비전시리즈','챔피언십시리즈','월드시리즈'];
+  }
+  const pr=league==='KBO'?C(.33+(t-.55)*.6,.22,.58):C(.4+(t-.65)*.6,.28,.62);
+  for(const r of rounds){if(Math.random()>pr){
+    if(r==='한국시리즈'){A('한국시리즈 준우승');return {t:'한국시리즈 준우승 — 마지막 한 걸음이 모자랐다',tag:'한국시리즈 준우승'}}
+    if(r==='월드시리즈'){A('월드시리즈 준우승');return {t:'월드시리즈 준우승 — 마지막 한 걸음이 모자랐다',tag:'월드시리즈 준우승'}}
+    return {t:`가을야구 진출 — ${r}에서 탈락`}}}
+  if(league==='KBO'){A('한국시리즈 우승');return {t:'★ 한국시리즈 우승! ★',tag:'한국시리즈 우승',champ:true}}
+  A('월드시리즈 우승');return {t:'★ 월드시리즈 우승! ★',tag:'월드시리즈 우승',champ:true};
+}
+function teamResult(lg,idx){
+  const t=P.tstr*.65+Math.random()*.35+idx*.03;
+  if(lg==='HS'){
+    const rs=(P.hsRun&&P.hsRun.results)||[];
+    const wins=rs.filter(r=>r.round==='우승');
+    if(wins.length)return {t:`${wins.map(r=>r.name).join('·')} 우승!`,tag:'전국대회 우승'};
+    const deep=rs.filter(r=>['4강','8강','16강'].includes(r.round));
+    if(deep.length)return {t:deep.map(r=>`${r.name} ${r.round}`).join(' · ')};
+    return {t:rs.length?'전국대회 우승 없이 시즌을 마쳤다':'지역 예선 탈락'};
+  }
+  if(lg==='UNI'){if(t>.82){A('대학리그 우승');return {t:'대학리그 우승!',tag:'대학리그 우승'}}return {t:t>.5?'대학리그 중상위권':'대학리그 하위권'}}
+  if(lg==='KBO2')return {t:`퓨처스리그 ${RI(1,10)}위`};
+  if(isMin(lg))return {t:`${LV[lg]} ${RI(1,12)}위`};
+  return postseason(t,lg==='KBO1'?'KBO':'MLB');
+}
+function seasonGames(lg,gf){
+  if(lg==='MIL')return P.milType==='상무'?Math.round(96*C(gf,0,1)):0;
+  const full=lg==='HS'?26:lg==='UNI'?34:lg==='KBO2'?96:lg==='KBO1'?144:lg==='MLB'?162:lg==='A'?110:lg==='AA'?130:lg==='AAA'?142:80;
+  return Math.max(0,Math.round(full*C(gf,0,1)));
+}
+function pressBox(idx,gf,nick,fresh){
+  const born=fresh?`올해 별명이 붙었다. “${nick}”.`:`별명은 그대로 “${nick}”.`;
+  let paper,crowd;
+  if(P.lv==='MIL'&&P.milType!=='상무'){paper='군 복무 소식이 짧은 기사로 남았다.';crowd='팬들은 전역 날짜를 세고 있다.'}
+  else if(gf<.45){paper='언론은 성적보다 공백을 먼저 적었다.';crowd='팬 댓글은 회복을 기다리는 쪽이 많았다.'}
+  else if(idx>1.6){paper='스포츠 지면이 시즌을 크게 다뤘다.';crowd='응원가 사이에 별명이 먼저 나왔다.'}
+  else if(idx>.3){paper='지역 방송과 신문이 이름을 꾸준히 올렸다.';crowd='팬 반응은 자리를 잡았다는 평이 많았다.'}
+  else if(idx>-.5){paper='기사는 짧고, 평가는 갈렸다.';crowd='팬들은 응원과 걱정 사이를 오갔다.'}
+  else{paper='부진을 짚는 기사가 더 많았다.';crowd='댓글은 차가웠고, 별명도 가볍게 돌았다.'}
+  return `<div class="press-box"><b>언론 · 팬</b><p>${paper}</p><p>${crowd}</p><p class="nick-line">${born}</p></div>`;
+}
+function headline(idx,gf){
+  if(gf<.5)return `${P.name}, 부상으로 시즌의 절반을 날렸다`;
+  if(idx>2)return `“이 선수가 리그를 지배한다” — ${P.name}, 압도적인 시즌`;
+  if(idx>1)return `${P.name}, 팀의 핵심으로 우뚝`;
+  if(idx>0)return `${P.name}, 꾸준한 활약으로 입지 다져`;
+  if(idx>-1)return `${P.name}, 기복 있는 시즌… 반등이 필요하다`;
+  return `부진에 빠진 ${P.name}, 벤치에서 시간을 보냈다`;
+}
+function playSeason(){
+  SEAS_MODE='';SEAS_EV=null;
+  const lg=P.lv,lab=lvLabel();P.played=true;
+  const tags=[],news=[];let line='',idx=0,tr={t:''},gf=1;
+  if(lg==='KBO1'||lg==='KBO2'){P.kboYears++;if(lg==='KBO1')P.kbo1Years++}
+  if(lg==='MLB')P.mlbYears++;
+  if(isPro(lg))P.proYears++;
+  const rehab=P.rehab;P.rehab=0;
+  const mod=P.mod||{inj:0,perf:0};
+  if(lg!=='MIL'&&!P.injured&&Math.random()<C(.08+(P.age>31?.05:0)-(P.restFlag?.05:0)-(P.shield?.04:0)-.012*((P.eq&&P.eq.helmet)||0)+(P.prepInjExtra||0)+(mod.inj||0),.01,.45)){const r=Math.random();injure(r<.6?'minor':r<.92?'major':'surg')}
+  let inj='';
+  if(P.injured){gf=P.injured==='minor'?.82:P.injured==='major'?.5:.12;inj=P.injured==='minor'?'경미한 부상으로 일부 경기를 결장했다.':P.injured==='major'?'큰 부상으로 시즌의 절반을 날렸다.':(P.pitcher?'토미 존 수술':'큰 수술')+'을 받고 시즌을 거의 접었다.';if(P.injured==='surg')P.rehab=1}
+  else if(rehab)gf=.75;
+  if(lg==='MIL'){
+    if(P.milType==='상무'){idx=(ovr()-REQ.KBO2)/9+G()*.5;line='상무(퓨처스) '+statline('KBO2',idx,1).line;tr={t:`퓨처스리그 ${RI(1,9)}위`}}
+    else{line='현역 복무 — 야구는 잠시 멈춤';tr={t:'조국의 부름에 응답했다.'}}
+    inj='';
+  }else{
+    idx=(ovr()-REQ[lg])/9+G()*.55+(P.mental-50)/250+P.hot+(mod.perf||0)*.22+DIFF_IDX[P.diff==null?1:P.diff];P.hot=0;
+    if(lg==='HS'&&P.hsRun){
+      const wins=(P.hsRun.results||[]).filter(r=>r.round==='우승').length;
+      idx+=Math.min(1.1,(P.hsRun.form||0)*.08+wins*.4);
+    }
+    const sl=statline(lg,idx,gf);line=sl.line;if(lg==='KBO1'||lg==='MLB'){const cc=P.car[lg==='MLB'?'MLB':'KBO'];cc.g++;['w','l','sv','hd','ip','k','er','ab','h','hr','rbi','sb'].forEach(k=>{cc[k]=(cc[k]||0)+(sl[k]||0)})}
+    awards(lg,idx,gf).forEach(a=>tags.push(a));
+    tr=teamResult(lg,idx);if(tr.tag)tags.push(tr.tag);
+  }
+  let pay=0;
+  if(lg!=='MIL'){const cap=yearlyPay(ovr(),lg==='MLB');pay=P.deal?Math.min(P.deal,cap):cap}
+  P.money=Math.round(((+P.money||0)+pay)*100)/100;
+  P.shield=false;
+  const anchored=teamProfile(P.team);P.tstr=anchored?anchored.win/100:C((P.tstr||.5)+G()*.08,.05,.95);
+  P.lastIdx=idx;
+  P.hist.push({y:P.y,age:P.age,team:P.team,lv:lab,line,tags:tags.slice()});
+  L(`${lab} ${P.team} — ${line}${tags.length?' ['+tags.join(', ')+']':''}`);if(inj)L(inj);
+  let milEnd=false;
+  if(lg==='MIL'){P.milLeft--;if(P.milLeft<=0){P.mil='done';P.lv=P.prevLv;milEnd=true}}
+  P.injured=null;P.restFlag=false;P.prepInjExtra=0;
+  const payTxt=pay>0?`연봉 ${priceLabel(pay)}`:'';
+  const hd=headline(idx,gf);
+  const gp=seasonGames(lg,gf);
+  const hadNick=P.fanNick,hadTier=P.fanTier,nick=fanNick();
+  const press=pressBox(idx,gf,nick,!hadNick||hadTier!==P.fanTier);
+  const hsLine=(P.hsRun&&P.hsRun.results&&P.hsRun.results.length)?`<div class="season-news">${P.hsRun.results.map(r=>`<b>${r.name}</b> ${r.round}`).join('<br>')}</div>`:'';
+  const planTxt=P.hsRun?'':((P.planPicks&&P.planPicks.length)?`<p class="sub">시즌 선택: ${P.planPicks.join(' · ')}</p>`:'');
+  const evTxt=P.hsRun?'':(P.eventNote?`<p class="sub">시즌 전: ${P.eventNote}</p>`:'');
+  P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
+  finishSnap();
+  const resTop=`<div class="res-top"><div class="rec"><small>내 성적</small><b style="font-size:14px;line-height:1.35">${line}</b><span class="gp">출전 ${gp}경기</span></div><div class="rec"><small>팀·리그</small><b style="font-size:14px;line-height:1.35">${tr.t||lab}</b></div><div class="rec"><small>연봉</small><b style="font-size:14px;line-height:1.35">${pay>0?priceLabel(pay):'-'}</b></div></div>`;
+  SEAS_RES={title:`${P.y} 시즌 결산`,html:`<p class="sub">${P.age}세 · ${lab} · <b>${P.team}</b></p><div class="season-news">📰 ${hd}</div>${resTop}${press}<p class="line">${line}</p>${hsLine}${planTxt}${evTxt}<p>${tags.map(t=>`<span class="tag ${/우승|MVP|금메달/.test(t)?'':'g'}">${t}</span>`).join('')}</p>${tr.t?`<p>${tr.t}</p>`:''}${inj?`<p style="color:#ff9b8a">⚠ ${inj}</p>`:''}${payTxt?`<p class="sub">${payTxt}</p>`:''}${milEnd?'<p style="color:var(--gold)">★ 전역! 다시 야구장으로 돌아간다.</p>':''}`};
+  SEAS_MODE='result';SEAS_EV=null;PREP_OPEN=false;HUBTAB='main';
+  hub();
+}
+function finishSnap(){
+  if(!P.snap||!P.snap.st)return;
+  const prev=Math.round(P.snap.st.reduce((a,b)=>a+b,0)/5);
+  P.lastOvrDelta=ovr()-prev;
+  P.lastDelta=P.labels.map((_,i)=>Math.round(((P.st[i]||0)-(P.snap.st[i]||0))*10)/10);
+  P.lastMen=Math.round(((P.mental||0)-(P.snap.men||0))*10)/10;
+  P.snap=null;
+}
+function resultOverlay(){
+  const r=SEAS_RES;if(!r)return '';
+  const go=B('허브로 돌아가기 ▶',closeResult,'play');
+  const ret=isPro(P.lv)&&P.age>=34?B('은퇴를 선언한다',()=>{P.retire=true;SEAS_MODE='';SEAS_RES=null;P.playBanner=null;ending()},'red'):'';
+  return seasonShell(r.title,bannerHtml()+r.html+`<div class="prep-go">${go}${ret}</div>`);
+}
+function closeResult(){SEAS_MODE='';SEAS_RES=null;P.playBanner=null;afterSeason()}
+
+function teamProfile(name){return TEAMS.find(t=>t.name===name)||null}
+function teamRank(t){return (t.org==='MLB'?1000:0)+t.win*.5+t.fame*.25+t.pay*.25}
+function teamBar(t){return (t.org==='MLB'?62:46)+t.win*.18+t.fame*.10+t.pay*.08}
+function marketValue(){return ovr()+Math.min(P.fame||0,12)*1.1+(P.lastIdx||0)*4}
+function teamBlurb(t){
+  const w=t.win>=75?'강팀':t.win>=55?'중위권':'약팀';
+  const f=t.fame>=75?'명문':t.fame>=50?'인기':'무명';
+  const p=t.pay>=75?'고액 연봉':t.pay>=50?'보통 연봉':'박봉';
+  return `${w} · ${f} · ${p}`;
+}
+function payLabel(deal,org){
+  const w=won(deal);
+  return org==='MLB'?`${w} · ${usdText(deal)}`:w;
+}
+function currentPay(){
+  const cap=yearlyPay(ovr(),P.lv==='MLB');
+  if(P.deal)return Math.min(P.deal,cap);
+  return cap;
+}
+function offerCeiling(o,org,minor){return yearlyPay(o,org==='MLB'&&!minor)}
+function offerDeal(o,org,teamPay,minor){
+  const cap=offerCeiling(o,org,minor);
+  const scale=.8+((teamPay||50)/100)*.2;
+  return Math.max(.05,Math.round(Math.min(cap,cap*scale)*10)/10);
+}
+function teamFits(t,o){
+  if(t.org==='KBO')return o<55?t.pay<=66:o<65?t.pay<=74:true;
+  if(o<65)return false;
+  if(o<75)return t.pay<=55;
+  if(o<85)return t.pay<=82;
+  return true;
+}
+function offerYears(t,val){
+  if(val>=teamBar(t)+8)return t.pay>=70?5:4;
+  if(val>=teamBar(t))return 3;
+  return 1;
+}
+function otherTeams(o){
+  let fit=TEAMS.filter(t=>t.name!==P.team&&teamFits(t,o)).sort((a,b)=>teamRank(b)-teamRank(a));
+  if(fit.length<2){
+    const org=o>=85?'MLB':'KBO';
+    const extra=TEAMS.filter(t=>t.org===org&&t.name!==P.team&&!fit.includes(t)).sort((a,b)=>a.pay-b.pay);
+    fit=fit.concat(extra);
+  }
+  return fit.slice(0,2);
+}
+function buildOffers(){
+  const o=ovr(),cur=teamProfile(P.team),pay=currentPay();
+  const org=P.org==='MLB'?'MLB':'KBO';
+  const tstr=cur?cur.win/100:(P.tstr||.5);
+  const left=Math.max(1,(P.contract||1)-1);
+  const minorStay=org==='MLB'&&P.lv!=='MLB';
+  const stay={kind:'stay',title:'계약을 유지한다',sub:`${P.team} · ${payLabel(pay,org)} · ${left}년`,team:P.team,org,deal:pay,yrs:left,tstr,minor:minorStay};
+  const idx=P.lastIdx||0,pct=idx>=1.5?.28:idx>=.6?.16:idx>=0?.08:0;
+  const ceiling=offerCeiling(o,org,minorStay);
+  const toward=pct>=.16?ceiling:pct>0?Math.round((pay+ceiling)/2*100)/100:pay;
+  const raised=Math.round(Math.min(ceiling,Math.max(pay,toward))*100)/100;
+  const raiseYrs=Math.max(left,pct>=.16?3:2);
+  const raise=pct&&raised>pay+.05?{kind:'raise',title:'연봉 인상을 요구한다',sub:`${P.team} · ${payLabel(pay,org)} → ${payLabel(raised,org)} · ${raiseYrs}년`,team:P.team,org,deal:raised,yrs:raiseYrs,tstr,minor:minorStay}
+    :{kind:'raise',refused:true,title:'연봉 인상을 요구한다',sub:pay+0.05>=ceiling?'이미 이 실력의 연봉 상한이다.':'구단이 이번 시즌 성적을 이유로 거절한다',team:P.team,org,deal:pay,yrs:left,tstr,minor:minorStay};
+  const moves=otherTeams(o).map(t=>{
+    const minor=t.org==='MLB'&&o<75;
+    const deal=offerDeal(o,t.org,t.pay,minor);
+    return {kind:'move',title:t.name,sub:`${t.org}${minor?' 마이너':''} · ${teamBlurb(t)} · ${payLabel(deal,t.org)} · ${offerYears(t,o)}년`,team:t.name,org:t.org,deal,yrs:offerYears(t,o),tstr:t.win/100,minor};
+  });
+  return [stay,raise,...moves];
+}
+function openOffers(){P.offers=buildOffers();SEAS_MODE='offer';PREP_OPEN=false;HUBTAB='main';hub()}
+function offerOverlay(){
+  if(!P.offers||P.offers.length<4)P.offers=buildOffers();
+  const opts=P.offers.map((x,i)=>B(`<b>${x.title}</b><span class="sub">${x.sub}</span>`,()=>takeOffer(i),'choice')).join('');
+  return seasonShell('시즌 후 계약',`<p>네 가지 제안이 왔다. 연락하는 구단과 연봉은 현재 OVR에 맞춰져 있고, 실력이 모자라면 상위 구단은 연락하지 않는다.</p><div class="opts">${opts}</div>`);
+}
+function takeOffer(i){
+  const x=P.offers[i];if(!x)return;
+  const wasMLB=P.org==='MLB',back=wasMLB&&x.org==='KBO';
+  P.team=x.team;P.org=x.org;P.deal=x.deal;P.contract=x.yrs;P.tstr=x.tstr;
+  if(x.org==='MLB'){
+    const o=ovr();
+    if(x.minor||o<75){P.lv=o>=70?'AAA':o>=62?'AA':'A'}
+    else{P.lv='MLB';if(!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔')}
+  }else{P.lv=ovr()>=65?'KBO1':'KBO2';if(P.lv==='KBO1'&&!P.ach['KBO 1군 데뷔'])A('KBO 1군 데뷔')}
+  const note=x.refused?'인상은 무산되고 잔류했다.':x.kind==='raise'?'연봉 인상에 합의했다.':x.kind==='stay'?'남은 계약을 이어 간다.':`${x.team}과 계약했다.`;
+  L(`계약 — ${note} ${x.team} · ${payLabel(x.deal,x.org)}`);
+  P.offers=null;SEAS_MODE='';P.news.push(note+(back?' 한국으로 돌아왔다.':''));
+  hub();
+}
+function pickClub(org,val){
+  const fit=TEAMS.filter(t=>t.org===org&&val>=teamBar(t)).sort((a,b)=>teamRank(b)-teamRank(a));
+  if(fit.length)return fit[0];
+  return TEAMS.filter(t=>t.org===org).slice().sort((a,b)=>teamBar(a)-teamBar(b))[0];
+}
+
+/* ============ 시즌 후 진행 ============ */
+function afterSeason(){
+  if(P.retire)return ending();
+  if(P.lv==='HS'){if(P.grade<3){P.grade++;return hub()}return careerChoice()}
+  if(P.lv==='UNI'){if(P.uniYear<4){P.uniYear++;return hub()}return draftIntro('UNI')}
+  if(isPro(P.lv))return openOffers();
+  hub();
+}
+function nextSeason(first){
+  P.news=[];
+  P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
+  if(!first){P.age++;P.y++}
+  if(P.rehab)P.news.push('재활 시즌: 작년 수술의 여파로 컨디션이 완전하지 않다.');
+  if(isPro(P.lv)&&(P.age>=42||(P.age>=30&&ovr()<46))){P.retire=true;return ending()}
+  if(isPro(P.lv)&&P.mil==='none'&&P.age>=27)return militaryChoice(P.age===27&&!P.deferred);
+  proceed();
+}
+function proceed(){PREP_SEL=[];movement();P.news.forEach(n=>L(n));trainScreen()}
+function movement(){
+  const o=ovr()+R(-3,3);
+  if(P.lv==='KBO2'&&o>=58){P.lv='KBO1';P.news.push('1군 콜업! 드디어 1군 엔트리에 이름이 올랐다.');if(!P.ach['KBO 1군 데뷔']){A('KBO 1군 데뷔')}}
+  else if(P.lv==='KBO1'&&o<52){P.lv='KBO2';P.news.push('2군행 통보. 퓨처스에서 다시 시작이다.')}
+  else if(P.lv==='A'&&o>=58){P.lv='AA';P.news.push('AA 승격!')}
+  else if(P.lv==='AA'&&o>=64){P.lv='AAA';P.news.push('AAA 승격! 빅리그가 눈앞이다.')}
+  else if(P.lv==='AAA'&&o>=69){P.lv='MLB';P.news.push('메이저리그 콜업!! 꿈에 그리던 빅리그 로스터.');if(!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔')}
+  else if(P.lv==='MLB'&&o<62){P.lv='AAA';P.news.push('AAA로 내려갔다. 다시 올라갈 수 있을까.')}
+}
+function militaryChoice(canDefer){
+  const ok=P.org==='KBO'&&ovr()>=56;
+  const shot=[2030,2034,2038,2042,2046,2050].includes(P.y)?'올해는 아시안게임 해다. 금메달이면 예술·체육요원이다.':'아시안게임 금메달, 또는 올림픽 동메달 이상이면 예술·체육요원이다.';
+  show(()=>hud()+panel('병역의 의무',`<p>만 ${P.age}세. 병역을 마치지 않았다. ${P.org==='MLB'?'해외 진출 중이라도 국외여행 허가의 한계가 다가온다.':'더 미루기는 어렵다.'}</p><p class="sub">상무(국군체육부대)는 KBO 선수만 지원할 수 있고 경쟁이 치열합니다. 현역은 야구를 완전히 쉬어야 합니다. ${shot}</p>`
+   +(ok?B('상무(국군체육부대) 지원',()=>{if(Math.random()<C(.45+(ovr()-56)*.02,.4,.9))enlist('상무');else show(()=>panel('상무 탈락',`<p>아쉽게 상무 선발에서 떨어졌다. 현역으로 입대한다.</p>${B('입대',()=>enlist('현역'))}`))}):'')
+   +B('현역 입대',()=>enlist('현역'))
+   +(canDefer?B('1년 미루고 국가대표 기회를 노린다',()=>{P.deferred=true;proceed()},'alt'):'')));
+}
+function enlist(type){P.milType=type;P.milLeft=2;P.prevLv=P.lv;P.lv='MIL';P.news=[`${type} 입대. 2년의 시간이 시작된다.`];L(P.news[0]);trainScreen()}
+
+/* ============ 진로 / 드래프트 ============ */
+const draftScore=from=>ovr()+(P.pot-75)*.1+(from==='UNI'?-1:0);
+function careerChoice(){
+  const sc=draftScore('HS'),exp=Math.round(130-(sc-46)*10);
+  const txt=exp>110?'지명 가능성이 낮다':`${C(Math.ceil(exp/10),1,11)}라운드 전후`;
+  show(()=>hud()+panel('졸업 후 진로',`<p>3년간의 고교 야구가 끝났다. 스카우트 보고서의 예상: <b>${txt}</b></p>${B('KBO 신인드래프트에 도전',()=>draftIntro('HS'))}${B('대학에 진학한다 (4년)',goUni,'alt')}${sc>=53?B('MLB 직행 계약',()=>signMLBDirect(sc),'red'):''}<p class="sub">MLB 직행은 마이너 A부터 시작하는 고된 길입니다. 상위 순번 지명이 아니라면 대학에서 더 키우는 선택도 있습니다.</p>`));
+}
+function goUni(){P.lv='UNI';P.uniYear=1;P.team=pick(UNIS);L(`대학 진학 — ${P.team}`);hub()}
+function signMLBDirect(sc){
+  const bonus=C((sc-50)*.3,.1,5),club=pickClub('MLB',sc+8),team=club.name;
+  P.org='MLB';P.team=team;P.lv='A';P.contract=6;P.tstr=club.win/100;P.money+=bonus*13.8;L('MLB 직행 계약 — '+team);
+  show(()=>panel('MLB 직행!',`<p><b>${team}</b>와 계약. 계약금 ${won(bonus*EOK_PER_M)} · $${f1(bonus)}M.</p><p>한국에서 고교를 졸업하고 곧장 미국으로 건너왔다. 언어도, 음식도 낯설다.</p>${B('루키리그 합류',hub)}`));
+}
+function draftIntro(from){
+  show(()=>panel('KBO 신인 드래프트 D-Day',`<p>서울의 한 호텔 컨벤션홀. 구단 관계자들이 둘러앉은 가운데 지명이 시작된다.</p><p>당신의 이름은 불릴까?</p>${B('지명 순간을 지켜본다',()=>draftResult(from))}`));
+}
+function draftResult(from){
+  const sc=draftScore(from)+G()*.6;
+  const pk=Math.round(C(130-(sc-46)*10+G()*6,1,140));
+  if(pk>110){
+    return show(()=>panel('지명 실패',`<p>110명의 이름이 불렸지만 그 안에 <b>${P.name}</b>은 없었다.</p><p>아직 끝난 게 아니다.</p>`
+      +B('육성선수로 입단한다',()=>signKBO(pick(KBO),999,12,.2,from),'alt')
+      +(from==='HS'?B('대학에 진학한다',goUni):'')
+      +(from==='UNI'?B('은퇴하고 새 길을 찾는다',()=>{P.retire=true;ending()},'red'):'')));
+  }
+  const round=Math.ceil(pk/10),team=P.draftOrder[(pk-1)%10];
+  const bonus=round===1?5.5-.35*(pk-1):round===2?1:round<=4?.6:.25;
+  signKBO(team,pk,round,bonus,from,true);
+}
+function signKBO(team,pk,round,bonus,from,drafted){
+  P.org='KBO';P.team=team;P.lv=pk<=20?'KBO1':'KBO2';P.faYears=from==='HS'?9:8;P.tstr=(teamProfile(team)||{win:50}).win/100;P.money+=bonus;
+  if(P.lv==='KBO1')A('KBO 1군 데뷔');
+  let extra='';
+  if((FAV[P.region]||[]).includes(team)){fame(2);mental(4);extra='<p style="color:var(--gold)">★ 어릴 적부터 응원하던 팀의 유니폼을 입게 됐다! (명성+2, 멘탈+4)</p>'}
+  const head=drafted?`${P.y+1} KBO 신인드래프트 ${round}라운드 (전체 ${pk}순위)`:'육성선수 계약';
+  L(`${head} — ${team}`);
+  show(()=>panel(head,`<p><b>${team}</b>이(가) 당신을 지명했다!</p><p>${bonus>0?`계약금 ${won(bonus)}. `:''}${P.lv==='KBO1'?'상위 지명이라 1군 캠프부터 합류한다.':'일단 퓨처스(2군)에서 시작한다.'}</p>${extra}${B('프로 데뷔 시즌으로',hub)}`));
+}
+
+/* ============ 포스팅 / FA ============ */
+function postingChoice(){
+  show(()=>hud()+panel('포스팅 시스템',`<p>메이저리그 구단들이 당신을 주시하고 있다. 구단이 동의해야 포스팅이 가능하다.</p>`
+   +B('포스팅을 신청한다',()=>{const ok=Math.random()<C(.5+P.fame*.03+(ovr()-66)*.01,.35,.9);
+      if(!ok)return show(()=>panel('포스팅 무산',`<p>구단이 끝내 동의하지 않았다. “우리에겐 아직 네가 필요해.”</p>${B('시즌 준비',hub)}`));
+      postingSign()},'red')
+   +B('이번엔 잔류한다',hub,'alt')));
+}
+function mlbEntry(){const o=ovr();return o>=72?'MLB':o>=66?'AAA':o>=60?'AA':'A'}
+function postingSign(){
+  const o=ovr();
+  const pool=TEAMS.filter(t=>t.org==='MLB'&&teamFits(t,o)).sort((a,b)=>teamRank(b)-teamRank(a));
+  const club=pool[0]||pickClub('MLB',marketValue());
+  const minor=o<75,yrs=offerYears(club,o),deal=offerDeal(o,'MLB',club.pay,minor);
+  P.org='MLB';P.team=club.name;P.contract=yrs;P.deal=deal;P.tstr=club.win/100;P.lv=minor?(o>=70?'AAA':o>=62?'AA':'A'):'MLB';L('포스팅으로 MLB 진출 — '+club.name);
+  if(P.lv==='MLB'&&!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔');
+  show(()=>panel('MLB 진출!',`<p><b>${club.name}</b>과(와) 계약했다. 연 ${payLabel(deal,'MLB')} × ${yrs}년.</p><p>${P.lv==='MLB'?'메이저리그 개막 로스터에 이름이 올랐다.':'마이너 '+P.lv+'에서 빅리그 콜업을 노린다.'}</p>${B('미국 생활 시작',hub)}`));
+}
+function faScreen(fromMLB){
+  const o=ovr(),offers=[];
+  let kt=shuffle(TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team&&teamFits(t,o)));
+  if(!kt.length)kt=TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team).sort((a,b)=>a.pay-b.pay);
+  kt=kt.slice(0,2);
+  if(!fromMLB&&teamProfile(P.team)&&teamProfile(P.team).org==='KBO')kt.unshift(teamProfile(P.team));
+  kt.slice(0,3).forEach(t=>offers.push({org:'KBO',team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,'KBO',t.pay,false)}));
+  if(o>=65||fromMLB){
+    let mlb=shuffle(TEAMS.filter(t=>t.org==='MLB'&&t.name!==P.team&&teamFits(t,Math.max(o,65))));
+    if(!mlb.length)mlb=TEAMS.filter(t=>t.org==='MLB').sort((a,b)=>a.pay-b.pay);
+    mlb.slice(0,fromMLB?3:2).forEach(t=>offers.push({org:'MLB',team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,'MLB',t.pay,o<75),minor:o<75}));
+    if(fromMLB&&teamProfile(P.team)){const cur=teamProfile(P.team);offers.push({org:'MLB',team:cur.name,tstr:cur.win/100,yrs:offerYears(cur,o),deal:offerDeal(o,'MLB',cur.pay,o<75),minor:o<75})}
+  }
+  const lab=x=>`${x.team} · ${x.org==='MLB'&&x.minor?'마이너 계약 · ':''}${payLabel(x.deal,x.org)}/년 × ${x.yrs}년 · ${tier(x.tstr)}`;
+  show(()=>hud()+panel('FA 시장이 열렸다',`<p>${fromMLB?'메이저리그 계약이 끝났다. 새 팀을 찾거나, 유턴할 수도 있다.':'KBO FA 자격 취득! 선택이 인생을 바꾼다.'}</p>`
+   +offers.map(x=>B((x.org==='MLB'?'[MLB] ':'[KBO] ')+lab(x),()=>pickOffer(x,fromMLB),x.org==='MLB'?'red':'')).join('')+`<p class="sub">강팀일수록 우승 확률이 높지만 보수는 선택의 문제입니다.</p>`));
+}
+function pickOffer(x,fromMLB){
+  const wasMLB=P.org==='MLB';
+  P.team=x.team;P.org=x.org;P.contract=x.yrs;P.deal=x.deal;P.tstr=x.tstr;L(`${x.org} FA 계약 — ${x.team}`);
+  if(x.org==='MLB'){
+    const o=ovr();
+    P.lv=(x.minor||o<75)?(o>=70?'AAA':o>=62?'AA':'A'):'MLB';
+    if(P.lv==='MLB'&&!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔');
+  }else{
+    P.lv=ovr()>=65?'KBO1':'KBO2';
+    if(P.lv==='KBO1'&&!P.ach['KBO 1군 데뷔'])A('KBO 1군 데뷔');
+  }
+  show(()=>panel('계약 완료',`<p><b>${x.team}</b>와 ${x.yrs}년 계약.${wasMLB&&x.org==='KBO'?' 유턴을 택했다. 팬들은 뜨겁게 환영했다.':''}</p>${B('다음 시즌',hub)}`));
+}
+
+/* ============ 엔딩 ============ */
+function score(){let s=0;for(const k in P.ach)s+=(PTS[k]||0)*P.ach[k];s+=P.kbo1Years*.3+P.mlbYears*.7+P.fame*.2;return Math.round(s)}
+function gradeOf(s){return s>=90?['S','전설']:s>=60?['A','명예의 전당급']:s>=36?['B','리그 정상급 스타']:s>=18?['C','주전급 베테랑']:s>=8?['D','1군 생활을 한 선수']:['E','무명으로 남은 도전자']}
+function titleOf(){
+  const a=P.ach,h=k=>a[k]>0;
+  if(h('월드시리즈 우승')&&h('MLB MVP·사이영상급'))return '월드시리즈를 품은 전설의 코리안 메이저리거';
+  if(h('월드시리즈 우승'))return '월드시리즈 챔피언';
+  if(h('올림픽 금메달'))return '올림픽 야구 금메달리스트';
+  if(h('WBC 우승'))return 'WBC를 들어 올린 국가대표';
+  if(h('MLB MVP·사이영상급'))return '메이저리그를 평정한 코리안 슈퍼스타';
+  if(h('한국시리즈 우승')&&P.mlbYears>0)return '한국시리즈 우승 + 빅리그를 경험한 선수';
+  if(h('KBO MVP'))return 'KBO 정규시즌 MVP';
+  if(h('한국시리즈 우승'))return '한국시리즈 챔피언';
+  if(P.mlbYears>=3)return '코리안 메이저리거';
+  if(h('KBO 골든글러브'))return 'KBO 골든글러브 수상자';
+  if(P.kbo1Years>=8)return 'KBO 베테랑';
+  if(P.kbo1Years>0||P.mlbYears>0)return '프로 1군 선수';
+  return '프로의 문턱에서 멈춘 도전자';
+}
+function ending(){
+  P.done=true;try{localStorage.removeItem('b2ws_save')}catch(e){}
+  const s=score(),[g,gd]=gradeOf(s),ti=titleOf();
+  const role=ROLE[P.role];
+  try{const l=JSON.parse(localStorage.getItem('b2ws_hof')||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potGrade(P.pot)})});l.sort((a,b)=>b.score-a.score);localStorage.setItem('b2ws_hof',JSON.stringify(l.slice(0,10)))}catch(e){}
+  const ach=Object.keys(P.ach).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
+  const epi=g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.';
+  const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
+  show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점</p><p>${epi}</p></div>`
+   +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · 통산 수입 ${won(P.money)}</p><p>${ach}</p>`)
+   +panel('시즌별 기록',`<div class="scroll"><table><tr><th>연도</th><th>나이</th><th>소속</th><th>리그</th><th>성적</th><th>기록</th></tr>${P.hist.map(h=>`<tr><td>${h.y}</td><td>${h.age}</td><td>${h.team}</td><td>${h.lv}</td><td>${h.line}</td><td>${h.tags.join(', ')}</td></tr>`).join('')}</table></div>`)
+   +`<div>${B('결과 공유(복사)',()=>{const txt=share+location.href;if(navigator.share){navigator.share({text:share,url:location.href}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('복사했어요!'),()=>prompt('복사해서 공유하세요',txt))}else prompt('복사해서 공유하세요',txt)})}${B('Hall of Fame',hofScreen)}${B('메인 메뉴',menu,'alt')}</div>`);
+}
+title();
+</script>
+</body>
+</html>

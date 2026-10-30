@@ -3279,53 +3279,219 @@ function titleOf(){
   if(P.kbo1Years>0||P.mlbYears>0)return '프로 1군 선수';
   return '프로의 문턱에서 멈춘 도전자';
 }
-/* ===== 한 문단 일대기: 커리어 유형을 고르고, 유형마다 준비한 템플릿 중 하나에 기록을 채운다 ===== */
+/* ===== 한 문단 일대기 =====
+   커리어 유형(9가지)별 본문 2개 중 하나 + 커리어 조건에 맞는 결말(12가지) 중 하나를 이어 붙인다.
+   언어별로 따로 쓴 문장을 쓰고, 팀·수상·은퇴 사유 같은 값만 번역 사전(TR)으로 바꿔 넣는다 */
 const STORY={
-  legend:[
-    '{region}의 작은 운동장에서 공을 던지던 아이, {name}. {hs} 시절만 해도 누구도 그 이름을 기억하지 않았다. 그러나 {first} 유니폼을 입은 뒤 {name}은(는) 리그의 역사를 하나씩 다시 썼다. {peakAge}세에 BEST OVR {peak}에 도달했고, {awards}의 영광이 뒤따랐다. {champ}{age}세에 마지막 인사를 건넸을 때, 구장은 오래도록 그 이름을 불렀다. 사람들은 그를 이렇게 기억한다. “{title}.”',
-    '처음엔 벤치였다. {hs} 더그아웃 맨 끝자리에서 {name}은(는) 매일 밤 글러브를 닦았다. {first}에서 시작된 프로 생활은 {years}을 지나며 전설이 되었다. {awards}. {best} 그 시즌의 기억은 지금도 팬들의 입에 오르내린다. {champ}{age}세, 등번호가 영구결번으로 걸리던 날 그는 처음 벤치에 앉았던 소년을 떠올렸다.'],
-  star:[
-    '{region} 출신 {name}은(는) {hs}을(를) 거쳐 {first}에서 프로의 문을 열었다. {years} 동안 꾸준히 이름을 알렸고, {peakAge}세에는 BEST OVR {peak}로 리그 정상급 선수가 되었다. {awards}. {champ}{reason} 화려한 전설은 아니었어도, 한 시대의 팬들에게 {name}은(는) 분명 “우리 팀의 스타”였다.',
-    '{name}의 야구는 늘 성실했다. {hs}에서, {first}에서, 그리고 {teams}에서. {best} {awards}. {champ}{age}세에 은퇴를 선언하던 날, 동료들은 “저 선수만큼 준비된 사람은 없었다”고 입을 모았다.'],
-  mlb:[
-    '{region}의 소년 {name}은(는) 더 큰 무대를 꿈꿨다. {hs}를 지나 {first}, 그리고 마침내 메이저리그. 낯선 언어와 긴 원정 속에서도 {mlb}시즌을 버텼고, BEST OVR {peak}까지 올라섰다. {awards}. {champ}{reason} 바다 건너에서 그가 남긴 발자국은 다음 세대의 길이 되었다.',
-    '“메이저리그에서 뛰고 싶다.” {hs} 시절 {name}의 일기장 첫 줄이었다. 그 꿈은 {mlb}시즌의 빅리그 커리어로 이뤄졌다. {best} {awards}. {age}세에 고향으로 돌아온 그는 아이들에게 말했다. “문은 생각보다 가까이 있다.”'],
-  journey:[
-    '{name}의 커리어는 이삿짐과 함께였다. {teams}. 유니폼 색이 바뀔 때마다 그는 새 사물함에 이름표를 붙였다. {peakAge}세에 BEST OVR {peak}까지 올랐고, {awards}. {reason} 어느 팀의 레전드도 아니었지만, 그를 거쳐 간 모든 팀이 그를 기억했다.',
-    '떠돌이라는 말이 늘 따라다녔다. 그러나 {name}은(는) 가는 곳마다 제 몫을 했다. {teams}을(를) 거치며 {years}을 뛰었다. {best} {age}세, 마지막 짐을 싸던 날 그는 처음으로 웃으며 말했다. “어디서든 야구는 야구였다.”'],
-  injury:[
-    '{name}은(는) 누구보다 빨리 정상에 다가갔다. {hs}을(를) 거쳐 {first}에서 BEST OVR {peak}까지 올랐을 때, 사람들은 그의 이름 앞에 “차세대”를 붙였다. 그러나 몸은 버텨주지 않았다. {inj}번의 부상, 그리고 끝내 찾아온 큰 부상. {reason} 너무 일찍 끝난 이야기여서, 팬들은 아직도 “만약”이라는 말을 꺼낸다.',
-    '재활실은 {name}에게 두 번째 집이었다. {inj}번 쓰러지고 그만큼 다시 일어섰다. {best} {awards}. {age}세에 결국 유니폼을 벗었지만, 그가 버틴 시간들은 그 자체로 하나의 기록이었다.'],
-  late:[
-    '{name}은(는) 늦게 핀 꽃이었다. 20대 내내 {first}의 벤치와 2군을 오갔고, 누구도 기대하지 않았다. 그런데 {peakAge}세, 거짓말처럼 BEST OVR {peak}까지 치솟았다. {best} {awards}. {reason} 야구는 늦게 시작해도 된다는 것을 그가 증명했다.',
-    '서른이 넘어서야 {name}의 시간이 왔다. {hs}와 {first}에서 보낸 긴 무명 시절은 {peakAge}세의 전성기를 위한 준비였다. {awards}. {age}세에 은퇴하며 그는 후배들에게 한마디를 남겼다. “포기하지 마. 내 전성기는 서른 넘어서 왔다.”'],
-  bust:[
-    '{hs} 시절 {name}의 별명은 “괴물”이었다. 스카우트들은 앞다퉈 그의 이름을 적었다. 그러나 {first}에서의 시간은 생각보다 길고 무거웠다. BEST OVR {peak}. 기대에 미치지 못한 숫자였다. {reason} 그래도 그는 마지막까지 성실했고, 그 사실은 누구도 부정하지 못한다.',
-    '“재능은 충분했는데.” 사람들은 {name}을(를) 그렇게 기억한다. {years}, 그는 늘 한 발짝 모자랐다. {reason} 유니폼을 벗은 뒤 그는 유소년 코치가 되었고, 아이들에게 재능보다 꾸준함을 가르쳤다.'],
-  never:[
-    '{name}은(는) 끝내 1군 무대를 밟지 못했다. {hs}에서, {first}에서 매일 같은 시간에 배트를 쥐었다. BEST OVR {peak}. 화려한 기록은 없지만, 그는 누구보다 오래 경기장에 남아 공을 주웠다. {reason} 야구는 그에게 이긴 날보다 버틴 날을 더 많이 남겼다.',
-    '프로의 벽은 높았다. {name}의 이름은 2군 기록지에만 남았다. 그래도 {age}세까지 포기하지 않았다. {reason} 은퇴 후 그는 동네 리틀야구단 감독이 되었다. 아이들은 그를 “우리 감독님”이라고 부른다.'],
-  ordinary:[
-    '{region} 출신 {name}. {hs}을(를) 거쳐 {first}에서 프로가 되었고, {years} 동안 자기 자리를 지켰다. 최고의 순간은 {peakAge}세, BEST OVR {peak}. {best} {awards}. {reason} 거창하지 않았지만, 그의 야구는 분명 누군가의 주말을 행복하게 만들었다.',
-    '{name}의 야구 인생은 한 문장으로 요약된다. “늘 그 자리에 있었다.” {first}에서 {teams}까지, {years}. {best} {age}세에 조용히 은퇴를 발표했고, 팬들은 조용히 박수를 보냈다.']
+ ko:{
+  body:{
+   legend:['{region}의 작은 운동장에서 공을 던지던 아이, {name}. {hs} 시절만 해도 누구도 그 이름을 기억하지 않았다. 그러나 {first} 유니폼을 입은 뒤 {name}은(는) 리그의 역사를 하나씩 다시 썼다. {peakAge}세에 BEST OVR {peak}까지 올랐고, {awards} {champ}',
+    '처음엔 벤치였다. {hs} 더그아웃 맨 끝자리에서 {name}은(는) 매일 밤 글러브를 닦았다. {first}에서 시작된 프로 생활은 {years}을(를) 지나며 전설이 되었다. {awards} {best} {champ}'],
+   star:['{region} 출신 {name}은(는) {hs}을(를) 거쳐 {first}에서 프로의 문을 열었다. {years} 동안 꾸준히 이름을 알렸고, {peakAge}세에는 BEST OVR {peak}로 리그 정상급 선수가 되었다. {awards} {champ} {reason}',
+    '{name}의 야구는 늘 성실했다. {hs}에서, {first}에서, 그리고 {teams}에서. {best} {awards} {champ} {reason}'],
+   mlb:['{region}의 소년 {name}은(는) 더 큰 무대를 꿈꿨다. {hs}을(를) 지나 {first}, 그리고 마침내 메이저리그. 낯선 언어와 긴 원정 속에서도 {mlb}시즌을 버텼고, BEST OVR {peak}까지 올라섰다. {awards} {champ} {reason}',
+    '“메이저리그에서 뛰고 싶다.” {hs} 시절 {name}의 일기장 첫 줄이었다. 그 꿈은 {mlb}시즌의 빅리그 커리어로 이뤄졌다. {best} {awards} {reason}'],
+   journey:['{name}의 커리어는 이삿짐과 함께였다. {teams}. 유니폼 색이 바뀔 때마다 새 사물함에 이름표를 붙였다. {peakAge}세에 BEST OVR {peak}까지 올랐고, {awards} {reason}',
+    '떠돌이라는 말이 늘 따라다녔다. 그러나 {name}은(는) 가는 곳마다 제 몫을 했다. {teams}을(를) 거치며 {years}을(를) 채웠다. {best} {reason}'],
+   injury:['{name}은(는) 누구보다 빨리 정상에 다가갔다. {first}에서 BEST OVR {peak}까지 올랐을 때, 사람들은 그 이름 앞에 “차세대”를 붙였다. 그러나 몸은 버텨주지 않았다. {inj}번의 부상이 차례로 찾아왔다. {reason}',
+    '재활실은 {name}에게 두 번째 집이었다. {inj}번 쓰러지고 그만큼 다시 일어섰다. {best} {awards} {reason}'],
+   late:['{name}은(는) 늦게 핀 꽃이었다. 20대 내내 {first}에서 기회를 기다렸고, 누구도 크게 기대하지 않았다. 그런데 {peakAge}세, 거짓말처럼 BEST OVR {peak}까지 치솟았다. {best} {awards} {reason}',
+    '서른이 넘어서야 {name}의 시간이 왔다. {hs}와(과) {first}에서 보낸 긴 시간은 {peakAge}세의 전성기를 위한 준비였다. {awards} {reason}'],
+   bust:['{hs} 시절 {name}의 별명은 “괴물”이었다. 스카우트들은 앞다퉈 그 이름을 적었다. 그러나 {first}에서의 시간은 생각보다 길고 무거웠다. BEST OVR {peak}, 기대에 미치지 못한 숫자였다. {reason}',
+    '“재능은 충분했는데.” 사람들은 {name}을(를) 그렇게 기억한다. {years} 동안 늘 한 발짝이 모자랐다. {reason}'],
+   never:['{name}은(는) 끝내 1군 무대를 밟지 못했다. {hs}에서, {first}에서 매일 같은 시간에 배트를 쥐었다. BEST OVR {peak}. 화려한 기록은 없지만 누구보다 오래 경기장에 남아 공을 주웠다. {reason}',
+    '프로의 벽은 높았다. {name}의 이름은 2군 기록지에만 남았다. 그래도 {age}세까지 포기하지 않았다. {reason}'],
+   ordinary:['{region} 출신 {name}. {hs}을(를) 거쳐 {first}에서 프로가 되었고, {years} 동안 자기 자리를 지켰다. 최고의 순간은 {peakAge}세, BEST OVR {peak}. {best} {awards} {reason}',
+    '{name}의 야구 인생은 한 문장으로 요약된다. “늘 그 자리에 있었다.” {first}에서 {last}까지. {best} {reason}']
+  },
+  end:{
+   number:'은퇴식 날, 구단은 {name}의 등번호 {num}번을 영구결번으로 걸었다. 그날 이후 그 번호를 다는 선수는 없다.',
+   speech:'몇 년 뒤 명예의 전당 헌액식, {name}은(는) 연설의 첫 문장을 이렇게 시작했다. “저는 벤치에서 시작했습니다.”',
+   manager:'몇 년 뒤 {name}은(는) {last}의 감독으로 돌아왔다. 첫 시즌 더그아웃에서 그는 선수 시절보다 더 많이 웃었다.',
+   caster:'은퇴 후 {name}은(는) 마이크를 잡았다. 날카롭지만 따뜻한 해설로 “야구 보는 맛”을 알려주는 해설위원이 되었다.',
+   front:'선수 시절의 감각을 살려 프런트에 들어간 {name}은(는) 훗날 단장이 되어 또 다른 “벤치의 소년”을 찾아냈다.',
+   scout:'{name}은(는) 메이저리그 구단의 스카우트가 되어, 자신이 걸었던 길을 걷는 후배들을 찾아 오늘도 비행기에 오른다.',
+   academy:'{name}은(는) 고향 {region}에 야구 아카데미를 세웠다. 첫 제자가 프로에 지명되던 날, 그는 누구보다 크게 울었다.',
+   coach:'{name}은(는) 고향 {region}(으)로 돌아가 리틀야구단 코치가 되었다. 아이들은 그의 옛 영상보다 지금의 잔소리를 더 좋아한다.',
+   rehab:'부상과 싸운 경험을 살려 {name}은(는) 재활 트레이너가 되었다. 그의 재활실 벽에는 “포기는 내일 해도 된다”라는 글이 걸려 있다.',
+   shop:'{name}은(는) 구장 앞에 작은 국밥집을 열었다. 벽에는 유니폼 한 벌, 손님들은 지금도 그 시절 이야기를 꺼낸다.',
+   family:'유니폼을 벗은 뒤에야 {name}은(는) 가족과 저녁을 함께 먹는 평범한 행복을 알게 되었다.',
+   quiet:'그 뒤로 {name}은(는) 야구장을 찾지 않았다. 다만 해마다 개막전 날이면 텔레비전 앞에 조용히 앉아 있었다고 한다.'
+  },
+  years:(y,pro)=>y?`${y}시즌의 1군 생활`:`${pro}시즌의 프로 생활`,
+  awards:a=>a.length?`${a.join(', ')} 등이 커리어를 장식했다.`:'트로피는 없었지만 출석부는 늘 꽉 차 있었다.',
+  best:b=>`${b.y}년, ${b.age}세의 ${b.team} 시절(${b.line})이 가장 빛나는 시즌이었다.`,
+  champ:n=>n?`우승 반지는 ${n}개.`:'',
+  retired:a=>`${a}세에 스스로 은퇴를 선택했다.`,sep:', '
+ },
+ en:{
+  body:{
+   legend:['A kid throwing balls on a small field in {region}: {name}. Back at {hs}, nobody remembered the name. But once in a {first} uniform, {name} rewrote the league\'s history one page at a time, reaching a BEST OVR of {peak} at {peakAge}. {awards} {champ}',
+    'It started on the bench. In the last seat of the {hs} dugout, {name} cleaned the glove every night. The pro career that began with {first} became a legend over {years}. {awards} {best} {champ}'],
+   star:['{name} from {region} went through {hs} and broke into the pros with {first}. Over {years} the name kept growing, and at {peakAge} {name} became one of the league\'s best with a BEST OVR of {peak}. {awards} {champ} {reason}',
+    '{name} always played the game the right way: at {hs}, at {first}, and with {teams}. {best} {awards} {champ} {reason}'],
+   mlb:['{name}, a kid from {region}, dreamed of a bigger stage. From {hs} to {first}, and finally the major leagues. Through a new language and endless road trips, {name} lasted {mlb} seasons and climbed to a BEST OVR of {peak}. {awards} {champ} {reason}',
+    '"I want to play in the majors." That was the first line of {name}\'s diary at {hs}. The dream came true with {mlb} big-league seasons. {best} {awards} {reason}'],
+   journey:['{name}\'s career came with moving boxes: {teams}. Every new jersey meant a new name tag on a new locker. {name} peaked at {peakAge} with a BEST OVR of {peak}. {awards} {reason}',
+    'The word "journeyman" always followed {name}, yet every club got its money\'s worth. Through {teams}, {name} put in {years}. {best} {reason}'],
+   injury:['{name} closed in on the top faster than anyone. When the BEST OVR hit {peak} at {first}, people started saying "the next big thing." But the body would not hold up. {inj} injuries came one after another. {reason}',
+    'The rehab room became {name}\'s second home. Down {inj} times, back up just as many. {best} {awards} {reason}'],
+   late:['{name} was a late bloomer. Through their twenties {name} waited for a chance at {first}, and few expected much. Then, at {peakAge}, the BEST OVR shot up to {peak} as if by magic. {best} {awards} {reason}',
+    '{name}\'s time came only after thirty. The long years at {hs} and {first} were preparation for a prime at {peakAge}. {awards} {reason}'],
+   bust:['At {hs}, they called {name} "the monster." Scouts raced to write the name down. But the years at {first} were longer and heavier than anyone thought. A BEST OVR of {peak}, short of the hype. {reason}',
+    '"So much talent, though." That is how people remember {name}. Over {years}, always one step short. {reason}'],
+   never:['{name} never reached the top level. At {hs} and at {first}, {name} picked up the bat at the same hour every day. BEST OVR {peak}. No headline numbers, but always the last one picking up balls on the field. {reason}',
+    'The wall of pro ball was high. {name}\'s name stayed in the minor-league box scores. Still, {name} did not quit until {age}. {reason}'],
+   ordinary:['{name} from {region} went through {hs}, turned pro with {first} and held a spot for {years}. The best moment came at {peakAge}: a BEST OVR of {peak}. {best} {awards} {reason}',
+    '{name}\'s baseball life fits in one sentence: "Always there." From {first} to {last}. {best} {reason}']
+  },
+  end:{
+   number:'On retirement day the club retired {name}\'s number {num}. No one has worn it since.',
+   speech:'Years later, at the Hall of Fame induction, {name} opened the speech with one line: "I started on the bench."',
+   manager:'A few years later {name} came back as manager of {last}, and smiled more in that first season in the dugout than in any as a player.',
+   caster:'After retiring, {name} picked up a microphone and became a sharp but warm analyst who taught fans how to enjoy the game.',
+   front:'{name} joined the front office, later became general manager, and found another kid who started on the bench.',
+   scout:'{name} became a scout for a big-league club and still boards flights to find young players walking the same road.',
+   academy:'{name} opened a baseball academy back home in {region}. When the first student was drafted, nobody cried harder.',
+   coach:'{name} went home to {region} to coach a Little League team. The kids like the nagging now more than the old highlight videos.',
+   rehab:'Drawing on years of fighting injuries, {name} became a rehab trainer. A sign on the wall says: "You can quit tomorrow."',
+   shop:'{name} opened a small soup restaurant across from the ballpark. One jersey hangs on the wall, and customers still bring up the old days.',
+   family:'Only after taking off the uniform did {name} learn the simple joy of eating dinner with family.',
+   quiet:'{name} never went back to a ballpark after that. But every Opening Day, they say, {name} sat quietly in front of the TV.'
+  },
+  years:(y,pro)=>y?`${y} top-level seasons`:`${pro} pro seasons`,
+  awards:a=>a.length?`${a.join(', ')} decorated the career.`:'No trophies, but never missed a day.',
+  best:b=>`The ${b.y} season with ${b.team}, at age ${b.age} (${b.line}), shone the brightest.`,
+  champ:n=>n?`${n} championship ring${n>1?'s':''}.`:'',
+  retired:a=>`Chose to retire at ${a}.`,sep:', '
+ },
+ ja:{
+  body:{
+   legend:['{region}の小さなグラウンドでボールを投げていた子ども、{name}。{hs}時代、その名を覚えている人は誰もいなかった。だが{first}のユニフォームを着てから、{name}はリーグの歴史を一つずつ塗り替えた。{peakAge}歳でBEST OVR {peak}に到達。{awards}{champ}',
+    '始まりはベンチだった。{hs}のベンチの一番端で、{name}は毎晩グラブを磨いた。{first}で始まったプロ生活は、{years}を経て伝説になった。{awards}{best}{champ}'],
+   star:['{region}出身の{name}は{hs}を経て{first}でプロの扉を開いた。{years}の間、着実に名を上げ、{peakAge}歳でBEST OVR {peak}のリーグ屈指の選手になった。{awards}{champ}{reason}',
+    '{name}の野球はいつも誠実だった。{hs}で、{first}で、そして{teams}で。{best}{awards}{champ}{reason}'],
+   mlb:['{region}の少年{name}は、もっと大きな舞台を夢見た。{hs}から{first}、そしてついにメジャーリーグへ。慣れない言葉と長い遠征の中で{mlb}シーズンを戦い抜き、BEST OVR {peak}まで上り詰めた。{awards}{champ}{reason}',
+    '「メジャーでプレーしたい」。{hs}時代、{name}の日記の一行目だった。その夢は{mlb}シーズンのメジャー生活でかなった。{best}{awards}{reason}'],
+   journey:['{name}のキャリアは引っ越しの連続だった。{teams}。ユニフォームの色が変わるたび、新しいロッカーに名札を貼った。{peakAge}歳でBEST OVR {peak}。{awards}{reason}',
+    '「渡り鳥」という言葉がいつもついて回った。それでも{name}は行く先々で役目を果たした。{teams}を渡り歩き、{years}を積み上げた。{best}{reason}'],
+   injury:['{name}は誰よりも早く頂点に近づいた。{first}でBEST OVR {peak}に達したとき、人々はその名に「次世代」とつけた。だが体はもたなかった。{inj}度のケガが次々に襲った。{reason}',
+    'リハビリ室は{name}の第二の家だった。{inj}度倒れ、同じ数だけ立ち上がった。{best}{awards}{reason}'],
+   late:['{name}は遅咲きの花だった。20代はずっと{first}でチャンスを待ち、誰も大きな期待はしていなかった。ところが{peakAge}歳、嘘のようにBEST OVR {peak}まで跳ね上がった。{best}{awards}{reason}',
+    '{name}の時代は30歳を過ぎてからやってきた。{hs}と{first}で過ごした長い時間は、{peakAge}歳の全盛期のための準備だった。{awards}{reason}'],
+   bust:['{hs}時代、{name}のあだ名は「怪物」だった。スカウトは競ってその名を書き留めた。だが{first}での時間は思ったより長く重かった。BEST OVR {peak}、期待には届かない数字だった。{reason}',
+    '「才能は十分だったのに」。人々は{name}をそう記憶している。{years}の間、いつも一歩足りなかった。{reason}'],
+   never:['{name}はついに一軍の舞台に立てなかった。{hs}で、{first}で、毎日同じ時間にバットを握った。BEST OVR {peak}。派手な記録はないが、誰よりも遅くまでグラウンドに残ってボールを拾った。{reason}',
+    'プロの壁は高かった。{name}の名前は二軍の記録にだけ残った。それでも{age}歳まであきらめなかった。{reason}'],
+   ordinary:['{region}出身の{name}。{hs}を経て{first}でプロになり、{years}の間、自分の場所を守った。最高の瞬間は{peakAge}歳、BEST OVR {peak}。{best}{awards}{reason}',
+    '{name}の野球人生は一言で表せる。「いつもそこにいた」。{first}から{last}まで。{best}{reason}']
+  },
+  end:{
+   number:'引退セレモニーの日、球団は{name}の背番号{num}を永久欠番にした。それ以来、その番号をつけた選手はいない。',
+   speech:'数年後の殿堂入り式典で、{name}はスピーチの最初の一文をこう始めた。「私はベンチから始まりました」。',
+   manager:'数年後、{name}は{last}の監督として戻ってきた。最初のシーズン、ベンチの{name}は現役時代よりよく笑った。',
+   caster:'引退後、{name}はマイクを握った。鋭くも温かい解説で「野球の楽しみ方」を伝える解説者になった。',
+   front:'現役時代の感覚を生かしてフロントに入った{name}は、のちにGMとなり、新たな「ベンチの少年」を見つけ出した。',
+   scout:'{name}はメジャー球団のスカウトになり、自分と同じ道を歩む後輩を探して今日も飛行機に乗る。',
+   academy:'{name}は故郷{region}に野球アカデミーを作った。最初の教え子がプロに指名された日、誰よりも大きな声で泣いた。',
+   coach:'{name}は故郷{region}に戻り、少年野球のコーチになった。子どもたちは昔の映像より、今の小言のほうが好きだ。',
+   rehab:'ケガと戦った経験を生かし、{name}はリハビリトレーナーになった。その部屋の壁には「あきらめるのは明日でいい」と書かれている。',
+   shop:'{name}は球場の前に小さな食堂を開いた。壁にはユニフォームが一枚。客は今でもあの頃の話を持ち出す。',
+   family:'ユニフォームを脱いでようやく、{name}は家族と夕食を囲むささやかな幸せを知った。',
+   quiet:'それから{name}が球場を訪れることはなかった。ただ毎年開幕戦の日だけは、テレビの前に静かに座っていたという。'
+  },
+  years:(y,pro)=>y?`一軍${y}シーズン`:`プロ${pro}シーズン`,
+  awards:a=>a.length?`${a.join('、')}がキャリアを彩った。`:'トロフィーはなかったが、休むことは一度もなかった。',
+  best:b=>`${b.y}年、${b.age}歳の${b.team}時代(${b.line})が最も輝いたシーズンだった。`,
+  champ:n=>n?`優勝リングは${n}個。`:'',
+  retired:a=>`${a}歳で自ら引退を選んだ。`,sep:'、'
+ },
+ zh:{
+  body:{
+   legend:['在{region}小球場投球的孩子,{name}。{hs}時期,沒有人記得這個名字。但穿上{first}球衣後,{name}一頁一頁改寫了聯盟的歷史,在{peakAge}歲達到BEST OVR {peak}。{awards}{champ}',
+    '一切從板凳開始。在{hs}休息區的最末端,{name}每晚擦拭手套。從{first}開始的職業生涯,經過{years}成為傳奇。{awards}{best}{champ}'],
+   star:['來自{region}的{name},經過{hs},在{first}敲開職業大門。{years}間穩定累積名聲,{peakAge}歲時以BEST OVR {peak}躋身聯盟頂尖。{awards}{champ}{reason}',
+    '{name}的棒球總是踏實。在{hs}、在{first},也在{teams}。{best}{awards}{champ}{reason}'],
+   mlb:['{region}的少年{name}夢想著更大的舞台。從{hs}到{first},最後來到大聯盟。在陌生語言與漫長客場中撐過{mlb}個球季,攀上BEST OVR {peak}。{awards}{champ}{reason}',
+    '「我想在大聯盟打球。」這是{hs}時期{name}日記的第一行。這個夢以{mlb}季的大聯盟生涯實現了。{best}{awards}{reason}'],
+   journey:['{name}的生涯總伴隨著搬家紙箱:{teams}。每換一次球衣,就在新的置物櫃貼上名牌。{peakAge}歲達到BEST OVR {peak}。{awards}{reason}',
+    '「流浪者」這個詞總跟著{name}。但無論去哪裡,{name}都盡了本分。輾轉{teams},累積了{years}。{best}{reason}'],
+   injury:['{name}比誰都快接近巔峰。在{first}達到BEST OVR {peak}時,人們在這名字前加上「新世代」。但身體撐不住了,{inj}次傷病接連而來。{reason}',
+    '復健室是{name}的第二個家。倒下{inj}次,也站起來{inj}次。{best}{awards}{reason}'],
+   late:['{name}是晚開的花。整個二十幾歲都在{first}等待機會,沒人抱太大期待。然而{peakAge}歲時,BEST OVR奇蹟般衝上{peak}。{best}{awards}{reason}',
+    '{name}的時代在三十歲之後才到來。在{hs}與{first}度過的漫長歲月,都是為了{peakAge}歲的巔峰做準備。{awards}{reason}'],
+   bust:['{hs}時期,{name}的綽號是「怪物」。球探搶著記下這個名字。但在{first}的日子比想像中漫長沉重。BEST OVR {peak},沒能達到期待。{reason}',
+    '「明明很有天分。」人們這樣記得{name}。{years}之中,總是差了一步。{reason}'],
+   never:['{name}終究沒能站上一軍舞台。在{hs}、在{first},每天同一時間握起球棒。BEST OVR {peak}。沒有亮眼紀錄,卻總是最後一個留在球場撿球的人。{reason}',
+    '職業的門檻很高。{name}的名字只留在二軍紀錄表上。即使如此,直到{age}歲都沒有放棄。{reason}'],
+   ordinary:['來自{region}的{name}。經過{hs},在{first}成為職業球員,{years}間守住自己的位置。最棒的時刻在{peakAge}歲,BEST OVR {peak}。{best}{awards}{reason}',
+    '{name}的棒球人生可以用一句話概括:「一直都在那裡。」從{first}到{last}。{best}{reason}']
+  },
+  end:{
+   number:'退休典禮當天,球團將{name}的背號{num}號退休。從此再也沒有人穿過那個號碼。',
+   speech:'幾年後的名人堂典禮上,{name}的致詞第一句是:「我是從板凳開始的。」',
+   manager:'幾年後,{name}以{last}總教練的身分回來了。執教第一季,{name}在休息區笑得比球員時期還多。',
+   caster:'退休後{name}拿起了麥克風,成為犀利又溫暖、教大家怎麼看球的球評。',
+   front:'憑著球員時期的敏銳,{name}進入球團辦公室,後來當上總經理,又發掘了另一個「板凳少年」。',
+   scout:'{name}成為大聯盟球隊的球探,至今仍搭上飛機,尋找走在同一條路上的後輩。',
+   academy:'{name}在故鄉{region}成立了棒球學院。第一位學生被選進職業隊那天,{name}哭得比誰都大聲。',
+   coach:'{name}回到故鄉{region},成為少棒教練。孩子們比起當年的精華影片,更喜歡現在的嘮叨。',
+   rehab:'憑著與傷病奮戰的經驗,{name}成為復健訓練師。復健室牆上寫著:「放棄留到明天也不遲。」',
+   shop:'{name}在球場前開了一間小湯飯店。牆上掛著一件球衣,客人至今仍會聊起那段時光。',
+   family:'脫下球衣後,{name}才懂得和家人一起吃晚餐的平凡幸福。',
+   quiet:'那之後{name}再也沒去過球場。只是聽說每年開幕戰那天,{name}都會安靜地坐在電視前。'
+  },
+  years:(y,pro)=>y?`${y}季一軍生涯`:`${pro}季職業生涯`,
+  awards:a=>a.length?`${a.join('、')}點綴了這段生涯。`:'沒有獎盃,但從未缺席。',
+  best:b=>`${b.y}年,${b.age}歲在{team}的那季(${b.line})是最耀眼的球季。`.replace('{team}',b.team),
+  champ:n=>n?`冠軍戒指${n}枚。`:'',
+  retired:a=>`${a}歲時自己選擇了退休。`,sep:'、'
+ }
 };
+/* 일대기용 지역 이름 (사전에 넣으면 '경기' 같은 낱말이 다른 문장에서도 바뀌어 따로 둔다) */
+const STORY_REGION={'서울':{en:'Seoul',ja:'ソウル',zh:'首爾'},'부산':{en:'Busan',ja:'釜山',zh:'釜山'},'대구':{en:'Daegu',ja:'大邱',zh:'大邱'},'인천':{en:'Incheon',ja:'仁川',zh:'仁川'},'광주':{en:'Gwangju',ja:'光州',zh:'光州'},'대전':{en:'Daejeon',ja:'大田',zh:'大田'},'울산':{en:'Ulsan',ja:'蔚山',zh:'蔚山'},'세종':{en:'Sejong',ja:'世宗',zh:'世宗'},'경기':{en:'Gyeonggi',ja:'京畿',zh:'京畿'},'강원':{en:'Gangwon',ja:'江原',zh:'江原'},'충북':{en:'North Chungcheong',ja:'忠清北道',zh:'忠清北道'},'충남':{en:'South Chungcheong',ja:'忠清南道',zh:'忠清南道'},'전북':{en:'North Jeolla',ja:'全羅北道',zh:'全羅北道'},'전남':{en:'South Jeolla',ja:'全羅南道',zh:'全羅南道'},'경북':{en:'North Gyeongsang',ja:'慶尚北道',zh:'慶尚北道'},'경남':{en:'South Gyeongsang',ja:'慶尚南道',zh:'慶尚南道'},'제주':{en:'Jeju',ja:'済州',zh:'濟州'}};
+/* 일대기용 은퇴 사유(3인칭). 키는 게임 안의 한국어 은퇴 사유 */
+const STORY_WHY={
+ '큰 부상으로 선수 생활을 일찍 마감했다.':{en:'A major injury ended the career early.',ja:'大ケガで選手生活は早くに幕を閉じた。',zh:'一場重傷讓球員生涯提早落幕。'},
+ '마흔다섯, 몸이 더는 버텨주지 않았다. 마지막 시즌을 끝으로 글러브를 내려놓았다.':{en:'At 45 the body finally gave out, and the glove was put down after one last season.',ja:'45歳、体はもう持たなかった。最後のシーズンを終えてグラブを置いた。',zh:'四十五歲,身體再也撐不住,打完最後一季放下了手套。'},
+ '구단으로부터 방출 통보를 받았다. 불러주는 팀은 더 이상 없었다.':{en:'Then came the release, and no other team called.',ja:'やがて戦力外通告を受け、声をかける球団はもうなかった。',zh:'最後收到釋出通知,再也沒有球隊找上門。'},
+ '하위 마이너에 서른을 훌쩍 넘긴 선수의 자리는 없었다. 방출 뒤 은퇴를 결심했다.':{en:'There was no room in the low minors for a player well past thirty; after the release came retirement.',ja:'30歳をとうに過ぎた選手に下位マイナーの居場所はなく、解雇ののち引退を決めた。',zh:'低階小聯盟容不下年過三十的球員,被釋出後決定退休。'},
+ '다시 1군 무대를 밟을 수 없다는 걸 받아들였다. 정든 유니폼을 벗기로 했다.':{en:'Accepting there would be no way back to the top level, the uniform came off for good.',ja:'もう一軍には戻れないと受け入れ、慣れ親しんだユニフォームを脱いだ。',zh:'接受了再也回不到一軍的事實,脫下了熟悉的球衣。'},
+ '입단 테스트를 돌았지만 받아주는 팀은 없었다. 그렇게 현역 생활이 끝났다.':{en:'Tryout after tryout, no team said yes, and that was the end of the playing days.',ja:'入団テストを回っても受け入れる球団はなく、現役生活はそこで終わった。',zh:'參加了一次次入團測試,卻沒有球隊點頭,球員生涯就此結束。'}
+};
+/* 결말: 조건에 맞는 것 중 가중치로 하나 (w가 클수록 잘 나온다) */
+const STORY_END=[
+ {k:'number',ok:v=>'S'.includes(v.g),w:4},{k:'speech',ok:v=>'SA'.includes(v.g),w:3},
+ {k:'manager',ok:v=>'ABC'.includes(v.g)&&v.yrs>=8,w:2},{k:'caster',ok:v=>v.fame>=5,w:2},
+ {k:'front',ok:v=>'ABC'.includes(v.g),w:1},{k:'scout',ok:v=>v.mlb>0,w:2},
+ {k:'academy',ok:v=>v.money>=50,w:2},{k:'coach',ok:()=>true,w:1},
+ {k:'rehab',ok:v=>v.inj>=3||v.injRetire,w:3},{k:'shop',ok:v=>'CDE'.includes(v.g),w:2},
+ {k:'family',ok:v=>v.married,w:2},{k:'quiet',ok:v=>'DE'.includes(v.g),w:2}
+];
 function lifeStory(){
-  const g=gradeOf(score())[0],pro=P.hist.filter(h=>/KBO|MLB|마이너|퓨처스|메이저/.test(h.lv));
-  const teams=[...new Set(pro.map(h=>h.team))],first=pro[0]?pro[0].team:P.team;
+  const lang=STORY[LANG]?LANG:'ko',S=STORY[lang],g=gradeOf(score())[0],pro=P.hist.filter(h=>/KBO|MLB|마이너|퓨처스|메이저/.test(h.lv));
+  const T=x=>lang==='ko'?x:TR(x);
+  const teams=[...new Set(pro.map(h=>h.team))],first=pro[0]?pro[0].team:P.team,last=teams.length?teams[teams.length-1]:P.team;
   const best=P.hist.slice().sort((a,b)=>b.tags.length-a.tags.length)[0];
-  const aw=achSort(Object.keys(P.ach).filter(k=>!FEAT_KEYS.has(k)&&!/데뷔/.test(k))).slice(0,3);
-  const champ=(P.ach['한국시리즈 우승']||0)+(P.ach['월드시리즈 우승']||0);
+  const aw=achSort(Object.keys(P.ach).filter(k=>!FEAT_KEYS.has(k)&&!/데뷔/.test(k))).slice(0,3).map(T);
+  const champ=(P.ach['한국시리즈 우승']||0)+(P.ach['월드시리즈 우승']||0),yrs=(P.kbo1Years||0)+(P.mlbYears||0);
   const type=P.injRetire||(P.injCount||0)>=4?'injury':g==='S'?'legend':P.mlbYears>=3&&'AB'.includes(g)?'mlb':teams.length>=4?'journey':(P.peakAge||0)>=30&&'ABC'.includes(g)?'late':'AB'.includes(g)?'star':!P.kbo1Years&&!P.mlbYears?'never':P.potG==='S'&&'DE'.includes(g)?'bust':'ordinary';
-  const yrs=(P.kbo1Years||0)+(P.mlbYears||0);
-  const v={name:P.name,region:P.region,hs:P.hist[0]?P.hist[0].team:P.team,first,teams:teams.join(', ')||P.team,peak:bestOvr(),peakAge:P.peakAge||P.age,age:P.age,
-    years:yrs?`${yrs}시즌의 1군 생활`:`${P.proYears||0}시즌의 프로 생활`,mlb:P.mlbYears||0,inj:P.injCount||0,title:titleOf(),
-    awards:aw.length?aw.join(', ')+' 등의 이름이 그의 커리어를 장식했다':'트로피는 없었지만 출석부는 늘 꽉 차 있었다',
-    best:best&&best.tags.length?`${best.y}년, ${best.age}세의 ${best.team} 시절(${best.line})은 그의 가장 빛나는 시즌이었다.`:'',
-    champ:champ?`우승 반지는 ${champ}개. `:'',reason:P.injRetire?'큰 부상이 그의 마지막 시즌이 되었다.':P.retireWhy?P.retireWhy:`${P.age}세에 스스로 은퇴를 선택했다.`};
-  /* 조사 정리: 은(는)·이(가)·을(를)·와(과)를 앞 글자 받침에 맞춘다 */
-  const jo=(t,a,b)=>t.replace(new RegExp(`([가-힣A-Za-z0-9])${a}\\(${b}\\)`,'g'),(_,c)=>{const k=c.charCodeAt(0)-0xAC00;return c+(k>=0&&k<11172&&k%28?a:b)});
-  let t=pick(STORY[type]).replace(/\{(\w+)\}/g,(_,k)=>v[k]==null?'':v[k]).replace(/\s+/g,' ').trim();
-  [['은','는'],['이','가'],['을','를'],['과','와']].forEach(([a,b])=>{t=jo(t,a,b)});
+  const v={name:P.name,region:lang==='ko'?P.region:(STORY_REGION[P.region]&&STORY_REGION[P.region][lang])||T(P.region),hs:T(P.hist[0]?P.hist[0].team:P.team),first:T(first),last:T(last),teams:teams.map(T).join(S.sep)||T(P.team),
+    peak:bestOvr(),peakAge:P.peakAge||P.age,age:P.age,mlb:P.mlbYears||0,inj:P.injCount||0,num:(P.cust&&P.cust.num)||0,
+    years:S.years(yrs,P.proYears||0),awards:S.awards(aw),champ:S.champ(champ),
+    best:best&&best.tags.length?S.best({y:best.y,age:best.age,team:T(best.team),line:T(best.line)}):'',
+    reason:(w=>!w?S.retired(P.age):lang==='ko'?w:(STORY_WHY[w]&&STORY_WHY[w][lang])||T(w))(P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다.':P.retireWhy)};
+  const cond={g,yrs,fame:P.fame||0,mlb:P.mlbYears||0,money:P.money||0,inj:P.injCount||0,injRetire:!!P.injRetire,married:!!P.married};
+  const ends=STORY_END.filter(e=>e.ok(cond)),tot=ends.reduce((a,e)=>a+e.w,0);let x=Math.random()*tot;
+  const end=ends.find(e=>(x-=e.w)<0)||ends[0];
+  const fill=t=>t.replace(/\{(\w+)\}/g,(_,k)=>v[k]==null?'':v[k]);
+  let t=(fill(pick(S.body[type]))+(lang==='ko'||lang==='en'?' ':'')+fill(S.end[end.k])).replace(/\s+/g,' ').trim();
+  if(lang==='ko'){
+    /* 조사 정리: 은(는)·이(가)·을(를)·와(과)를 앞 글자 받침에 맞춘다 */
+    const jo=(s,a,b)=>s.replace(new RegExp(`([가-힣A-Za-z0-9])${a}\\(${b}\\)`,'g'),(_,c)=>{const k=c.charCodeAt(0)-0xAC00;return c+(k>=0&&k<11172&&k%28?a:b)});
+    [['은','는'],['이','가'],['을','를'],['과','와']].forEach(([a,b])=>{t=jo(t,a,b)});
+    t=t.replace(/(\S+)\(으\)로/g,(_,w)=>ro(w));
+  }
   return t;
 }
 function ending(){
@@ -3340,7 +3506,7 @@ function ending(){
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
   show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점 / 999</p><p class="sub">${(o=>`팀 수상 ${o.team} · 개인 수상 ${o.personal} · 업적 ${o.feat} · 커리어 ${o.career}`)(scoreParts())}</p>${why?`<p>${why}</p>`:''}<p>${epi}</p></div>`
    +panel('결과지',`<div class="share-card-row">${shareCardFrontHtml(true)}${shareCardBackHtml(true)}</div><p class="sub" style="text-align:center">${rank?`🏆 오늘의 명전 ${SLOT_NAME[pos]} ${rank}위에 올랐다! (24시간 동안 기록)`:`오늘의 명전 ${SLOT_NAME[pos]} 탑10에는 들지 못했다.`}</p><div style="text-align:center">${B('결과지 이미지 저장',()=>shareCardImage(true))}</div>`)
-   +panel('한 문단 일대기',`<p class="story">${story}</p>`)
+   +panel('한 문단 일대기',`<p class="story" data-notr>${story}</p>`)
    +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>${RULE.mil==='none'?'':`병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · `}통산 수입 ${won(P.money)}</p><p>${ach}</p>`)
    +panel('시즌별 기록',`<div class="scroll"><table><tr><th>연도</th><th>나이</th><th>소속</th><th>리그</th><th>성적</th><th>기록</th></tr>${P.hist.map(h=>`<tr><td>${h.y}</td><td>${h.age}</td><td>${h.team}</td><td>${h.lv}</td><td>${h.line}</td><td>${h.tags.join(', ')}</td></tr>`).join('')}</table></div>`)
    +`<div>${B('결과 공유(복사)',()=>{const txt=TR(share)+location.href;if(navigator.share){navigator.share({text:TR(share),url:location.href}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('복사했어요!'),()=>prompt('복사해서 공유하세요',txt))}else prompt('복사해서 공유하세요',txt)})}${B('오늘의 명전',hofScreen)}${B('메인 메뉴',menu,'alt')}</div>`);

@@ -1012,8 +1012,9 @@ function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem(SK('b2ws
 function L(m){P.log.push(`${P.y}년 · ${m}`);if(P.log.length>300)P.log.shift()}
 /* ===== 오늘의 명전: 포지션별 탑10, 각 기록은 게임이 끝난 시점부터 24시간 유지 =====
    새 기록은 그 포지션 탑10에 들 때만 저장(못 들면 저장하지 않음). 점수는 결과지의 레전드 점수.
-   HOF_API에 공유 서버 주소를 넣으면 기록을 서버에 보내고 서버 목록을 받아 모두가 같은 명전을 본다.
-   서버 약속: GET HOF_API → {포지션:[기록...]}, POST HOF_API (기록 1개) → 같은 형식. 비어 있으면 이 기기에만 저장 */
+   HOF_API에 공유 서버 주소(server/hof-server.js, 예: 'https://내도메인/hof')를 넣으면 서버가 순위를 정하고
+   모두가 같은 명전을 본다. GET HOF_API → {포지션:[기록...]}, POST HOF_API (기록 1개) → {rank, board}.
+   비어 있으면 이 기기에만 저장 */
 const HOF_KEY='b2ws_hof_day',HOF_TTL=24*3600*1000,HOF_API='';
 const HOF_POS=['C','CI','MI','OF','DH','SP','MR','CL'];
 try{localStorage.removeItem(SK('b2ws_hof'))}catch(e){} /* 예전(두 자릿수 점수) 명예의 전당 기록 정리 */
@@ -1023,17 +1024,22 @@ function hofLoad(){
   return d;
 }
 function hofSave(d){try{localStorage.setItem(SK(HOF_KEY),JSON.stringify(d))}catch(e){}}
-/* 등재되면 순위(1~10), 못 들면 0 */
-function hofSubmit(e){
+/* 등록 결과를 cb(순위)로 알려준다: 1~10이면 등재, 0이면 탑10 밖, -1이면 서버 연결 실패 */
+function hofSubmitLocal(e){
   const d=hofLoad(),l=d[e.pos]||(d[e.pos]=[]);
   if(l.length>=10&&e.score<=l[l.length-1].score)return 0;
   l.push(e);l.sort((a,b)=>b.score-a.score);d[e.pos]=l.slice(0,10);hofSave(d);
-  if(HOF_API)try{fetch(HOF_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)}).catch(()=>{})}catch(_){}
   return d[e.pos].indexOf(e)+1;
 }
+function hofSubmit(e,cb){
+  if(!HOF_API)return cb(hofSubmitLocal(e));
+  try{fetch(HOF_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)})
+    .then(r=>r.json()).then(r=>{if(r.board)hofSave(r.board);cb(r.rank|0)}).catch(()=>cb(-1))}catch(_){cb(-1)}
+}
+/* 서버가 있으면 서버 목록이 기준(이 기기 목록을 덮어쓴다) */
 function hofSync(done){
   if(!HOF_API)return done&&done();
-  try{fetch(HOF_API).then(r=>r.json()).then(srv=>{const d=hofLoad();HOF_POS.forEach(k=>{const m=new Map();(srv[k]||[]).concat(d[k]).forEach(e=>m.set(e.id,e));d[k]=[...m.values()]});hofSave(d);done&&done()}).catch(()=>done&&done())}catch(e){done&&done()}
+  try{fetch(HOF_API).then(r=>r.json()).then(srv=>{hofSave(srv);done&&done()}).catch(()=>done&&done())}catch(e){done&&done()}
 }
 function hofRead(){const d=hofLoad();return HOF_POS.flatMap(k=>d[k]).sort((a,b)=>b.score-a.score)}
 const hofLeft=e=>{const h=Math.max(0,(HOF_TTL-(Date.now()-e.t))/3600000);return h>=1?`${Math.floor(h)}시간 남음`:`${Math.max(1,Math.round(h*60))}분 남음`};
@@ -3498,14 +3504,17 @@ function ending(){
   P.done=true;try{localStorage.removeItem(SK('b2ws_save'))}catch(e){}
   const s=score(),[g,gd]=gradeOf(s),ti=titleOf();
   const role=roleLabel();
-  const pos=slot(),rank=hofSubmit({id:Date.now()+'-'+Math.random().toString(36).slice(2,8),name:P.name,role,pos,grade:g,score:s,title:ti,peak:bestOvr(),kbo:P.kbo1Years,mlb:P.mlbYears,t:Date.now()});
+  const pos=slot(),hofMsg=r=>r>0?`🏆 오늘의 명전 ${SLOT_NAME[pos]} ${r}위에 올랐다! (24시간 동안 기록)`:r<0?'명전 서버에 연결하지 못했다.':`오늘의 명전 ${SLOT_NAME[pos]} 탑10에는 들지 못했다.`;
+  let rank=null;
+  hofSubmit({id:Date.now()+'-'+Math.random().toString(36).slice(2,8),name:P.name,role,pos,grade:g,score:s,title:ti,peak:bestOvr(),kbo:P.kbo1Years,mlb:P.mlbYears,t:Date.now()},
+    r=>{rank=r;const el=document.getElementById('hof-rank');if(el)el.textContent=hofMsg(r)});
   const story=lifeStory();
   const ach=achSort(Object.keys(P.ach)).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
   const why=P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다.':(P.retireWhy||'');
   const epi=(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
   show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점 / 999</p><p class="sub">${(o=>`팀 수상 ${o.team} · 개인 수상 ${o.personal} · 업적 ${o.feat} · 커리어 ${o.career}`)(scoreParts())}</p>${why?`<p>${why}</p>`:''}<p>${epi}</p></div>`
-   +panel('결과지',`<div class="share-card-row">${shareCardFrontHtml(true)}${shareCardBackHtml(true)}</div><p class="sub" style="text-align:center">${rank?`🏆 오늘의 명전 ${SLOT_NAME[pos]} ${rank}위에 올랐다! (24시간 동안 기록)`:`오늘의 명전 ${SLOT_NAME[pos]} 탑10에는 들지 못했다.`}</p><div style="text-align:center">${B('결과지 이미지 저장',()=>shareCardImage(true))}</div>`)
+   +panel('결과지',`<div class="share-card-row">${shareCardFrontHtml(true)}${shareCardBackHtml(true)}</div><p class="sub" style="text-align:center" id="hof-rank">${rank==null?'오늘의 명전 등록 중…':hofMsg(rank)}</p><div style="text-align:center">${B('결과지 이미지 저장',()=>shareCardImage(true))}</div>`)
    +panel('한 문단 일대기',`<p class="story" data-notr>${story}</p>`)
    +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>${RULE.mil==='none'?'':`병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · `}통산 수입 ${won(P.money)}</p><p>${ach}</p>`)
    +panel('시즌별 기록',`<div class="scroll"><table><tr><th>연도</th><th>나이</th><th>소속</th><th>리그</th><th>성적</th><th>기록</th></tr>${P.hist.map(h=>`<tr><td>${h.y}</td><td>${h.age}</td><td>${h.team}</td><td>${h.lv}</td><td>${h.line}</td><td>${h.tags.join(', ')}</td></tr>`).join('')}</table></div>`)

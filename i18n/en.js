@@ -305,6 +305,8 @@ window.B2_LOC={
 "계약 완료": "Contract signed",
 "계약금 {0}.": "Signing bonus {0}.",
 "계약을 유지한다": "Stay on your contract",
+"명전 서버에 연결하지 못했다.": "Couldn't reach the Hall of Fame server.",
+"오늘의 명전 등록 중…": "Submitting to Today's Hall of Fame…",
 "재계약 불가 통보": "Non-renewal notice",
 "시즌을 앞두고 단장실에 불려 갔다. “미안하지만, 내년 구상에 네 자리는 없다.”": "Before the season, the GM called you in. \"Sorry, there's no place for you in next year's plans.\"",
 "연봉을 절반으로 깎고 1년만 더 뛴다": "Take a 50% pay cut for one more year",

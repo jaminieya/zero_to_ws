@@ -2573,7 +2573,8 @@ function careerChoice(){
 }
 function mlbAmateurOffers(sc){
   const n=sc>=58?2:1,pool=shuffle(TEAMS.filter(t=>t.org==='MLB'));
-  return pool.slice(0,n).map(t=>({team:t.name,tstr:t.win/100,bonus:Math.round(C((sc-50)*.3+G()*.15,.1,5)*100)/100}));
+  /* 계약금은 30억 원대(30~39억)로 고정. 평가가 높을수록 위쪽 */
+  return pool.slice(0,n).map(t=>({team:t.name,tstr:t.win/100,bonus:C(Math.round(30+(sc-53)*.6+R(0,3)),30,39)/EOK_PER_M}));
 }
 function goUni(){P.mlbOffers=null;P.lv='UNI';P.uniYear=1;P.team=pick(UNIS);L(`2년제 대학 진학 — ${P.team}`);hub()}
 function signMLBDirect(x){

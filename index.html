@@ -452,10 +452,19 @@ const ASIAN_NATS=['AF','BD','BH','BN','BT','CN','HK','ID','IN','IQ','IR','JO','J
 const LG_SNAP={teams:TEAMS.map(t=>Object.assign({},t)),kbo:KBO.slice(),unis:UNIS.slice(),ind:IND_TEAMS.slice(),regions:CREATE_REGIONS.slice(),
   hs:JSON.parse(JSON.stringify(HS_BY_REGION)),fav:JSON.parse(JSON.stringify(FAV))};
 let LEAGUE='KBO',TOURS_READY=false;
+/* 한국어 화면에서는 해외 리그의 팀·학교·지역 이름도 한국어로 보여준다 (leagues.js의 ko) */
+function koLeague(L){
+  const d=L.data||{},k=LANG==='ko'&&L.ko;if(!k)return d;
+  const N=x=>k.names[x]||x,keys=o=>Object.fromEntries(Object.entries(o).map(([r,v])=>[N(r),v.map(N)]));
+  return Object.assign({},d,{
+    teams:d.teams&&d.teams.map(t=>[N(t[0])].concat(t.slice(1))),
+    unis:d.unis&&(k.unis||d.unis.map(N)),ind:d.ind&&d.ind.map(N),regions:d.regions&&d.regions.map(N),
+    hs:d.hs&&keys(d.hs),fav:d.fav&&keys(d.fav)});
+}
 function setLeague(key,nat){
   if(!LEAGUES[key])key='KBO';
   LEAGUE=key;
-  const L=LEAGUES[key]||{},d=L.data||{};
+  const L=LEAGUES[key]||{},d=koLeague(L);
   const rep=(a,v)=>a.splice(0,a.length,...v),robj=(o,v)=>{Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,JSON.parse(JSON.stringify(v)))};
   Object.keys(RULE).forEach(k=>delete RULE[k]);Object.assign(RULE,RULE_KBO,L.rule||{});
   rep(TEAMS,LG_SNAP.teams.map(t=>Object.assign({},t)));rep(KBO,LG_SNAP.kbo);rep(UNIS,LG_SNAP.unis);rep(IND_TEAMS,LG_SNAP.ind);rep(CREATE_REGIONS,LG_SNAP.regions);
@@ -619,8 +628,9 @@ function won(n){
 function localMoney(eok){
   const n=Math.max(0,+eok||0),fx=x=>(Math.round(x*10)/10).toLocaleString();
   if(RULE.cur==='USD')return usdText(n);
-  if(RULE.cur==='JPY'){const man=n*1100;return man>=10000?fx(man/10000)+'億円':Math.round(man).toLocaleString()+'万円'}
-  if(RULE.cur==='TWD'){const man=n*232;return man>=10000?'NT$'+fx(man/10000)+'億':'NT$'+Math.round(man).toLocaleString()+'萬'}
+  const ko=LANG==='ko';
+  if(RULE.cur==='JPY'){const man=n*1100;return man>=10000?fx(man/10000)+(ko?'억 엔':'億円'):Math.round(man).toLocaleString()+(ko?'만 엔':'万円')}
+  if(RULE.cur==='TWD'){const man=n*232;return man>=10000?'NT$'+fx(man/10000)+(ko?'억':'億'):'NT$'+Math.round(man).toLocaleString()+(ko?'만':'萬')}
   return String(n);
 }
 function usdText(eok){
@@ -859,7 +869,14 @@ function ensureFaState(){
   P.faEligible=P.org==='KBO'&&!P.faUsed&&P.kboService>=faNeed();
   if(P.offers)P.offers=null;
 }
-function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem(SK('b2ws_save')));setLeague(P.league||LEAGUE_HOME[LANG]||'KBO',P.nat);hub()}catch(e){try{alert('저장 데이터를 불러오지 못했습니다.')}catch(_){}menu()}}
+/* 예전 저장(해외 리그 이름이 원어로 저장됨)을 한국어 화면에서 불러오면 이름을 한국어로 바꾼다 */
+function koSaveNames(){
+  const L=LEAGUES[P.league]||{},k=LANG==='ko'&&L.ko;if(!k)return;
+  const uni=(L.data&&L.data.unis)||[],N=x=>k.names[x]||(uni.includes(x)&&k.unis?k.unis[uni.indexOf(x)]:x);
+  ['team','region','highSchool'].forEach(f=>{if(typeof P[f]==='string')P[f]=N(P[f])});
+  (P.hist||[]).forEach(h=>{h.team=N(h.team)});
+}
+function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem(SK('b2ws_save')));setLeague(P.league||LEAGUE_HOME[LANG]||'KBO',P.nat);koSaveNames();hub()}catch(e){try{alert('저장 데이터를 불러오지 못했습니다.')}catch(_){}menu()}}
 function L(m){P.log.push(`${P.y}년 · ${m}`);if(P.log.length>300)P.log.shift()}
 function hofRead(){try{return JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]')}catch(e){return []}}
 const SETKEY='b2ws_set_v1';
@@ -2048,7 +2065,7 @@ const HS_TOURS=[
   play(c){return `${P.region} 유니폼을 입고 나섰다. ${hsCup(P.region+' 대표 · 전국체전',c.fx.push||0)}`;}}
 ];
 const HS_TOURS_DEF=HS_TOURS.map(t=>Object.assign({},t));
-function applyLeagueTours(){const lt=(LEAGUES[LEAGUE]||{}).hsTours||{};HS_TOURS.forEach((t,i)=>{Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,HS_TOURS_DEF[i],lt[t.id]||lt[HS_TOURS_DEF[i].id]||{})})}
+function applyLeagueTours(){const lg=LEAGUES[LEAGUE]||{},lt=lg.hsTours||{},kt=LANG==='ko'&&lg.ko&&lg.ko.tours||{};HS_TOURS.forEach((t,i)=>{const id=HS_TOURS_DEF[i].id;Object.keys(t).forEach(k=>delete t[k]);Object.assign(t,HS_TOURS_DEF[i],lt[id]||{},kt[id]||{})})}
 TOURS_READY=true;applyLeagueTours();
 function hsTourName(s){const n=s.nth?s.nth(P.y):0;return n?`제${n}회 ${s.title}`:s.title}
 function hsQualified(s){

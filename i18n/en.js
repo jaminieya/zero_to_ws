@@ -1,30 +1,5 @@
-/* en — 번역 사전과 국가 데이터 (index.html의 RULE·applyCountry 참고) */
+/* en — 번역 사전과 메뉴 배경 팀 표시. 리그 데이터는 leagues.js */
 window.B2_LOC={
- rule:{lg:'KBO',domestic:false,native:true,homeDraft:false,uniYears:3,mlbOffers:false,returnRule:'free',mil:'none',exempt:false,asian:false,
-   faDom:[6,6],faAbroad:99,draftTeams:30,draftPicks:600,bonusMul:1,cur:'USD',
-   sal:[[40,.35],[55,.45],[65,.6],[75,.9],[99,1.2]]},
- data:{
-  teams:[],
-  unis:['Vanderbilt','LSU','Texas A&M','Florida','Arkansas','Stanford','UCLA','Wake Forest','Tennessee','Oregon State'],
-  ind:['Long Island Ducks','St. Paul Saints','Sugar Land Space Cowboys'],
-  regions:['California','Texas','Florida','Georgia','Arizona','New York','Illinois','Ohio','Washington','North Carolina'],
-  hs:{California:['Harvard-Westlake','JSerra Catholic','Mater Dei','St. John Bosco'],Texas:['Keller','Lake Travis','Bellaire'],Florida:['IMG Academy','American Heritage','Calvary Christian'],
-      Georgia:['Buford','Parkview'],Arizona:['Hamilton','Brophy Prep'],'New York':['Xaverian','Monsignor Farrell'],Illinois:['Lincoln-Way East','Mount Carmel'],
-      Ohio:['Archbishop Moeller'],Washington:['Puyallup'],'North Carolina':['Cardinal Gibbons']},
-  fav:{California:['LA 다저스','샌프란시스코 자이언츠','샌디에이고 파드리스','LA 에인절스'],Texas:['텍사스 레인저스','휴스턴 애스트로스'],Florida:['마이애미 말린스','탬파베이 레이스'],
-       Georgia:['애틀랜타 브레이브스'],Arizona:['애리조나 다이아몬드백스'],'New York':['뉴욕 양키스','뉴욕 메츠'],Illinois:['시카고 컵스','시카고 화이트삭스'],
-       Ohio:['클리블랜드 가디언스','신시내티 레즈'],Washington:['시애틀 매리너스']}
- },
- hsTours:{
-  wl1:{tag:'Mar',title:'Spring District Season',when:'Mar–Apr',host:'State High School Association',place:'District ballparks · weekends'},
-  emart:{tag:'NHSI',title:'National High School Invitational',when:'Early April',host:'NHSI',place:'Cary, NC'},
-  gold:{tag:'Region',title:'Regional Playoffs',nth:null,when:'May',host:'State High School Association',place:'Regional host sites'},
-  wl2:{tag:'State',title:'State Playoffs',when:'May–June',host:'State High School Association',place:'Host sites statewide'},
-  dragon:{tag:'PG',title:'Perfect Game National Showcase',nth:null,when:'June',host:'Perfect Game',place:'Phoenix, AZ'},
-  pres:{tag:'ECP',title:'East Coast Pro',nth:null,when:'July',host:'East Coast Pro',place:'Hoover, AL'},
-  phoenix:{tag:'Jupiter',title:'WWBA World Championship',nth:null,when:'October',host:'Perfect Game',place:'Jupiter, FL'},
-  nat:{tag:'Area',title:'Area Code Games',nth:null,when:'August',host:'Area Code Games',place:'Long Beach, CA'}
- },
  stage:{h:['L','LAD'],a:['N','NYY']},
  dict:{
 "#{0} · {1}등급": "#{0} · Grade {1}",

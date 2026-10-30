@@ -1,0 +1,83 @@
+/* 리그 데이터: 미국(MLB), 일본(NPB), 대만(CPBL). 한국(KBO)은 index.html 기본값.
+   선수 생성에서 고른 시작 리그에 따라 index.html의 setLeague()가 적용한다 */
+window.B2_LEAGUES={
+ MLB:{
+ rule:{lg:'KBO',domestic:false,native:true,homeDraft:false,uniYears:3,mlbOffers:false,returnRule:'free',mil:'none',exempt:false,asian:false,
+   faDom:[6,6],faAbroad:99,draftTeams:30,draftPicks:600,bonusMul:1,cur:'USD',
+   sal:[[40,.35],[55,.45],[65,.6],[75,.9],[99,1.2]]},
+ data:{
+  teams:[],
+  unis:['Vanderbilt','LSU','Texas A&M','Florida','Arkansas','Stanford','UCLA','Wake Forest','Tennessee','Oregon State'],
+  ind:['Long Island Ducks','St. Paul Saints','Sugar Land Space Cowboys'],
+  regions:['California','Texas','Florida','Georgia','Arizona','New York','Illinois','Ohio','Washington','North Carolina'],
+  hs:{California:['Harvard-Westlake','JSerra Catholic','Mater Dei','St. John Bosco'],Texas:['Keller','Lake Travis','Bellaire'],Florida:['IMG Academy','American Heritage','Calvary Christian'],
+      Georgia:['Buford','Parkview'],Arizona:['Hamilton','Brophy Prep'],'New York':['Xaverian','Monsignor Farrell'],Illinois:['Lincoln-Way East','Mount Carmel'],
+      Ohio:['Archbishop Moeller'],Washington:['Puyallup'],'North Carolina':['Cardinal Gibbons']},
+  fav:{California:['LA 다저스','샌프란시스코 자이언츠','샌디에이고 파드리스','LA 에인절스'],Texas:['텍사스 레인저스','휴스턴 애스트로스'],Florida:['마이애미 말린스','탬파베이 레이스'],
+       Georgia:['애틀랜타 브레이브스'],Arizona:['애리조나 다이아몬드백스'],'New York':['뉴욕 양키스','뉴욕 메츠'],Illinois:['시카고 컵스','시카고 화이트삭스'],
+       Ohio:['클리블랜드 가디언스','신시내티 레즈'],Washington:['시애틀 매리너스']}
+ },
+ hsTours:{
+  wl1:{tag:'Mar',title:'Spring District Season',when:'Mar–Apr',host:'State High School Association',place:'District ballparks · weekends'},
+  emart:{tag:'NHSI',title:'National High School Invitational',when:'Early April',host:'NHSI',place:'Cary, NC'},
+  gold:{tag:'Region',title:'Regional Playoffs',nth:null,when:'May',host:'State High School Association',place:'Regional host sites'},
+  wl2:{tag:'State',title:'State Playoffs',when:'May–June',host:'State High School Association',place:'Host sites statewide'},
+  dragon:{tag:'PG',title:'Perfect Game National Showcase',nth:null,when:'June',host:'Perfect Game',place:'Phoenix, AZ'},
+  pres:{tag:'ECP',title:'East Coast Pro',nth:null,when:'July',host:'East Coast Pro',place:'Hoover, AL'},
+  phoenix:{tag:'Jupiter',title:'WWBA World Championship',nth:null,when:'October',host:'Perfect Game',place:'Jupiter, FL'},
+  nat:{tag:'Area',title:'Area Code Games',nth:null,when:'August',host:'Area Code Games',place:'Long Beach, CA'}
+ }
+ },
+ NPB:{
+ rule:{lg:'NPB',homeDraft:false,uniYears:4,mlbOffers:true,returnRule:'free',mil:'none',exempt:false,asian:true,
+   faDom:[8,7],faAbroad:9,draftTeams:12,draftPicks:72,bonusMul:1.6,cur:'JPY',
+   sal:[[40,.4],[50,.45],[55,.6],[65,2.5],[75,9],[85,30],[95,50],[99,60]]},
+ data:{
+  teams:[['読売ジャイアンツ',80,95,92],['阪神タイガース',82,94,84],['横浜DeNAベイスターズ',70,74,72],['広島東洋カープ',62,80,60],['東京ヤクルトスワローズ',52,64,62],['中日ドラゴンズ',50,70,64],
+         ['福岡ソフトバンクホークス',90,82,96],['北海道日本ハムファイターズ',72,72,64],['オリックス・バファローズ',66,58,66],['東北楽天ゴールデンイーグルス',56,56,68],['埼玉西武ライオンズ',54,62,58],['千葉ロッテマリーンズ',60,64,60]],
+  unis:['早稲田大学','慶應義塾大学','明治大学','法政大学','亜細亜大学','東洋大学','中央大学','青山学院大学','國學院大學','東北福祉大学','大阪商業大学'],
+  ind:['徳島インディゴソックス','高知ファイティングドッグス','富山GRNサンダーバーズ','信濃グランセローズ','神奈川フューチャードリームス'],
+  regions:['北海道','青森','岩手','宮城','東京','神奈川','埼玉','千葉','愛知','大阪','兵庫','奈良','和歌山','広島','高知','福岡','沖縄'],
+  hs:{北海道:['北海','駒大苫小牧','札幌日大'],青森:['八戸学院光星','青森山田'],岩手:['花巻東','盛岡大附'],宮城:['仙台育英','東北'],
+      東京:['帝京','日大三','早稲田実','関東一','二松学舎大附'],神奈川:['横浜','東海大相模','慶應義塾'],埼玉:['浦和学院','花咲徳栄'],千葉:['習志野','木更津総合','専大松戸'],
+      愛知:['中京大中京','東邦','愛工大名電'],大阪:['大阪桐蔭','履正社'],兵庫:['報徳学園','明石商','東洋大姫路'],奈良:['天理','智辯学園'],和歌山:['智辯和歌山'],
+      広島:['広陵'],高知:['明徳義塾'],福岡:['九州国際大付','福岡大大濠'],沖縄:['興南','沖縄尚学']},
+  fav:{東京:['読売ジャイアンツ','東京ヤクルトスワローズ'],大阪:['阪神タイガース','オリックス・バファローズ'],兵庫:['阪神タイガース','オリックス・バファローズ'],宮城:['東北楽天ゴールデンイーグルス'],
+       北海道:['北海道日本ハムファイターズ'],愛知:['中日ドラゴンズ'],広島:['広島東洋カープ'],神奈川:['横浜DeNAベイスターズ'],埼玉:['埼玉西武ライオンズ'],千葉:['千葉ロッテマリーンズ'],福岡:['福岡ソフトバンクホークス']}
+ },
+ hsTours:{
+  wl1:{tag:'春',title:'春季都道府県大会',when:'3–4月',host:'各都道府県高野連',place:'都道府県内各球場'},
+  emart:{tag:'センバツ',title:'選抜高等学校野球大会',nth:y=>98+(y-2026),when:'3月下旬',host:'毎日新聞社・日本高野連',place:'阪神甲子園球場'},
+  gold:{tag:'地区',title:'春季地区大会',nth:null,when:'5月',host:'各地区高野連',place:'地区内の持ち回り球場'},
+  wl2:{tag:'予選',title:'夏の地方大会',when:'6–7月',host:'朝日新聞社・各都道府県高野連',place:'都道府県内各球場'},
+  dragon:{tag:'甲子園',title:'全国高等学校野球選手権大会',nth:y=>108+(y-2026),when:'8月',host:'朝日新聞社・日本高野連',place:'阪神甲子園球場'},
+  pres:{tag:'秋',title:'秋季都道府県大会',nth:null,when:'9月',host:'各都道府県高野連',place:'都道府県内各球場'},
+  phoenix:{tag:'神宮',title:'明治神宮野球大会',nth:y=>57+(y-2026),when:'11月',host:'明治神宮・日本学生野球協会',place:'明治神宮野球場'},
+  nat:{tag:'国スポ',title:'国民スポーツ大会 高校野球',nth:y=>80+(y-2026),when:'10月',host:'日本スポーツ協会',place:'開催県'}
+ }
+ },
+ CPBL:{
+ rule:{lg:'CPBL',homeDraft:false,uniYears:4,mlbOffers:true,returnRule:'draft',mil:'tw',milYears:1,exempt:false,asian:true,
+   faDom:[9,8],faAbroad:9,draftTeams:6,draftPicks:36,bonusMul:.35,cur:'TWD',
+   sal:[[40,.16],[50,.2],[55,.3],[65,.9],[75,2.2],[85,4.5],[95,7],[99,9]]},
+ data:{
+  teams:[['中信兄弟',80,90,80],['統一7-ELEVEn獅',74,80,74],['樂天桃猿',66,72,72],['富邦悍將',54,66,78],['味全龍',70,70,70],['台鋼雄鷹',50,56,60]],
+  unis:['國立臺灣體育運動大學','臺北市立大學','國立體育大學','輔仁大學','中國文化大學','開南大學','南華大學','國立臺東大學'],
+  ind:['台北巨人','新北熊讚','台中金剛'],
+  regions:['台北市','新北市','桃園市','台中市','台南市','高雄市','嘉義市','屏東縣','花蓮縣','台東縣','宜蘭縣'],
+  hs:{台北市:['穀保家商','華興中學'],新北市:['鶯歌工商','北大高中'],桃園市:['平鎮高中','中壢高中'],台中市:['西苑高中','台中高農'],台南市:['南英商工','台南高商'],
+      高雄市:['普門中學','三民高中','高苑工商'],嘉義市:['嘉義高中'],屏東縣:['美和中學'],花蓮縣:['花蓮體中'],台東縣:['台東體中'],宜蘭縣:['中道中學']},
+  fav:{台中市:['中信兄弟'],台南市:['統一7-ELEVEn獅'],桃園市:['樂天桃猿'],新北市:['富邦悍將'],台北市:['味全龍'],高雄市:['台鋼雄鷹']}
+ },
+ hsTours:{
+  wl1:{tag:'聯賽',title:'高中棒球運動聯賽 分區預賽',when:'3–4月',host:'中華民國高級中等學校體育總會',place:'各分區球場'},
+  emart:{tag:'王貞治',title:'王貞治盃全國青棒大賽',when:'3–4月',host:'中華民國棒球協會',place:'台北天母棒球場'},
+  gold:{tag:'複賽',title:'高中棒球運動聯賽 複賽',nth:null,when:'5月',host:'高中體總',place:'台中洲際棒球場'},
+  wl2:{tag:'預賽',title:'全國青棒錦標賽 預賽',when:'5–6月',host:'中華民國棒球協會',place:'各縣市球場'},
+  dragon:{tag:'全國',title:'全國青棒錦標賽',nth:null,when:'6–7月',host:'中華民國棒球協會',place:'台南亞太棒球場'},
+  pres:{tag:'國際',title:'國際青棒邀請賽',nth:null,when:'7月',host:'中華民國棒球協會',place:'花蓮德興棒球場'},
+  phoenix:{tag:'黑豹旗',title:'黑豹旗全國高中棒球大賽',nth:y=>14+(y-2026),when:'10–11月',host:'黑豹旗',place:'台南市立棒球場'},
+  nat:{tag:'玉山盃',title:'玉山盃全國青棒錦標賽',nth:null,when:'10月',host:'中華民國棒球協會',place:'主辦縣市'}
+ }
+ }
+};

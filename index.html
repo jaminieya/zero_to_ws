@@ -1138,18 +1138,43 @@ function treatment(t,o){const b=teamBar(t);return o>=b+8?'핵심 전력 · 주�
 function marketState(){
   const y=mktYear();
   if(P.mkt&&P.mkt.y===y&&P.mkt.team===P.team)return P.mkt;
+  P.mkt={y,team:P.team,offers:[],req:'',raised:false,moved:false,msg:''};
+  return P.mkt;
+}
+/* 이적 제의: OVR에 맞는 구단 중 0~3곳. 명성이 낮을수록 아무도 연락하지 않을 확률이 크다(최대 30%).
+   force면(태업 끝에 이적 허용) 최소 1곳은 나온다 */
+function transferOffers(force){
   const o=ovr(),abroadOk=P.org==='MLB'||(P.kboService||0)>=RULE.faAbroad;
   const homeOk=!(P.amateurMLB&&!P.kboYears&&RULE.returnRule!=='free');
-  const pool=shuffle(TEAMS.filter(t=>t.name!==P.team&&teamFits(t,o)&&(t.org===P.org||(t.org==='MLB'&&abroadOk&&o>=75)||(t.org==='KBO'&&P.org==='MLB'&&homeOk))));
-  const offers=pool.slice(0,RI(2,3)).map(t=>{
+  let pool=shuffle(TEAMS.filter(t=>t.name!==P.team&&teamFits(t,o)&&(t.org===P.org||(t.org==='MLB'&&abroadOk&&o>=75)||(t.org==='KBO'&&P.org==='MLB'&&homeOk))));
+  let n=Math.random()<C(.3-(P.fame||0)*.02,.1,.3)?0:RI(1,3);
+  if(force){if(!pool.length)pool=TEAMS.filter(t=>t.org===P.org&&t.name!==P.team).sort((a,b)=>teamBar(a)-teamBar(b)).slice(0,1);n=Math.max(1,n)}
+  return pool.slice(0,n).map(t=>{
     const minor=t.org==='MLB'&&o<75;
     return {team:t.name,org:t.org,minor,deal:Math.max(.05,Math.round(Math.min(offerCeiling(o,t.org,minor)*RAISE_MAX,offerDeal(o,t.org,t.pay,minor)*R(.9,1.1))*10)/10),yrs:offerYears(t,o),tstr:t.win/100,treat:treatment(t,o),rival:isRival(P.team,t.name)};
   });
-  P.mkt={y,team:P.team,offers,raised:false,moved:false,msg:''};
-  return P.mkt;
+}
+/* 이적 신청: 구단이 허락할 확률은 팀 기준보다 잘할수록(핵심 선수일수록), 남은 계약이 길수록 낮다 (20~85%) */
+function requestTransfer(){
+  const m=marketState();if(m.req||m.moved)return;
+  const cur=teamProfile(P.team),gap=cur?ovr()-teamBar(cur):0;
+  const ok=Math.random()<C(.65-gap*.02-((P.contract||0)>=3?.1:0),.2,.85);
+  if(!ok){m.req='denied';m.msg=`${P.team}: “너는 우리 팀에 꼭 필요하다.” 이적 신청이 거절됐다.`}
+  else{m.offers=transferOffers(false);m.req=m.offers.length?'open':'none';
+    m.msg=m.offers.length?`구단이 이적을 허락했다. ${m.offers.length}개 구단이 관심을 보였다.`:'구단은 허락했지만, 연락해 온 구단이 하나도 없다.'}
+  L('이적 신청 — '+(m.req==='denied'?'거절':m.req==='none'?'제의 없음':'허락'));hub();
+}
+function stayPut(){const m=marketState();m.req='stay';mental(-3);m.msg='마음을 다잡고 이번 시즌도 뛰기로 했다. (멘탈 -3)';hub()}
+/* 태업: 40% 확률로 구단이 손을 들고 이적을 허용(최소 1곳 제의). 실패하면 다음 시즌 연봉 0 · 명성 -2 · 멘탈 -5 */
+function goStrike(){
+  const m=marketState();if(m.req!=='denied'&&m.req!=='none')return;
+  fame(-1);
+  if(Math.random()<.4){m.offers=transferOffers(true);m.req='open';m.msg='태업 끝에 구단이 손을 들었다. 이적이 허용됐다. (명성 -1)';L('태업 — 이적 허용')}
+  else{P.strikeY=mktYear();fame(-2);mental(-5);m.req='punished';m.msg=`구단이 버텼다. ${P.strikeY} 시즌은 연봉 없이 뛰어야 한다. (명성 -3, 멘탈 -5)`;L('태업 — 실패, 한 시즌 무급')}
+  hub();
 }
 function askRaise(){
-  const m=marketState();if(m.raised||m.moved)return;
+  const m=marketState();if(m.raised||m.moved||m.req==='punished')return;
   m.raised=true;
   const o=ovr(),org=P.org,pay=currentPay(),minor=org==='MLB'&&P.lv!=='MLB',ceil=offerCeiling(o,org,minor);
   const idx=P.lastIdx||0,pct=idx>=1.5?.28:idx>=.6?.16:idx>=0?.08:0;
@@ -1185,10 +1210,15 @@ function hubMarketModal(){
     ${teamMerit()?`<p>팀 메리트 <b>${meritLine(P.team)}</b></p>`:''}${rk?`<p>지난 시즌 순위 <b>${rk}</b></p>`:''}${riv.length?`<p>라이벌 <b>${riv.join(', ')}</b></p>`:''}</div>`;
   const lock=m.moved?'<p class="sub">이번 이적 시장에서는 이미 팀을 옮겼다.</p>':'';
   const keep=B(`<b>계약을 유지한다</b><span class="sub">${P.deal&&!(P.contract>0)?'1년 재계약':'현재 조건 그대로 다음 시즌을 맞는다'}</span>`,keepContract,'choice');
-  const raise=m.raised||m.moved?'':B('<b>연봉 인상을 요구한다</b><span class="sub">지난 시즌 성적이 좋을수록 받아들여질 가능성이 크다. 거절당하면 멘탈 -3</span>',askRaise,'choice');
-  const offers=m.moved?'':(m.offers.length?m.offers.map((x,i)=>B(`<b>${x.rival?'⚠ ':''}[${x.org}${x.minor?' 마이너':''}] ${x.team}</b><span class="sub">지난 시즌 ${lastRank(x.team)||'-'} · ${x.treat}${teamMerit(x.team)?`<br>${meritLine(x.team)}`:''}<br>연봉 ${payLabel(x.deal,x.org)}/년 × ${x.yrs}년${x.rival?` · <b style="color:#c0392b">${P.team}의 라이벌 (명성 -3, 멘탈 -20)</b>`:''}</span>`,()=>moveTeam(i),'choice')).join('')
-    :'<p class="sub">지금 실력에 맞춰 연락해 온 구단이 없다.</p>');
-  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win" onclick="event.stopPropagation()"><div class="wbar"><span>${mktYear()} 시즌 이적 시장</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${info}${m.msg?`<p class="mkt-msg">${m.msg}</p>`:''}${lock}<div class="opts">${keep}${raise}</div>${m.moved?'':`<p style="margin-top:12px"><b>이적 제의</b> <span class="sub">현재 OVR에 맞는 구단들이 연락해 왔다</span></p><div class="opts">${offers}</div>`}</div></div></div>`;
+  const raise=m.raised||m.moved||m.req==='punished'?'':B('<b>연봉 인상을 요구한다</b><span class="sub">지난 시즌 성적이 좋을수록 받아들여질 가능성이 크다. 거절당하면 멘탈 -3</span>',askRaise,'choice');
+  const offerBtns=()=>m.offers.map((x,i)=>B(`<b>${x.rival?'⚠ ':''}[${x.org}${x.minor?' 마이너':''}] ${x.team}</b><span class="sub">지난 시즌 ${lastRank(x.team)||'-'} · ${x.treat}${teamMerit(x.team)?`<br>${meritLine(x.team)}`:''}<br>연봉 ${payLabel(x.deal,x.org)}/년 × ${x.yrs}년${x.rival?` · <b style="color:#c0392b">${P.team}의 라이벌 (명성 -3, 멘탈 -20)</b>`:''}</span>`,()=>moveTeam(i),'choice')).join('');
+  const strikeBtns=()=>B('<b>계속 뛴다</b><span class="sub">이번 시즌은 남는다 (멘탈 -3)</span>',stayPut,'choice')
+    +B('<b>태업한다</b><span class="sub">40%: 구단이 이적을 허용 · 60%: 다음 시즌 연봉 0, 명성 -3, 멘탈 -5</span>',goStrike,'choice');
+  const xfer=m.moved?'':m.req===''?B('<b>이적을 신청한다</b><span class="sub">구단이 허락하면 나를 원하는 구단들과 협상한다. 핵심 선수이거나 계약이 많이 남았을수록 허락받기 어렵다</span>',requestTransfer,'choice')
+    :m.req==='open'?`<p class="sub">나를 원하는 구단</p>${offerBtns()}`
+    :m.req==='denied'||m.req==='none'?strikeBtns()
+    :'';
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win" onclick="event.stopPropagation()"><div class="wbar"><span>${mktYear()} 시즌 이적 시장</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${info}${m.msg?`<p class="mkt-msg">${m.msg}</p>`:''}${lock}<div class="opts">${keep}${raise}</div>${xfer?`<p style="margin-top:12px"><b>이적</b></p><div class="opts">${xfer}</div>`:''}</div></div></div>`;
 }
 function hubRetireModal(){
   const cl=H.length;H.push(()=>{HUBRETIRE=false;hub()});
@@ -2666,6 +2696,7 @@ function playSeason(){
   }
   let pay=0;
   if(isPro(lg)){const cap=yearlyPay(ovr(),lg==='MLB');pay=(P.deal?Math.min(P.deal,cap):cap)*(1+(meritFx('pay')||0))}
+  if(P.strikeY===P.y){pay=0;tags.push('태업 여파 · 무급 시즌')}
   if(isPro(lg)){const mf=meritFx('fame'),mm=meritFx('men');if(mf&&Math.random()<.5)fame(mf);if(mm)mental(mm)}
   P.money=Math.round(((+P.money||0)+pay)*100)/100;
   P.shield=false;
@@ -2917,6 +2948,7 @@ function signMLBDirect(x){
 function homeTeam(){const f=RULE.homeDraft&&FAV[P.region];return f&&f.length?pick(f):pick(KBO)}
 /* KBO를 거치지 않고 해외로 나갔던 선수는 복귀 전 2년 유예 */
 function graceStart(mode){
+  P.fa=null;
   P.org='';P.contract=0;P.deal=null;P.grace=2;P.amateurMLB=false;
   if(mode==='MIL'){
     P.team='국군';P.milType='현역';P.milLeft=2;P.prevLv='IND';P.lv='MIL';L('KBO 복귀 유예 — 현역 입대');
@@ -2992,26 +3024,50 @@ function postingSign(){
   if(P.lv==='MLB'&&!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔');
   show(()=>panel('MLB 진출!',`<p><b>${club.name}</b>과(와) 계약했다. 연 ${payLabel(deal,'MLB')} × ${yrs}년.</p><p>${P.lv==='MLB'?'메이저리그 개막 로스터에 이름이 올랐다.':'마이너 '+P.lv+'에서 빅리그 콜업을 노린다.'}</p>${B('미국 생활 시작',hub)}`));
 }
+/* FA: 연락 온 구단은 0곳일 수도 있다. 원하는 구단에 직접 3번까지 연락할 수 있고,
+   OVR이 구단 기준에 맞으면 50% 확률로 승인(제의 목록에 추가), 모자라면 바로 거절 */
+function faOffer(t,o){const minor=t.org==='MLB'&&o<75;return {org:t.org,team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,t.org,t.pay,minor),minor}}
 function faScreen(fromMLB){
   ensureFaState();
-  const o=ovr(),offers=[],allowMLB=fromMLB||P.kboService>=RULE.faAbroad;
-  let kt=shuffle(TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team&&teamFits(t,o)));
-  if(!kt.length)kt=TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team).sort((a,b)=>a.pay-b.pay);
-  kt=kt.slice(0,2);
-  if(!fromMLB&&teamProfile(P.team)&&teamProfile(P.team).org==='KBO')kt.unshift(teamProfile(P.team));
+  const o=ovr(),allowMLB=fromMLB||P.kboService>=RULE.faAbroad;
   const graced=fromMLB&&P.amateurMLB&&!P.kboYears&&RULE.returnRule!=='free';
-  if(!graced)kt.slice(0,3).forEach(t=>offers.push({org:'KBO',team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,'KBO',t.pay,false)}));
-  if(allowMLB&&(o>=65||fromMLB)){
-    let mlb=shuffle(TEAMS.filter(t=>t.org==='MLB'&&t.name!==P.team&&teamFits(t,Math.max(o,65))));
-    if(!mlb.length)mlb=TEAMS.filter(t=>t.org==='MLB').sort((a,b)=>a.pay-b.pay);
-    mlb.slice(0,fromMLB?3:2).forEach(t=>offers.push({org:'MLB',team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,'MLB',t.pay,o<75),minor:o<75}));
-    if(fromMLB&&teamProfile(P.team)){const cur=teamProfile(P.team);offers.push({org:'MLB',team:cur.name,tstr:cur.win/100,yrs:offerYears(cur,o),deal:offerDeal(o,'MLB',cur.pay,o<75),minor:o<75})}
+  if(!P.fa||P.fa.y!==P.y||P.fa.fromMLB!==fromMLB){
+    const offers=[],cnt=()=>Math.random()<C(.3-(P.fame||0)*.02,.1,.3)?0:RI(1,2);
+    if(!graced){
+      const kt=shuffle(TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team&&teamFits(t,o))).slice(0,cnt());
+      if(!fromMLB&&teamProfile(P.team)&&teamProfile(P.team).org==='KBO')kt.unshift(teamProfile(P.team));
+      kt.forEach(t=>offers.push(faOffer(t,o)));
+    }
+    if(allowMLB&&(o>=65||fromMLB)){
+      shuffle(TEAMS.filter(t=>t.org==='MLB'&&t.name!==P.team&&teamFits(t,Math.max(o,65)))).slice(0,cnt()).forEach(t=>offers.push(faOffer(t,o)));
+      if(fromMLB&&teamProfile(P.team))offers.push(faOffer(teamProfile(P.team),o));
+    }
+    P.fa={y:P.y,fromMLB,offers,tries:3,msg:''};
   }
-  const lab=x=>`${x.team} · ${x.org==='MLB'&&x.minor?'마이너 계약 · ':''}${payLabel(x.deal,x.org)}/년 × ${x.yrs}년 · ${tier(x.tstr)}`;
+  const F=P.fa;
+  const lab=x=>`${x.team} · ${x.org==='MLB'&&x.minor?'마이너 계약 · ':''}${payLabel(x.deal,x.org)}/년 × ${x.yrs}년 · ${tier(x.tstr)}${x.direct?' · ✔ 직접 연락':''}`;
+  const cand=TEAMS.filter(t=>t.name!==P.team&&!F.offers.some(x=>x.team===t.name)&&((t.org==='KBO'&&!graced)||(t.org==='MLB'&&allowMLB)));
+  const contact=F.tries>0&&cand.length?`<p style="margin-top:12px"><b>원하는 구단에 직접 연락</b> <span class="sub">남은 기회 ${F.tries}번 · OVR이 구단 기준에 맞으면 50% 확률로 승인</span></p>
+    <select id="fa-team" data-notr>${cand.map(t=>`<option value="${t.name}">[${t.org}] ${t.name} (기준 OVR ${Math.round(teamBar(t))})</option>`).join('')}</select>${B(`연락하기 (${F.tries}번 남음)`,faContact,'alt')}`:'';
+  const cur=teamProfile(P.team);
+  const fallback=!F.offers.length&&!F.tries?(cur&&!graced?B(`[${cur.org}] ${cur.name}와 1년 계약 (연봉 30% 삭감)`,()=>pickOffer(Object.assign(faOffer(cur,o),{yrs:1,deal:Math.max(.05,Math.round(offerDeal(o,cur.org,cur.pay,cur.org==='MLB'&&o<75)*.7*10)/10)}),fromMLB),'alt'):B('은퇴한다',()=>{P.retire=true;ending()},'red')):'';
   show(()=>hud()+panel('FA 시장이 열렸다',`<p>${fromMLB?'메이저리그 계약이 끝났다. 새 팀을 찾거나, 유턴할 수도 있다.':'KBO FA 자격 취득! 선택이 인생을 바꾼다.'}</p>`
-   +offers.map(x=>B((x.org==='MLB'?'[MLB] ':'[KBO] ')+lab(x),()=>pickOffer(x,fromMLB),x.org==='MLB'?'red':'')).join('')+(graced?(RULE.returnRule==='grace'?B('[KBO] 한국으로 돌아간다 (2년 유예 후 드래프트)',graceChoice,'alt'):B('[KBO] 고국으로 돌아간다 (신인드래프트 참가)',()=>{P.org='';P.contract=0;P.deal=null;P.amateurMLB=false;L('고국 복귀 — 신인드래프트 참가');draftIntro('ABR')},'alt')):'')+`<p class="sub">${!fromMLB&&P.kboService<RULE.faAbroad?'대졸 국내 FA는 7시즌부터 가능하지만 해외 FA 계약은 8시즌을 채워야 합니다. ':''}강팀일수록 우승 확률이 높지만 보수는 선택의 문제입니다.</p>`));
+   +(F.msg?`<p class="mkt-msg">${F.msg}</p>`:'')
+   +(F.offers.length?F.offers.map(x=>B((x.org==='MLB'?'[MLB] ':'[KBO] ')+lab(x),()=>pickOffer(x,fromMLB),x.org==='MLB'?'red':'')).join(''):'<p class="sub">아직 연락해 온 구단이 없다.</p>')
+   +contact+fallback
+   +(graced?(RULE.returnRule==='grace'?B('[KBO] 한국으로 돌아간다 (2년 유예 후 드래프트)',graceChoice,'alt'):B('[KBO] 고국으로 돌아간다 (신인드래프트 참가)',()=>{P.fa=null;P.org='';P.contract=0;P.deal=null;P.amateurMLB=false;L('고국 복귀 — 신인드래프트 참가');draftIntro('ABR')},'alt')):'')
+   +`<p class="sub">${!fromMLB&&P.kboService<RULE.faAbroad?'대졸 국내 FA는 7시즌부터 가능하지만 해외 FA 계약은 8시즌을 채워야 합니다. ':''}강팀일수록 우승 확률이 높지만 보수는 선택의 문제입니다.</p>`));
+}
+function faContact(){
+  const F=P.fa,el=document.getElementById('fa-team'),t=el&&teamProfile(el.value);if(!F||!t||F.tries<=0)return;
+  F.tries--;const o=ovr();
+  if(!teamFits(t,t.org==='MLB'&&F.fromMLB?Math.max(o,65):o))F.msg=`${t.name}: “지금 실력으로는 어렵다.” (구단 기준 OVR ${Math.round(teamBar(t))}, 내 OVR ${o})`;
+  else if(Math.random()<.5){F.offers.push(Object.assign(faOffer(t,o),{direct:true}));F.msg=`${t.name}이(가) 승인했다! 제의 목록에 추가됐다.`}
+  else F.msg=`${t.name}: “이번에는 함께하기 어렵겠다.” 거절당했다.`;
+  L('FA 직접 연락 — '+F.msg);faScreen(F.fromMLB);
 }
 function pickOffer(x,fromMLB){
+  P.fa=null;
   const wasMLB=P.org==='MLB',wasKboFa=!fromMLB&&P.org==='KBO';
   P.team=x.team;P.org=x.org;P.contract=x.yrs;P.deal=x.deal;P.tstr=x.tstr;L(`${x.org} FA 계약 — ${x.team}`);
   if(wasKboFa){P.faUsed=true;P.faEligible=false}

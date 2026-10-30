@@ -1111,10 +1111,22 @@ const SHOP=[
  {id:'diet',n:'영양 식단·보충제',d:'다음 시즌 컨디션 상승',p:.08,fn:()=>{P.hot+=.25}},
  {id:'pr',n:'에이전트·SNS 홍보',d:'명성 +2',p:.45,fn:()=>fame(2)}
 ];
+const LUXURY=[
+ {id:'jet',n:'전용 비행기',d:'영구 OVR +2',p:500,ovr:2},
+ {id:'yacht',n:'슈퍼요트',d:'영구 OVR +1',p:300,ovr:1},
+ {id:'building',n:'프라임 빌딩',d:'영구 OVR +3',p:1500,ovr:3}
+];
 function buy(id){
   const s=SHOP.find(x=>x.id===id);
   if(!spend(s.p)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
   s.fn();P.shopMsg=`${s.n} 구매 완료!`;L(`상점 — ${s.n} 구매 (${priceLabel(s.p)})`);hub();
+}
+function buyLuxury(id){
+  const s=LUXURY.find(x=>x.id===id);P.luxOwned=P.luxOwned||{};
+  if(!s||P.luxOwned[id])return hub();
+  if(!spend(s.p)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
+  P.st=P.st.map(v=>C(Math.round((v+s.ovr)*10)/10,15,99));P.luxOwned[id]=true;
+  P.shopMsg=`${s.n} 구매 완료! OVR +${s.ovr}`;L(`럭셔리 자산 — ${s.n} 구매 (${priceLabel(s.p)}, OVR +${s.ovr})`);hub();
 }
 function shopPanel(){
   return `<div class="panel"><h2>상점</h2><p class="sub">보유 ${moneyPair(P.money)}</p>${SHOP.map(s=>`<div class="item"><b>${s.n}</b><br><span class="sub">${s.d}</span><br>${B(priceLabel(s.p),()=>buy(s.id),P.money>=s.p?'':'dis')}</div>`).join('')}<p class="sub">상점 금액은 시즌 연봉으로 쌓인 돈을 씁니다.</p></div>`;
@@ -1141,7 +1153,7 @@ function logPanel(){
 }
 let HUBTAB='main';
 const TABS=['shop','main','rec'],TABN={shop:['SHOP','상점'],main:['HOME','선수 홈'],rec:['CAREER','기록실']};
-function setTab(t){HUBTAB=t;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPLUX=false}hub()}
+function setTab(t){HUBTAB=t;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPCONS=false;SHOPLUX=false}hub()}
 function heroPanel(){
   const cu=P.cust;
   const rt=H.length;H.push(()=>{HUBRETIRE=true;hub()});
@@ -1178,7 +1190,7 @@ const EQUIP=[
  {id:'recov',n:()=>'회복 장비',d:'시즌 멘탈 +2 / 레벨'}
 ];
 const EQ_MAX=5,eqCost=l=>Math.round((.1+.08*l)*100)/100,CUST_COST=.05;
-let SHOPSEL=0,SHOPLUX=false,SHOPCU=null,SHOPEDIT=null;
+let SHOPSEL=0,SHOPCONS=false,SHOPLUX=false,SHOPCU=null,SHOPEDIT=null;
 const txt=v=>typeof v==='function'?v():v;
 function eqLv(id){return (P.eq&&P.eq[id])||0}
 function eqBuy(id){
@@ -1205,9 +1217,10 @@ function shopTab(){
     return `<div class="eqi ${sel?'on':''}"><div class="eqi-main" onclick="H[${ix}]()"><div><b>${txt(e.n)}</b><br><span class="sub">${txt(e.d)}</span></div><span class="lv">Lv.${sl}</span></div>${up}</div>`;
   }).join('');
   const left=`<div class="panel shop-eq-panel"><h2>장비 업그레이드</h2><div class="eql">${eqList}</div></div>`;
-  const lux=`<div class="panel lux"><div class="luxh"><b>럭셔리 박스</b><span class="sub">시즌 소모품 · ${SHOP.length}종</span></div><div style="text-align:center;margin-top:10px">${B('럭셔리 박스 열기',()=>{SHOPLUX=true;hub()})}</div></div>`;
+  const cons=`<div class="panel lux"><div class="luxh"><b>소모품</b><span class="sub">시즌 소모품 · ${SHOP.length}종</span></div><div style="text-align:center;margin-top:10px">${B('소모품',()=>{SHOPCONS=true;hub()})}</div></div>`;
+  const lux=`<div class="panel lux"><div class="luxh"><b>럭셔리 박스</b><span class="sub">프리미엄 자산 · ${LUXURY.length}종</span></div><div style="text-align:center;margin-top:10px">${B('럭셔리 박스 열기',()=>{SHOPLUX=true;hub()})}</div></div>`;
   const hero=`<div class="panel hp"><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><b>${P.name}</b><span class="sub">보유 ${moneyPair(P.money)}</span></div></div>`;
-  const mid=`<div class="shop-col shop-mid-col">${hero}${lux}</div>`;
+  const mid=`<div class="shop-col shop-mid-col">${hero}${cons}${lux}</div>`;
   /* 오른쪽: 커스터마이제이션 */
   const cell=f=>{
     const ix=hx(()=>{SHOPEDIT=f.k;hub()}),v=cu[f.k];
@@ -1237,10 +1250,15 @@ function shopTab(){
     }
     extra=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win sm" onclick="event.stopPropagation()"><div class="wbar"><span>${f.n}</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${body}</div></div></div>`;
   }
+  if(SHOPCONS){
+    const cl=hx(()=>{SHOPCONS=false;hub()});
+    const consBody=SHOP.map(x=>`<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${x.d}</span></div>${B(priceLabel(x.p),()=>buy(x.id),P.money>=x.p?'':'dis')}</div>`).join('');
+    extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>소모품</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">시즌 소모품 · 보유 ${moneyPair(P.money)}</p>${consBody}</div></div></div>`;
+  }
   if(SHOPLUX){
-    const cl=hx(()=>{SHOPLUX=false;hub()});
-    const luxBody=SHOP.map(x=>`<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${x.d}</span></div>${B(priceLabel(x.p),()=>buy(x.id),P.money>=x.p?'':'dis')}</div>`).join('');
-    extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>럭셔리 박스</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">시즌 소모품 · 보유 ${moneyPair(P.money)}</p>${luxBody}</div></div></div>`;
+    const cl=hx(()=>{SHOPLUX=false;hub()});P.luxOwned=P.luxOwned||{};
+    const luxBody=LUXURY.map(x=>{const owned=!!P.luxOwned[x.id],ok=!owned&&P.money>=x.p;return `<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${x.d} · ${owned?'보유 중':'초고가 영구 자산'}</span></div>${B(owned?'구매 완료':priceLabel(x.p),()=>buyLuxury(x.id),ok?'':'dis')}</div>`}).join('');
+    extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>럭셔리 박스</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">한 번만 구매할 수 있는 영구 자산 · 보유 ${moneyPair(P.money)}</p>${luxBody}</div></div></div>`;
   }
   return `<div class="sgrid"><div class="shop-col">${left}</div>${mid}<div class="shop-col">${right}</div></div>${extra}`;
 }

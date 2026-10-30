@@ -540,7 +540,8 @@ const slot=()=>P.slot||(['PW','CT','FN'].includes(P.role)?'SP':P.role);
 const isSP=()=>slot()==='SP';
 const roleLabel=()=>P.slot?`${ROLE[P.role]} · ${SLOT_NAME[P.slot]}`:ROLE[P.role];
 const LV={HS:'고교야구',UNI:'2년제 대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',IND:'독립야구단',MIL:'군 복무'};
-const REQ={HS:42,UNI:52,KBO2:52,KBO1:60,A:52,AA:58,AAA:64,MLB:70,IND:50,MIL:54};
+/* 리그 평균 OVR (시즌 성적 기준). 구단 기준(teamBar)에 맞춤: KBO 구단 65~75 → 1군 70, MLB 구단 75~96 → 85 */
+const REQ={HS:45,UNI:58,KBO2:60,KBO1:70,A:63,AA:70,AAA:77,MLB:85,IND:55,MIL:60};
 const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1};
 const isMin=l=>l==='A'||l==='AA'||l==='AAA';
 const isPro=l=>l==='KBO1'||l==='KBO2'||isMin(l)||l==='MLB';
@@ -681,9 +682,13 @@ function rollRange(rg){
 }
 /* 보직·수비 위치. 투수는 체력·회복력, 타자는 주루·수비로 정한다 */
 const SLOT_NAME={SP:'선발',MR:'계투',CL:'마무리',C:'포수',CI:'1루/3루',MI:'2루/중견',OF:'외야'};
-/* 팀 OVR: 리그 수준(고교 45 ~ MLB 70)에 팀 전력(약팀 -4 ~ 강팀 +4)을 더한 값. 고교는 45로 고정 */
-const TEAM_OVR_BASE={HS:45,UNI:52,KBO2:54,KBO1:60,A:53,AA:58,AAA:64,MLB:70,IND:50,MIL:54};
-function teamOvr(lv,tstr){if(lv==='HS')return 45;return Math.round((TEAM_OVR_BASE[lv]||50)+((tstr==null?.5:tstr)-.5)*8)}
+/* 팀 OVR: KBO 1군·MLB는 구단별 기준(teamBar), 그 밖의 리그는 리그 평균(REQ)에 팀 전력(-4 ~ +4)을 더한다. 고교는 45로 고정 */
+function teamOvr(){
+  if(P.lv==='HS')return 45;
+  const t=teamProfile(P.team);
+  if(t&&(P.lv==='KBO1'||P.lv==='MLB'))return Math.round(teamBar(t));
+  return Math.round((REQ[P.lv]||55)+((P.tstr==null?.5:P.tstr)-.5)*8);
+}
 /* 투수: 체력이 팀 OVR 이상이면 선발, 아니면 회복력이 팀 OVR 이상일 때 마무리(매일 대기), 둘 다 낮으면 계투
    타자: 주루·수비를 팀 OVR과 비교해 2루/중견(둘 다 높음) · 외야(주루만) · 포수(수비만) · 1루/3루(둘 다 낮음) */
 function slotOf(kind,st,bar){
@@ -695,7 +700,7 @@ function slotOf(kind,st,bar){
 /* 시즌마다 지금 팀 OVR 기준으로 보직·수비 위치를 다시 정한다 */
 function updateSlot(){
   if(!P.slot||P.lv==='MIL')return '';
-  const ns=slotOf(P.pitcher?'P':'H',P.st,teamOvr(P.lv,P.tstr));
+  const ns=slotOf(P.pitcher?'P':'H',P.st,teamOvr());
   if(ns===P.slot)return '';
   const msg=`${P.pitcher?'보직':'수비 위치'} 변경: ${SLOT_NAME[P.slot]} → ${SLOT_NAME[ns]}`;
   P.slot=ns;L(msg);return msg;
@@ -1418,7 +1423,7 @@ function mainTab(ny,na){
   const stats=`<div class="panel hp"><div class="ovrrow"><div><span class="sub">OVR</span><b>${o}${ovrDeltaMark()}</b></div><div><span class="sub">최근 시즌</span><b class="sm2">${last?last.lv:'-'}</b></div><div><span class="sub">최고 OVR</span><b>${Math.max(P.peak||0,o)}</b></div></div>
     ${P.labels.map((l,i)=>bar(l,P.st[i],P.lastDelta&&P.lastDelta[i])).join('')}${bar('멘탈',P.mental,P.lastMen)}${bar('명성',Math.min(P.fame,10)*10)}
     <p class="sub" style="margin-top:10px">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}보유 ${moneyPair(P.money)}</p></div>`;
-  const play=`<div class="panel hp home-play"><div class="tbox team-play-row"><div><b>${P.team}</b> <span class="sub">팀 OVR ${teamOvr(P.lv,P.tstr)}</span><br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
+  const play=`<div class="panel hp home-play"><div class="tbox team-play-row"><div><b>${P.team}</b> <span class="sub">팀 OVR ${teamOvr()}</span><br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
   const coach=`<div class="panel hp home-coach"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
   return `<div class="hgrid">${heroPanel()}${stats}${play}${coach}</div>`;
 }
@@ -2262,7 +2267,7 @@ function playSeason(){
   P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
   finishSnap();
   const payStr=isPro(lg)?`연봉 ${priceLabel(pay)}`:'연봉 아마추어 / 없음';
-  SEAS_RES={title:`${P.y} 시즌 결산`,html:`<p class="sub">${P.age}세 · ${lab} · <b>${P.team}</b> <span class="res-pay">${payStr}</span></p><div class="season-news">📰 ${hd}</div>${press}<p class="line">${line}${gp?` <span class="sub">· 출전 ${gp}경기</span>`:''}</p>${regTxt?`<p class="sub">FA ${regTxt}</p>`:''}${slotMsg?`<p style="color:var(--gold)">↻ ${slotMsg} (팀 OVR ${teamOvr(P.lv,P.tstr)})</p>`:''}${hsLine}${planTxt}${evTxt}<p>${tags.map(t=>`<span class="tag ${/우승|MVP|금메달/.test(t)?'':'g'}">${t}</span>`).join('')}</p>${tr.t?`<p>${tr.t}</p>`:''}${inj?`<p style="color:#ff9b8a">⚠ ${inj}</p>`:''}${milEnd?'<p style="color:var(--gold)">★ 전역! 다시 야구장으로 돌아간다.</p>':''}`};
+  SEAS_RES={title:`${P.y} 시즌 결산`,html:`<p class="sub">${P.age}세 · ${lab} · <b>${P.team}</b> <span class="res-pay">${payStr}</span></p><div class="season-news">📰 ${hd}</div>${press}<p class="line">${line}${gp?` <span class="sub">· 출전 ${gp}경기</span>`:''}</p>${regTxt?`<p class="sub">FA ${regTxt}</p>`:''}${slotMsg?`<p style="color:var(--gold)">↻ ${slotMsg} (팀 OVR ${teamOvr()})</p>`:''}${hsLine}${planTxt}${evTxt}<p>${tags.map(t=>`<span class="tag ${/우승|MVP|금메달/.test(t)?'':'g'}">${t}</span>`).join('')}</p>${tr.t?`<p>${tr.t}</p>`:''}${inj?`<p style="color:#ff9b8a">⚠ ${inj}</p>`:''}${milEnd?'<p style="color:var(--gold)">★ 전역! 다시 야구장으로 돌아간다.</p>':''}`};
   SEAS_MODE='result';SEAS_EV=null;PREP_OPEN=false;HUBTAB='main';
   hub();
 }
@@ -2307,12 +2312,10 @@ function offerDeal(o,org,teamPay,minor){
   const scale=.8+((teamPay||50)/100)*.2;
   return Math.max(.05,Math.round(Math.min(cap,cap*scale)*10)/10);
 }
+/* 구단 기준(teamBar)에 가까워야 연락이 온다. KBO는 기준 -8까지, MLB는 OVR 65 이상이면서 기준 -10까지(75 미만은 마이너 계약) */
 function teamFits(t,o){
-  if(t.org==='KBO')return o<55?t.pay<=66:o<65?t.pay<=74:true;
-  if(o<65)return false;
-  if(o<75)return t.pay<=55;
-  if(o<85)return t.pay<=82;
-  return true;
+  if(t.org==='KBO')return o>=teamBar(t)-8;
+  return o>=65&&o>=teamBar(t)-10;
 }
 function offerYears(t,val){
   if(val>=teamBar(t)+8)return t.pay>=70?5:4;
@@ -2320,10 +2323,11 @@ function offerYears(t,val){
   return 1;
 }
 function otherTeams(o){
-  let fit=TEAMS.filter(t=>t.name!==P.team&&teamFits(t,o)).sort((a,b)=>teamRank(b)-teamRank(a));
+  /* 이적 후보: 구단 기준(teamBar)이 내 OVR과 가장 가까운 구단. MLB 구단은 OVR 75(빅리그 구단 최저 기준) 이상일 때만 */
+  let fit=TEAMS.filter(t=>t.name!==P.team&&teamFits(t,o)&&(t.org==='KBO'||o>=75)).sort((a,b)=>Math.abs(teamBar(a)-o)-Math.abs(teamBar(b)-o));
   if(fit.length<2){
-    const org=o>=85?'MLB':'KBO';
-    const extra=TEAMS.filter(t=>t.org===org&&t.name!==P.team&&!fit.includes(t)).sort((a,b)=>a.pay-b.pay);
+    const org=o>=75?'MLB':'KBO';
+    const extra=TEAMS.filter(t=>t.org===org&&t.name!==P.team&&!fit.includes(t)).sort((a,b)=>Math.abs(teamBar(a)-o)-Math.abs(teamBar(b)-o));
     fit=fit.concat(extra);
   }
   return fit.slice(0,2);
@@ -2361,7 +2365,7 @@ function takeOffer(i){
   P.team=x.team;P.org=x.org;P.deal=x.deal;P.contract=x.yrs;P.tstr=x.tstr;
   if(x.org==='MLB'){
     const o=ovr();
-    if(x.minor||o<75){P.lv=o>=70?'AAA':o>=62?'AA':'A'}
+    if(x.minor||o<75){P.lv=o>=70?'AAA':o>=63?'AA':'A'}
     else{P.lv='MLB';if(!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔')}
   }else{P.lv=ovr()>=65?'KBO1':'KBO2';if(P.lv==='KBO1'&&!P.ach['KBO 1군 데뷔'])A('KBO 1군 데뷔')}
   const note=x.refused?'인상은 무산되고 잔류했다.':x.kind==='raise'?'연봉 인상에 합의했다.':x.kind==='stay'?'남은 계약을 이어 간다.':`${x.team}과 계약했다.`;
@@ -2418,8 +2422,8 @@ function nextSeason(first){
 function proceed(){PREP_SEL=[];movement();P.news.forEach(n=>L(n));trainScreen()}
 function movement(){
   const o=ovr()+R(-3,3);
-  if(P.lv==='KBO2'&&o>=58){P.lv='KBO1';P.news.push('1군 콜업! 드디어 1군 엔트리에 이름이 올랐다.');if(!P.ach['KBO 1군 데뷔']){A('KBO 1군 데뷔')}}
-  else if(P.lv==='KBO1'&&o<52){P.lv='KBO2';P.news.push('2군행 통보. 퓨처스에서 다시 시작이다.')}
+  if(P.lv==='KBO2'&&o>=REQ.KBO1-4){P.lv='KBO1';P.news.push('1군 콜업! 드디어 1군 엔트리에 이름이 올랐다.');if(!P.ach['KBO 1군 데뷔']){A('KBO 1군 데뷔')}}
+  else if(P.lv==='KBO1'&&o<REQ.KBO1-10){P.lv='KBO2';P.news.push('2군행 통보. 퓨처스에서 다시 시작이다.')}
   else if(isMin(P.lv)&&!(P.lvYear>=P.y)){
     /* 마이너는 1년에 한 단계씩: A → AA → AAA → MLB */
     const nx={A:'AA',AA:'AAA',AAA:'MLB'}[P.lv];
@@ -2429,7 +2433,7 @@ function movement(){
       else P.news.push(nx==='AAA'?'AAA 승격! 빅리그가 눈앞이다.':'AA 승격!');
     }
   }
-  else if(P.lv==='MLB'&&o<62){P.lv='AAA';P.lvYear=P.y;P.news.push('AAA로 내려갔다. 다시 올라갈 수 있을까.')}
+  else if(P.lv==='MLB'&&o<REQ.MLB-10){P.lv='AAA';P.lvYear=P.y;P.news.push('AAA로 내려갔다. 다시 올라갈 수 있을까.')}
 }
 function militaryChoice(canDefer){
   const ok=RULE.mil==='kr'&&P.org==='KBO'&&ovr()>=56;
@@ -2537,13 +2541,13 @@ function postingChoice(){
       postingSign()},'red')
    +B('이번엔 잔류한다',hub,'alt')));
 }
-function mlbEntry(){const o=ovr();return o>=72?'MLB':o>=66?'AAA':o>=60?'AA':'A'}
+function mlbEntry(){const o=ovr();return o>=75?'MLB':o>=70?'AAA':o>=63?'AA':'A'}
 function postingSign(){
   const o=ovr();
   const pool=TEAMS.filter(t=>t.org==='MLB'&&teamFits(t,o)).sort((a,b)=>teamRank(b)-teamRank(a));
   const club=pool[0]||pickClub('MLB',marketValue());
   const minor=o<75,yrs=offerYears(club,o),deal=offerDeal(o,'MLB',club.pay,minor);
-  P.org='MLB';P.team=club.name;P.contract=yrs;P.deal=deal;P.tstr=club.win/100;P.lv=minor?(o>=70?'AAA':o>=62?'AA':'A'):'MLB';P.lvYear=P.y+1;L('포스팅으로 MLB 진출 — '+club.name);
+  P.org='MLB';P.team=club.name;P.contract=yrs;P.deal=deal;P.tstr=club.win/100;P.lv=minor?(o>=70?'AAA':o>=63?'AA':'A'):'MLB';P.lvYear=P.y+1;L('포스팅으로 MLB 진출 — '+club.name);
   if(P.lv==='MLB'&&!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔');
   show(()=>panel('MLB 진출!',`<p><b>${club.name}</b>과(와) 계약했다. 연 ${payLabel(deal,'MLB')} × ${yrs}년.</p><p>${P.lv==='MLB'?'메이저리그 개막 로스터에 이름이 올랐다.':'마이너 '+P.lv+'에서 빅리그 콜업을 노린다.'}</p>${B('미국 생활 시작',hub)}`));
 }
@@ -2572,7 +2576,7 @@ function pickOffer(x,fromMLB){
   if(wasKboFa){P.faUsed=true;P.faEligible=false}
   if(x.org==='MLB'){
     const o=ovr();
-    P.lv=(x.minor||o<75)?(o>=70?'AAA':o>=62?'AA':'A'):'MLB';P.lvYear=P.y+1;
+    P.lv=(x.minor||o<75)?(o>=70?'AAA':o>=63?'AA':'A'):'MLB';P.lvYear=P.y+1;
     if(P.lv==='MLB'&&!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔');
   }else{
     P.lv=ovr()>=65?'KBO1':'KBO2';

@@ -106,25 +106,26 @@ html.rm .soft-ball,.html.rm .impact{display:none}
 .opts .btn.choice b{font-size:15px}
 .opts .btn.choice .sub{display:block;font-weight:500;margin-top:2px}
 .share-card-row{display:flex;gap:14px;justify-content:center;align-items:stretch;flex-wrap:wrap;margin:8px 0}
-.scard{flex:1 1 240px;max-width:320px;border:4px solid var(--paper);background:var(--navy);box-shadow:6px 6px 0 #000;padding:10px;display:flex;flex-direction:column;gap:8px;min-width:0}
-.scard-visual{display:flex;justify-content:center;background:#06130b;border:2px solid #2f5a3b;padding:8px;min-height:130px;align-items:center}
-.scard-info{text-align:center}
-.scard-info>b{display:block;font-size:18px;color:#fff;margin-bottom:4px}
-.scard-info>p{margin:4px 0;font-size:13px}
-.scard-ovr{color:var(--gold)!important;font-size:17px;margin:10px 0 6px!important}
-.scard-info .row{margin:5px 0}
-.scard-lbl{font-size:11px;color:#9fc7a6;text-align:center;margin:0 0 6px}
-.scard-back .scard-quote{font-size:14px;color:var(--gold);text-align:center;margin:6px 0 10px;line-height:1.5;padding:0 4px}
-.scard-teams{font-size:12px;color:#cfe3d0;max-height:150px;overflow:auto;text-align:left}
-.scard-teams p{margin:4px 0;padding-bottom:4px;border-bottom:1px dashed #2f5a3b}
-.scard-cstat{font-size:12px;text-align:left;line-height:1.55}
-.scard-cstat p{margin:8px 0}
-.scard-awards{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:left}
-.scard-awards .tag{font-size:11px;margin:2px 4px 2px 0}
+.scard{--sc1:#f6c21b;--sc2:#7a5d00;position:relative;flex:0 1 300px;width:min(300px,82vw);aspect-ratio:5/7;overflow:hidden;border:5px solid var(--sc1);border-radius:14px;background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--sc1) 34%,transparent),transparent 37%),repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,.045) 18px 21px),linear-gradient(155deg,var(--sc2),#07170e 58%,#020805);box-shadow:7px 7px 0 #000;min-width:0}
+.scard::after{content:"";position:absolute;inset:7px;border:2px solid color-mix(in srgb,var(--sc1) 75%,white);border-radius:9px;pointer-events:none;z-index:5}
+.scard-front .scard-visual{position:absolute;inset:12% 4% 24%;display:flex;justify-content:center;align-items:flex-end}
+.scard-front .scard-visual .av{width:72%!important;height:auto!important;max-height:100%}
+.scard-top{position:absolute;z-index:3;top:7%;font-weight:900;color:#fff;text-shadow:2px 2px 0 #000;line-height:1.05}
+.scard-ovr{left:8%;font-size:13px;text-align:center}.scard-ovr b{display:block;color:var(--sc1);font-size:31px}
+.scard-club{right:8%;max-width:48%;font-size:12px;text-align:right}.scard-club b{display:block;color:var(--sc1);font-size:21px}
+.scard-bottom{position:absolute;z-index:4;left:7%;right:7%;bottom:6%;padding:7px 11px 9px;background:rgba(3,10,6,.88);border:2px solid var(--sc1);text-align:center}
+.scard-name{font-size:18px;color:#fff;line-height:1.2;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scard-stats{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(3,1fr);gap:2px 14px}
+.scard-stat{display:flex;justify-content:space-between;gap:4px;color:#cfe3d0;font-size:11px}.scard-stat b{color:var(--sc1);font-size:13px}
+.scard-back{padding:14% 10%;display:flex;align-items:center;justify-content:center}
+.scard-back-inner{position:relative;z-index:2;width:100%}
+.scard-back h3{margin:0 0 18px;text-align:center;color:var(--sc1);font-size:18px;letter-spacing:1px}
+.scard-cstat{font-size:13px;text-align:left;line-height:1.75;color:#dcecdf}
+.scard-cstat p{margin:12px 0;padding:10px;border-top:2px solid var(--sc1);border-bottom:2px solid var(--sc1);background:rgba(0,0,0,.25)}
 .share-card-actions{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
 .share-card-actions .btn{margin:0}
 .share-cv-hid{position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none;width:540px;height:756px;overflow:hidden}
-.hub-modal .win.wide{max-width:min(720px,96vw)}
+.hub-modal .win.wide{max-width:min(760px,96vw)}
 .season-news{margin:10px 0;padding:10px 12px;border-left:4px solid var(--gold);background:#123a62;color:#f7fbff;border-radius:8px;font-size:15px;line-height:1.45}
 .res-top{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:12px 0}
 .res-top .rec{border:3px solid var(--paper);background:#06130b;padding:8px 10px;text-align:center}
@@ -405,7 +406,7 @@ const f1=n=>n.toFixed(1),f2=n=>n.toFixed(2);
 const rate=n=>n.toFixed(3).replace(/^0/,'');
 const EOK_PER_M=13.8; // $1M ≈ 13.8억 원 (1달러 = 1,380원)
 const SAL_CAP_M=70; // 오타니 다저스 10년·7억 달러 계약의 연평균. 연봉 상한.
-const SAL_KR=[[45,.06],[55,.3],[65,1.2],[75,6],[85,22],[95,32],[99,40]]; // 억 원. 고교~KBO·마이너
+const SAL_KR=[[40,.3],[50,.32],[55,.4],[65,1.2],[75,6],[85,22],[95,32],[99,40]]; // 억 원. KBO 최저연봉은 약 3천만원부터
 const SAL_US=[[45,.004],[55,.02],[65,.09],[75,.76],[85,8],[95,40],[99,SAL_CAP_M]]; // $M. 75~85가 메이저리그 평균, 99가 상한
 function won(n){
   n=Math.max(0,+n||0);
@@ -615,19 +616,17 @@ function fmtCarLine(c){
 }
 function shareCardFrontHtml(){
   const cu=P.cust||defCust(),o=ovr();
-  const stats=P.labels.map((l,i)=>bar(l,P.st[i])).join('')+bar('멘탈',P.mental);
-  return `<div class="scard scard-front"><div class="scard-visual">${avatar(cu,11,P.team)}</div><div class="scard-info"><b>${P.name}</b><p>${ROLE[P.role]||''}</p><p>#${cu.num}</p><p>${P.team}</p><p class="scard-ovr">OVR ${o}</p>${stats}</div></div>`;
+  const th=CARDTH[cu.theme]||CARDTH[2],labels=(P.labels||[]).concat(['멘탈']),vals=P.st.concat([P.mental]);
+  const stats=labels.slice(0,6).map((l,i)=>`<span class="scard-stat"><span>${l}</span><b>${Math.round(vals[i]||0)}</b></span>`).join('');
+  return `<div class="scard scard-front" style="--sc1:${th.c};--sc2:${th.c2}"><div class="scard-top scard-ovr"><b>${o}</b>OVR</div><div class="scard-top scard-club"><b>#${cu.num}</b>${P.team}</div><div class="scard-visual">${avatar(cu,15,P.team)}</div><div class="scard-bottom"><div class="scard-name">${P.name}</div><div class="scard-stats">${stats}</div></div></div>`;
 }
 function shareCardBackHtml(){
-  const ti=titleOf();
-  const teams=(P.hist||[]).length?(P.hist||[]).map(h=>`<p>${h.team} · ${h.lv} (${h.y}년)</p>`).join(''):'<p class="sub">아직 시즌 이력 없음</p>';
+  const cu=P.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2];
   let cs='';
   if(P.car.KBO.g>0)cs+=`<p><b>KBO</b> (${P.car.KBO.g}시즌)<br>${fmtCarLine(P.car.KBO)}</p>`;
   if(P.car.MLB.g>0)cs+=`<p><b>MLB</b> (${P.car.MLB.g}시즌)<br>${fmtCarLine(P.car.MLB)}</p>`;
   if(!cs)cs='<p class="sub">프로 통산 기록 없음</p>';
-  const aw=awardSplit();
-  const awards=`<div class="scard-awards"><div><p class="scard-lbl">개인 수상</p>${awardTags(aw.personal)}</div><div><p class="scard-lbl">팀 수상</p>${awardTags(aw.team)}</div></div>`;
-  return `<div class="scard scard-back"><p class="scard-quote">“${ti}”</p><div class="scard-teams">${teams}</div><div class="scard-cstat">${cs}</div>${awards}</div>`;
+  return `<div class="scard scard-back" style="--sc1:${th.c};--sc2:${th.c2}"><div class="scard-back-inner"><h3>CAREER STATS</h3><div class="scard-cstat">${cs}</div></div></div>`;
 }
 function wrapText(x,text,x0,y,maxW,lh){
   let line='';
@@ -638,56 +637,53 @@ function wrapText(x,text,x0,y,maxW,lh){
   if(line)x.fillText(line,x0,y);
   return y+lh;
 }
-function drawShareCardTo(x,W,H,side){
+function shareAvatarSources(){
+  const cu=P.cust||defCust(),uid=uniId(cu,P.team),un=UNI_BY_ID[uid],sk=C(cu.skin|0,0,5),tone=(cu.hcol|0)>=1?'light':'dark',st=((cu.style|0)%8+8)%8;
+  const sheet=un.lg==='KBO'?'kbo':un.lg==='MLB AL'?'al':'nl';
+  return [`${LYR}shoes/shoes_${sheet}.png`,`${LYR}arms/arms_${sheet}_${sk}.png`,`${UNI_PATH}${uid}.png`,`${LYR}head/face_${sk}.png`,...(cu.eyeblack?[`${LYR}head/eyeblack.png`]:[]),`${LYR}head/hair_${tone}_${st}.png`];
+}
+function loadShareAvatar(){return Promise.all(shareAvatarSources().map(src=>new Promise(resolve=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>resolve(null);im.src=src})))}
+function drawShareAvatar(x,W,H,imgs){
+  if(!imgs||!imgs.length)return;
+  const cu=P.cust||defCust(),bt=C(cu.body==null?1:cu.body,0,3),bw=AVL.W*AVL.sx[bt],uniS=uniId(cu,P.team)==='basic'?1.030:1;
+  const box={x:W*.19,y:H*.15,w:W*.62,h:H*.56},dr=(im,sx,sy,sw,sh)=>{if(im)x.drawImage(im,box.x+sx/AVL.W*box.w,box.y+sy/AVL.H*box.h,sw/AVL.W*box.w,sh/AVL.H*box.h)};
+  let i=0;dr(imgs[i++],(AVL.W-bw)/2,AVL.BY,bw,AVL.FH);dr(imgs[i++],(AVL.W-bw)/2,AVL.BY,bw,AVL.BH);
+  const ubw=bw*uniS,ubh=AVL.BH*uniS;dr(imgs[i++],(AVL.W-ubw)/2,AVL.BY+(AVL.BH-ubh)/2,ubw,ubh);
+  const hw=AVL.HW*AVL.SH,head=[(AVL.W-hw)/2,0,hw,AVL.HH*AVL.SH];dr(imgs[i++],...head);if(cu.eyeblack)dr(imgs[i++],...head);dr(imgs[i],...head);
+}
+function drawShareCardTo(x,W,H,side,avatarImgs){
   const cu=P.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2],o=ovr();
-  x.fillStyle='#0f2a1a';x.fillRect(0,0,W,H);
-  x.strokeStyle=th.c;x.lineWidth=Math.max(6,W/54);x.strokeRect(W*.05,H*.04,W*.9,H*.92);
+  const bg=x.createLinearGradient(0,0,W,H);bg.addColorStop(0,th.c2);bg.addColorStop(.58,'#07170e');bg.addColorStop(1,'#020805');x.fillStyle=bg;x.fillRect(0,0,W,H);
+  x.globalAlpha=.1;x.strokeStyle='#fff';x.lineWidth=W*.012;for(let i=-H;i<W;i+=W*.11){x.beginPath();x.moveTo(i,0);x.lineTo(i+H,H);x.stroke()}x.globalAlpha=1;
+  x.strokeStyle=th.c;x.lineWidth=Math.max(8,W/54);x.strokeRect(W*.035,H*.025,W*.93,H*.95);
+  x.strokeStyle='#fff';x.lineWidth=2;x.strokeRect(W*.055,H*.04,W*.89,H*.92);
   if(side==='back'){
-    const ti=titleOf();
-    x.fillStyle='#f6c21b';x.font=`${Math.round(W/26)}px sans-serif`;x.textAlign='center';
-    let y=wrapText(x,`“${ti}”`,W*.1,H*.12,W*.8,Math.round(H*.036));
-    y+=H*.02;
-    x.textAlign='left';x.font=`${Math.round(W/34)}px sans-serif`;
-    (P.hist||[]).forEach(h=>{x.fillStyle='#cfe3d0';x.fillText(`${h.team} · ${h.lv} (${h.y}년)`,W*.1,y);y+=H*.045});
-    if(!(P.hist||[]).length){x.fillStyle='#9fc7a6';x.fillText('시즌 이력 없음',W*.1,y);y+=H*.05}
-    y+=H*.03;
-    x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;
+    x.fillStyle=th.c;x.font=`bold ${Math.round(W/16)}px sans-serif`;x.textAlign='center';x.fillText('CAREER STATS',W/2,H*.2);
+    let y=H*.34;x.textAlign='left';x.fillStyle='#fff';x.font=`bold ${Math.round(W/25)}px sans-serif`;
     if(P.car.KBO.g>0){
       x.fillText(`KBO (${P.car.KBO.g}시즌)`,W*.1,y);y+=H*.038;
-      x.font=`${Math.round(W/34)}px sans-serif`;x.fillStyle='#9fc7a6';
-      y=wrapText(x,fmtCarLine(P.car.KBO),W*.1,y,W*.84,Math.round(H*.032))+H*.01;
+      x.font=`${Math.round(W/31)}px sans-serif`;x.fillStyle='#dcecdf';
+      y=wrapText(x,fmtCarLine(P.car.KBO),W*.1,y,W*.8,Math.round(H*.038))+H*.08;
     }
     if(P.car.MLB.g>0){
-      x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;
+      x.fillStyle='#fff';x.font=`bold ${Math.round(W/25)}px sans-serif`;
       x.fillText(`MLB (${P.car.MLB.g}시즌)`,W*.1,y);y+=H*.038;
-      x.font=`${Math.round(W/34)}px sans-serif`;x.fillStyle='#9fc7a6';
-      y=wrapText(x,fmtCarLine(P.car.MLB),W*.1,y,W*.84,Math.round(H*.032));
+      x.font=`${Math.round(W/31)}px sans-serif`;x.fillStyle='#dcecdf';
+      wrapText(x,fmtCarLine(P.car.MLB),W*.1,y,W*.8,Math.round(H*.038));
     }
-    if(!P.car.KBO.g&&!P.car.MLB.g){x.fillStyle='#9fc7a6';x.font=`${Math.round(W/34)}px sans-serif`;x.fillText('프로 통산 기록 없음',W*.1,y);y+=H*.04}
-    const aw=awardSplit(),lh=Math.round(H*.03);
-    y=Math.min(y+H*.03,H*.72);
-    x.textAlign='left';x.fillStyle='#f6c21b';x.font=`bold ${Math.round(W/32)}px sans-serif`;
-    x.fillText('개인 수상',W*.1,y);x.fillText('팀 수상',W*.52,y);y+=lh;
-    x.fillStyle='#cfe3d0';x.font=`${Math.round(W/36)}px sans-serif`;
-    const pTxt=aw.personal.join(' · ')||'없음',tTxt=aw.team.join(' · ')||'없음';
-    wrapText(x,pTxt,W*.1,y,W*.38,lh);
-    wrapText(x,tTxt,W*.52,y,W*.38,lh);
+    if(!P.car.KBO.g&&!P.car.MLB.g){x.fillStyle='#9fc7a6';x.font=`${Math.round(W/30)}px sans-serif`;x.textAlign='center';x.fillText('프로 통산 기록 없음',W/2,H*.48)}
     return;
   }
-  x.fillStyle='#06130b';x.fillRect(W*.08,H*.06,W*.84,H*.28);
-  x.fillStyle='#fff';x.font=`bold ${Math.round(W/10)}px sans-serif`;x.textAlign='center';
-  x.fillText(P.name,W/2,H*.36);
-  x.font=`${Math.round(W/28)}px sans-serif`;x.fillStyle='#f3e9c6';
-  x.fillText(ROLE[P.role]||'',W/2,H*.41);
-  x.fillText('#'+cu.num,W/2,H*.45);
-  x.fillText(P.team,W/2,H*.49);
-  x.fillStyle='#f6c21b';x.font=`bold ${Math.round(W/7)}px sans-serif`;x.fillText('OVR '+o,W/2,H*.56);
+  drawShareAvatar(x,W,H,avatarImgs);
+  x.textAlign='center';x.fillStyle=th.c;x.font=`bold ${Math.round(W/7)}px sans-serif`;x.fillText(String(o),W*.16,H*.15);
+  x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;x.fillText('OVR',W*.16,H*.19);
+  x.textAlign='right';x.fillStyle=th.c;x.font=`bold ${Math.round(W/17)}px sans-serif`;x.fillText('#'+cu.num,W*.88,H*.13);
+  x.fillStyle='#fff';x.font=`bold ${Math.round(W/32)}px sans-serif`;x.fillText(P.team,W*.88,H*.18);
+  x.fillStyle='rgba(3,10,6,.88)';x.fillRect(W*.075,H*.69,W*.85,H*.235);x.strokeStyle=th.c;x.lineWidth=3;x.strokeRect(W*.075,H*.69,W*.85,H*.235);
+  x.fillStyle='#fff';x.font=`bold ${Math.round(W/17)}px sans-serif`;x.textAlign='center';x.fillText(P.name,W/2,H*.755);
   const labels=(P.labels||[]).concat(['멘탈']);
   const vals=P.st.concat([P.mental]);
-  let y=H*.6;
-  labels.forEach((lb,i)=>{const v=vals[i]||0;x.fillStyle='#9fc7a6';x.font=`${Math.round(W/32)}px sans-serif`;x.textAlign='left';x.fillText(lb,W*.12,y);
-    x.fillStyle='#06130b';x.fillRect(W*.38,y-H*.018,W*.5,H*.026);x.fillStyle='#f6c21b';x.fillRect(W*.38,y-H*.018,W*.5*(v/100),H*.026);
-    x.fillStyle='#fff';x.textAlign='right';x.fillText(String(Math.round(v)),W*.92,y);y+=H*.062});
+  labels.slice(0,6).forEach((lb,i)=>{const col=i%2,row=Math.floor(i/2),lx=W*(col?.54:.13),rx=W*(col?.87:.46),y=H*(.81+row*.045);x.fillStyle='#cfe3d0';x.font=`${Math.round(W/34)}px sans-serif`;x.textAlign='left';x.fillText(lb,lx,y);x.fillStyle=th.c;x.font=`bold ${Math.round(W/30)}px sans-serif`;x.textAlign='right';x.fillText(String(Math.round(vals[i]||0)),rx,y)});
 }
 function drawShareCard(){
   const f=document.getElementById('shareCvFront'),b=document.getElementById('shareCvBack');
@@ -699,9 +695,11 @@ function shareCardBlob(cb){
   cv.width=W*2+gap;cv.height=H;
   const x=cv.getContext('2d');
   x.fillStyle='#050d08';x.fillRect(0,0,cv.width,cv.height);
-  drawShareCardTo(x,W,H,'front');
-  x.save();x.translate(W+gap,0);drawShareCardTo(x,W,H,'back');x.restore();
-  cv.toBlob(b=>cb(b),'image/png');
+  loadShareAvatar().then(imgs=>{
+    drawShareCardTo(x,W,H,'front',imgs);
+    x.save();x.translate(W+gap,0);drawShareCardTo(x,W,H,'back');x.restore();
+    cv.toBlob(b=>cb(b),'image/png');
+  });
 }
 function shareCardImage(){
   shareCardBlob(b=>{
@@ -1131,7 +1129,7 @@ function logPanel(){
   return `<div class="panel"><h2>시즌 로그</h2><div class="log">${lines||'<p class="sub log-empty">아직 시즌 기록이 없습니다.</p>'}</div></div>`;
 }
 let HUBTAB='main';
-const TABS=['shop','main','rec'],TABN={shop:['상점','상점'],main:['메인','메인'],rec:['기록','기록']};
+const TABS=['shop','main','rec'],TABN={shop:['SHOP','상점'],main:['HOME','선수 홈'],rec:['CAREER','기록실']};
 function setTab(t){HUBTAB=t;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPLUX=false}hub()}
 function heroPanel(){
   const cu=P.cust;
@@ -1378,10 +1376,10 @@ const EV=[
 {w:()=>P.lv==='UNI',t:'대학 감독의 프로 인맥',x:'감독님이 프로 구단 스카우트 팀장과 식사 자리를 마련해 주었다.',c:[
  ['적극적으로 어필한다','명성·멘탈 상승',()=>{fame(2);mental(2);return '자신 있게 포부를 밝혔다. 이름이 스카우트 사이에 돌기 시작했다. (명성+2)'}],
  ['성적으로 보여주겠다고 한다','기량 상승',()=>{bumpMain(2);return '말보다 결과로. 훈련에 더 매진했다. (기량+2)'}]]},
-{w:()=>isPro(P.lv),t:'비활동기간, 어디서 몸을 만들까',x:'시즌이 끝났다. 겨울을 어떻게 보낼까.',c:[
- ['괌·오키나와 합동 캠프','체력·멘탈 상승',()=>{bump(3,3);mental(2);return '따뜻한 곳에서 체력을 쌓았다. (체력+3)'}],
- ['미국 사설 트레이닝 센터','기량·명성 상승',()=>{bumpMain(3);bumpMain(2);fame(1);return '트랙맨·랩소도 데이터로 몸을 뜯어고쳤다. (기량 상승)'}],
- ['고향 집에서 엄마 밥 먹으며 쉰다','멘탈 크게 상승',()=>{mental(6);return '든든하게 먹고 푹 쉬었다. (멘탈+6)'}]]},
+{w:()=>isPro(P.lv),t:'비시즌, 어디서 몸을 만들까',x:'시즌이 끝났다. 비시즌을 어떻게 보낼까.',c:[
+ ['전지훈련만 간다','체력·멘탈 상승',()=>{bump(3,3);mental(2);return '전지훈련에서 체력을 착실하게 쌓았다. (체력+3, 멘탈+2)'}],
+ ['미국 사설 트레이닝 센터 간다','기량·명성 상승',()=>{bumpMain(3);bumpMain(2);fame(1);return '트랙맨·랩소도 데이터로 몸을 뜯어고쳤다. (기량 상승, 명성+1)'}],
+ ['한국 사설 트레이닝 센터 간다','기량·멘탈 상승',()=>{bumpMain(3);mental(3);return '익숙한 환경에서 맞춤 훈련을 소화했다. (기량+3, 멘탈+3)'}]]},
 {w:()=>isPro(P.lv),t:'코치의 폼 수정 제안',x:'“지금 폼으로는 한계가 있어. 이렇게 바꿔보자.”',c:[
  ['받아들인다','기량 크게 상승 / 폼이 꼬일 위험',()=>{if(Math.random()<.55){bumpMain(4);return '새 폼이 맞아떨어졌다! (기량+4)'}bumpMain(-2);return '폼이 꼬였다. 감을 되찾는 데 시간이 걸린다. (기량-2)'}],
  ['내 스타일을 고수한다','멘탈 상승',()=>{mental(3);return '자신을 믿기로 했다. (멘탈+3)'}]]},
@@ -1405,7 +1403,22 @@ const EV=[
  ['한국인 통역·선배와 어울린다','멘탈 소폭 상승',()=>{mental(2);return '편안함을 택했다. 적응은 천천히. (멘탈+2)'}]]},
 {w:()=>P.org==='MLB',t:'도미니카 동료의 조언',x:'옆 라커의 베테랑이 말했다. “너 그 그립/스윙, 이렇게 바꿔봐. 내가 해봤는데…”',c:[
  ['귀 기울여 듣는다','기량 상승 / 안 맞을 수도 있음',()=>{if(Math.random()<.65){bumpMain(3);mental(2);return '새로운 접근이 통했다. (기량+3)'}bumpMain(-1);return '나랑은 안 맞았다… (기량-1)'}],
- ['내 방식대로 간다','멘탈 상승',()=>{mental(2);return '신념을 지켰다. (멘탈+2)'}]]}
+ ['내 방식대로 간다','멘탈 상승',()=>{mental(2);return '신념을 지켰다. (멘탈+2)'}]]},
+{bad:true,w:()=>isPro(P.lv),t:'장비 가방이 사라졌다',x:'원정 버스가 떠난 뒤 장비 가방 하나가 보이지 않는다. 구단 직원들도 난감한 표정이다.',c:[
+ ['급히 새 장비로 뛴다','무작위 기량 하락',()=>{bump(RI(0,4),-2);return '손에 익지 않은 장비 탓에 감각이 흐트러졌다. (무작위 기량-2)'}],
+ ['끝까지 찾아본다','멘탈 하락 / 찾을 수도 있음',()=>{if(Math.random()<.45)return '창고 구석에서 가방을 찾았다. 한바탕 소동으로 끝났다.';mental(-3);return '결국 찾지 못했다. 허탈함이 오래 남았다. (멘탈-3)'}]]},
+{bad:true,w:()=>isPro(P.lv)&&P.age>=24,t:'악성 기사와 흔들리는 루틴',x:'확인되지 않은 사생활 기사가 포털 메인을 채웠다. 해명해도 댓글은 멈추지 않는다.',c:[
+ ['정면으로 해명한다','명성·멘탈 하락 위험',()=>{if(Math.random()<.45){fame(-1);mental(-2);return '논쟁만 더 커졌다. (명성-1, 멘탈-2)'}return '팩트가 확인되며 조용히 지나갔다.'}],
+ ['대응하지 않는다','멘탈 하락',()=>{mental(-2);return '시간이 해결했지만 마음에는 생채기가 남았다. (멘탈-2)'}]]},
+{bad:true,w:()=>P.lv==='HS'||P.lv==='UNI',t:'슬럼프가 길어지는 봄',x:'잘 맞은 타구와 공도 자꾸 결과가 나쁘다. 훈련을 더 해도 답이 보이지 않는다.',c:[
+ ['훈련량을 더 늘린다','기량 하락 또는 부상 위험',()=>{if(Math.random()<.35){injure('minor');return '조급함에 몸까지 상했다. (경미한 부상)'}bumpMain(-2);return '폼이 더 꼬였다. (기량-2)'}],
+ ['잠시 야구와 거리를 둔다','멘탈 소폭 하락',()=>{mental(-1);return '완전히 풀리진 않았지만 숨을 돌렸다. (멘탈-1)'}]]},
+{w:()=>true,t:'비 오는 날의 뜻밖의 휴식',x:'아침부터 비가 쏟아져 모든 일정이 취소됐다. 동료들과 숙소에서 시간을 보냈다.',c:[
+ ['보드게임 대회를 연다','능력치 변화 없음',()=> '마지막 판에서 코치가 대역전했다. 야구 이야기는 하나도 하지 않은 하루였다.'],
+ ['낮잠을 푹 잔다','능력치 변화 없음',()=> '알람도 없이 눈을 떴다. 별일 없어서 오히려 좋은 날이었다.']]},
+{w:()=>isPro(P.lv),t:'구장 전광판의 황당한 오타',x:'타석에 들어서자 전광판에 이름과 사진이 전혀 다른 선수로 표시됐다.',c:[
+ ['모자를 벗고 인사한다','능력치 변화 없음',()=> '관중이 웃고 박수를 보냈다. 경기 뒤 짧은 밈으로 남았다.'],
+ ['못 본 척 집중한다','능력치 변화 없음',()=> '다음 이닝에 조용히 수정됐다. 기록에는 아무것도 남지 않았다.']]}
 ];
 function choiceOf(c){return typeof c[1]==='function'?{l:c[0],d:'',fn:c[1]}:{l:c[0],d:c[1],fn:c[2]}}
 function bannerHtml(){return P.playBanner&&P.playBanner.text?`<p class="form-line ${P.playBanner.ok?'ok':'bad'}">${P.playBanner.text}</p>`:''}
@@ -1753,44 +1766,84 @@ function choosePlan(i){
 }
 
 /* ============ 시즌 시뮬 ============ */
+function roleGames(lg,idx,gf){
+  const req=REQ[lg]||55,ability=C(.48+(ovr()-req)/24,.28,1),youth=lg==='HS' ? .72 : lg==='UNI' ? .84 : 1;
+  const hurt=gf>=.95 ? 1 : gf>=.75 ? .62 : gf>=.35 ? .38 : .1;
+  let lo,hi;
+  if(P.role==='SP'){
+    if(lg==='KBO1'||lg==='MLB'){
+      if(gf>=.95)return RI(28,33);
+      if(gf>=.75)return RI(15,20);
+      if(gf>=.35)return RI(8,13);
+      return RI(1,4);
+    }
+    else if(lg==='HS'){lo=5;hi=14}else if(lg==='UNI'){lo=8;hi=18}else if(isMin(lg)||lg==='KBO2'){lo=18;hi=28}else{lo=10;hi=22}
+  }else if(P.role==='MR'||P.role==='CL'){
+    if(lg==='KBO1'||lg==='MLB'){lo=45;hi=68}else if(lg==='HS'){lo=8;hi=20}else if(lg==='UNI'){lo=14;hi=28}else{lo=28;hi=52}
+  }else{
+    const full=lg==='HS'?26:lg==='UNI'?34:lg==='KBO2'?96:lg==='KBO1'?144:lg==='MLB'?162:lg==='A'?110:lg==='AA'?130:lg==='AAA'?142:80;
+    lo=Math.round(full*(lg==='HS'?.35:lg==='UNI'?.45:.55));hi=Math.round(full*(lg==='HS'?.82:lg==='UNI'?.88:.96));
+  }
+  const base=lo+(hi-lo)*ability*youth;
+  return Math.max(1,Math.round(C(base+G()*Math.max(1,(hi-lo)*.08),lo,hi)*hurt));
+}
 function statline(lg,idx,gf){
-  const min=isMin(lg)||lg==='KBO2'||lg==='MIL';
-  const sc=lg==='HS'?.45:lg==='UNI'?.55:min?.9:1, hit=lg==='HS'||lg==='UNI'?1.12:1;
+  const min=isMin(lg)||lg==='KBO2'||lg==='MIL',g=roleGames(lg,idx,gf);
+  const sc=lg==='HS'?.72:lg==='UNI'?.8:min?.92:1,hit=lg==='HS'||lg==='UNI'?1.08:1;
   if(P.pitcher){
     const sp=P.role==='SP';
-    const ip=Math.max(0,Math.round((sp?R(150,188):P.role==='MR'?R(60,80):R(52,70))*gf*sc*(.85+P.st[3]/330)));
+    const ip=Math.max(0,Math.round(g*(sp?R(4.7,6.1):P.role==='MR'?R(.9,1.35):R(.85,1.2))*sc*(.85+P.st[3]/330)));
     const era=C(4.35-idx*.95+G()*.3,.9,9.5),k9=C(7.2+idx*1.5+(P.st[0]-60)/22,3.5,14);
     const k=Math.round(ip*k9/9),er=era*ip/9;
-    if(sp){const dec=Math.round(ip/6*.65),wp=C(.5+idx*.08+G()*.05,.15,.9),w=Math.round(dec*wp),l=dec-w;return {line:`${w}승 ${l}패 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd:0,ip,k,er}}
-    if(P.role==='CL'){const sv=idx>-.2?Math.round(C(R(8,24)+idx*7,0,50)*gf*sc):RI(0,4);return {line:`${sv}세이브 ERA ${f2(era)} ${k}K ${ip}이닝`,w:0,l:0,sv,hd:0,ip,k,er}}
-    const hd=idx>-.2?Math.round(C(R(10,26)+idx*6,0,42)*gf*sc):RI(0,5),w=Math.round(hd/5),l=Math.round(hd/7);
-    return {line:`${w}승 ${l}패 ${hd}홀드 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd,ip,k,er};
+    if(sp){const dec=Math.min(g,Math.round(ip/6*.65)),wp=C(.5+idx*.08+G()*.05,.15,.9),w=Math.round(dec*wp),l=dec-w;return {g,line:`${w}승 ${l}패 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd:0,ip,k,er}}
+    if(P.role==='CL'){const sv=idx>-.2?Math.round(C(g*(.3+idx*.06),0,g*.72)):RI(0,Math.min(4,g));return {g,line:`${sv}세이브 ERA ${f2(era)} ${k}K ${ip}이닝`,w:0,l:0,sv,hd:0,ip,k,er}}
+    const hd=idx>-.2?Math.round(C(g*(.22+idx*.05),0,g*.58)):RI(0,Math.min(5,g)),w=Math.round(hd/5),l=Math.round(hd/7);
+    return {g,line:`${w}승 ${l}패 ${hd}홀드 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd,ip,k,er};
   }
-  const pa=Math.round(560*gf*sc),ab=Math.round(pa*.9);
+  const pa=Math.round(g*R(3.45,4.15)*sc),ab=Math.round(pa*.9);
   const avg=C(.262+idx*.034+(P.st[0]-60)/1100,.17,.39);
   const rf=P.role==='IF'?.85:P.role==='DH'?1.15:1.05;
-  const hr=Math.round(C((P.st[1]/100)*30*(1+idx*.3)*rf*gf*sc*hit,0,62));
+  const volume=pa/560;
+  const hr=Math.round(C((P.st[1]/100)*30*(1+idx*.3)*rf*volume*hit,0,62));
   const rbi=Math.round(hr*1.9+pa*.045*(1+idx*.25));
-  const sb=Math.round(C((P.st[3]-40)/2.5,0,45)*gf*sc*(1+idx*.1));
+  const sb=Math.round(C((P.st[3]-40)/2.5,0,45)*volume*(1+idx*.1));
   const ops=C(.705+idx*.085+(P.st[2]-60)/700,.35,1.3);
   const h=Math.round(ab*avg);
-  return {line:`타율 ${rate(avg)} ${hr}홈런 ${rbi}타점 ${sb}도루 OPS ${rate(ops)}`,ab,h,hr,rbi,sb};
+  return {g,line:`타율 ${rate(avg)} ${hr}홈런 ${rbi}타점 ${sb}도루 OPS ${rate(ops)}`,ab,h,hr,rbi,sb};
 }
-function awards(lg,idx,gf){
-  const a=[],r=Math.random;
+function awardChance(score,team,base=.04,scale=.12,cap=.72){return C(base+Math.max(0,score)*scale+team,0,cap)}
+function awards(lg,idx,gf,sl,tr){
+  const a=[],r=Math.random,team=(tr&&tr.champ)?0.13:(tr&&/준우승/.test(tr.tag||''))?0.08:(tr&&/가을야구|플레이오프|시리즈/.test(tr.t||''))?0.04:-0.02;
+  const win=(name,score,base=.04,scale=.12,cap=.72)=>{if(r()<awardChance(score,team,base,scale,cap))a.push(name)};
   if(lg==='HS'&&idx>2.1&&!P.ach['고교 최고 유망주'])a.push('고교 최고 유망주');
   if(lg==='KBO1'){
-    if(P.kbo1Years===1&&P.proYears<=5&&idx>.7&&gf>.6)a.push('KBO 신인왕');
-    if(idx>2.6&&r()<.7)a.push('KBO MVP');
-    if(idx>1.8&&r()<.75)a.push('KBO 골든글러브');
-    if(idx>1.2&&r()<.8)a.push('KBO 올스타');
-    if(idx>2.2&&r()<.6)a.push('KBO 타이틀홀더');
+    if(P.kbo1Years===1&&P.proYears<=5&&gf>.6)win('KBO 신인왕',idx-.25,.06,.16,.58);
+    win('KBO MVP',idx-1.25,.025,.13,.58);
+    win('KBO 골든글러브',idx-.65,.05,.15,.68);
+    win('KBO 올스타',idx-.2,.12,.18,.78);
+    if(P.pitcher){
+      const era=sl.ip?sl.er*9/sl.ip:9;
+      if(P.role==='CL')win('KBO 세이브왕',(sl.sv-25)/9,.02,.18,.68);
+      else if(P.role==='MR')win('KBO 홀드왕',(sl.hd-24)/8,.02,.18,.68);
+      else{win('KBO 다승왕',(sl.w-12)/4,.02,.17,.66);win('KBO 평균자책왕',(3.35-era)/.65,.02,.18,.66);win('KBO 탈삼진왕',(sl.k-145)/45,.02,.16,.66)}
+    }else{
+      const avg=sl.ab?sl.h/sl.ab:0;
+      win('KBO 타격왕',(avg-.285)/.025,.02,.17,.66);win('KBO 홈런왕',(sl.hr-27)/10,.02,.17,.68);win('KBO 타점왕',(sl.rbi-85)/24,.02,.16,.66);win('KBO 도루왕',(sl.sb-20)/10,.02,.18,.68);
+    }
   }
   if(lg==='MLB'){
-    if(P.mlbYears===1&&idx>1&&gf>.6)a.push('MLB 신인왕');
-    if(idx>2.6&&r()<.6)a.push('MLB MVP·사이영상급');
-    if(idx>1.4&&r()<.75)a.push('MLB 올스타');
-    if(idx>1.1&&(P.pitcher?P.st[1]>=75:(P.st[4]>=72||P.st[1]>=75))&&r()<.5)a.push('골드글러브·실버슬러거');
+    if(P.mlbYears===1&&gf>.6)win('MLB 신인왕',idx-.45,.04,.14,.48);
+    win(P.pitcher?'사이영상':'MLB MVP',idx-1.55,.015,.11,.48);
+    win('MLB 올스타',idx-.25,.09,.15,.68);
+    if(P.pitcher){
+      const era=sl.ip?sl.er*9/sl.ip:9;
+      if(P.role==='CL')win('MLB 세이브왕',(sl.sv-34)/10,.015,.15,.58);
+      else if(P.role==='SP'){win('MLB 다승왕',(sl.w-15)/4,.015,.14,.56);win('MLB 평균자책왕',(3.05-era)/.55,.015,.15,.56);win('MLB 탈삼진왕',(sl.k-205)/55,.015,.14,.56)}
+    }else{
+      const avg=sl.ab?sl.h/sl.ab:0,def=(P.st[4]-65)/14,bat=(idx-1)+(P.st[1]-70)/30;
+      win('MLB 골드글러브',def,.025,.14,.52);win('MLB 실버슬러거',bat,.025,.13,.54);
+      win('MLB 타격왕',(avg-.295)/.022,.015,.15,.55);win('MLB 홈런왕',(sl.hr-36)/12,.015,.15,.58);win('MLB 타점왕',(sl.rbi-100)/25,.015,.14,.56);win('MLB 도루왕',(sl.sb-28)/12,.015,.16,.58);
+    }
   }
   a.forEach(k=>A(k));return a;
 }
@@ -1853,7 +1906,7 @@ function headline(idx,gf){
 function playSeason(){
   SEAS_MODE='';SEAS_EV=null;
   const lg=P.lv,lab=lvLabel();P.played=true;
-  const tags=[],news=[];let line='',idx=0,tr={t:''},gf=1;
+  const tags=[],news=[];let line='',idx=0,tr={t:''},gf=1,sl=null;
   if(lg==='KBO1'||lg==='KBO2'){P.kboYears++;if(lg==='KBO1')P.kbo1Years++}
   if(lg==='MLB')P.mlbYears++;
   if(isPro(lg))P.proYears++;
@@ -1864,7 +1917,7 @@ function playSeason(){
   if(P.injured){gf=P.injured==='minor'?.82:P.injured==='major'?.5:.12;inj=P.injured==='minor'?'경미한 부상으로 일부 경기를 결장했다.':P.injured==='major'?'큰 부상으로 시즌의 절반을 날렸다.':(P.pitcher?'토미 존 수술':'큰 수술')+'을 받고 시즌을 거의 접었다.';if(P.injured==='surg')P.rehab=1}
   else if(rehab)gf=.75;
   if(lg==='MIL'){
-    if(P.milType==='상무'){idx=(ovr()-REQ.KBO2)/9+G()*.5;line='상무(퓨처스) '+statline('KBO2',idx,1).line;tr={t:`퓨처스리그 ${RI(1,9)}위`}}
+    if(P.milType==='상무'){idx=(ovr()-REQ.KBO2)/9+G()*.5;sl=statline('KBO2',idx,1);line='상무(퓨처스) '+sl.line;tr={t:`퓨처스리그 ${RI(1,9)}위`}}
     else{line='현역 복무 — 야구는 잠시 멈춤';tr={t:'조국의 부름에 응답했다.'}}
     inj='';
   }else{
@@ -1873,12 +1926,12 @@ function playSeason(){
       const wins=(P.hsRun.results||[]).filter(r=>r.round==='우승').length;
       idx+=Math.min(1.1,(P.hsRun.form||0)*.08+wins*.4);
     }
-    const sl=statline(lg,idx,gf);line=sl.line;if(lg==='KBO1'||lg==='MLB'){const cc=P.car[lg==='MLB'?'MLB':'KBO'];cc.g++;['w','l','sv','hd','ip','k','er','ab','h','hr','rbi','sb'].forEach(k=>{cc[k]=(cc[k]||0)+(sl[k]||0)})}
-    awards(lg,idx,gf).forEach(a=>tags.push(a));
+    sl=statline(lg,idx,gf);line=sl.line;if(lg==='KBO1'||lg==='MLB'){const cc=P.car[lg==='MLB'?'MLB':'KBO'];cc.g++;['w','l','sv','hd','ip','k','er','ab','h','hr','rbi','sb'].forEach(k=>{cc[k]=(cc[k]||0)+(sl[k]||0)})}
     tr=teamResult(lg,idx);if(tr.tag)tags.push(tr.tag);
+    awards(lg,idx,gf,sl,tr).forEach(a=>tags.push(a));
   }
   let pay=0;
-  if(lg!=='MIL'){const cap=yearlyPay(ovr(),lg==='MLB');pay=P.deal?Math.min(P.deal,cap):cap}
+  if(isPro(lg)){const cap=yearlyPay(ovr(),lg==='MLB');pay=P.deal?Math.min(P.deal,cap):cap}
   P.money=Math.round(((+P.money||0)+pay)*100)/100;
   P.shield=false;
   const anchored=teamProfile(P.team);P.tstr=anchored?anchored.win/100:C((P.tstr||.5)+G()*.08,.05,.95);
@@ -1890,7 +1943,7 @@ function playSeason(){
   P.injured=null;P.restFlag=false;P.prepInjExtra=0;
   const payTxt=pay>0?`연봉 ${priceLabel(pay)}`:'';
   const hd=headline(idx,gf);
-  const gp=seasonGames(lg,gf);
+  const gp=sl&&sl.g!=null?sl.g:seasonGames(lg,gf);
   const hadNick=P.fanNick,hadTier=P.fanTier,nick=fanNick();
   const press=pressBox(idx,gf,nick,!hadNick||hadTier!==P.fanTier);
   const hsLine=(P.hsRun&&P.hsRun.results&&P.hsRun.results.length)?`<div class="season-news">${P.hsRun.results.map(r=>`<b>${r.name}</b> ${r.round}`).join('<br>')}</div>`:'';
@@ -1898,7 +1951,7 @@ function playSeason(){
   const evTxt=P.hsRun?'':(P.eventNote?`<p class="sub">시즌 전: ${P.eventNote}</p>`:'');
   P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
   finishSnap();
-  const resTop=`<div class="res-top"><div class="rec"><small>내 성적</small><b style="font-size:14px;line-height:1.35">${line}</b><span class="gp">출전 ${gp}경기</span></div><div class="rec"><small>팀·리그</small><b style="font-size:14px;line-height:1.35">${tr.t||lab}</b></div><div class="rec"><small>연봉</small><b style="font-size:14px;line-height:1.35">${pay>0?priceLabel(pay):'-'}</b></div></div>`;
+  const resTop=`<div class="res-top"><div class="rec"><small>내 성적</small><b style="font-size:14px;line-height:1.35">${line}</b><span class="gp">출전 ${gp}경기</span></div><div class="rec"><small>팀·리그</small><b style="font-size:14px;line-height:1.35">${tr.t||lab}</b></div><div class="rec"><small>연봉</small><b style="font-size:14px;line-height:1.35">${isPro(lg)?priceLabel(pay):'아마추어 · 없음'}</b></div></div>`;
   SEAS_RES={title:`${P.y} 시즌 결산`,html:`<p class="sub">${P.age}세 · ${lab} · <b>${P.team}</b></p><div class="season-news">📰 ${hd}</div>${resTop}${press}<p class="line">${line}</p>${hsLine}${planTxt}${evTxt}<p>${tags.map(t=>`<span class="tag ${/우승|MVP|금메달/.test(t)?'':'g'}">${t}</span>`).join('')}</p>${tr.t?`<p>${tr.t}</p>`:''}${inj?`<p style="color:#ff9b8a">⚠ ${inj}</p>`:''}${payTxt?`<p class="sub">${payTxt}</p>`:''}${milEnd?'<p style="color:var(--gold)">★ 전역! 다시 야구장으로 돌아간다.</p>':''}`};
   SEAS_MODE='result';SEAS_EV=null;PREP_OPEN=false;HUBTAB='main';
   hub();
@@ -2142,11 +2195,12 @@ function score(){let s=0;for(const k in P.ach)s+=(PTS[k]||0)*P.ach[k];s+=P.kbo1Y
 function gradeOf(s){return s>=90?['S','전설']:s>=60?['A','명예의 전당급']:s>=36?['B','리그 정상급 스타']:s>=18?['C','주전급 베테랑']:s>=8?['D','1군 생활을 한 선수']:['E','무명으로 남은 도전자']}
 function titleOf(){
   const a=P.ach,h=k=>a[k]>0;
-  if(h('월드시리즈 우승')&&h('MLB MVP·사이영상급'))return '월드시리즈를 품은 전설의 코리안 메이저리거';
+  const mlbBest=h('MLB MVP')||h('사이영상')||h('MLB MVP·사이영상급');
+  if(h('월드시리즈 우승')&&mlbBest)return '월드시리즈를 품은 전설의 코리안 메이저리거';
   if(h('월드시리즈 우승'))return '월드시리즈 챔피언';
   if(h('올림픽 금메달'))return '올림픽 야구 금메달리스트';
   if(h('WBC 우승'))return 'WBC를 들어 올린 국가대표';
-  if(h('MLB MVP·사이영상급'))return '메이저리그를 평정한 코리안 슈퍼스타';
+  if(mlbBest)return '메이저리그를 평정한 코리안 슈퍼스타';
   if(h('한국시리즈 우승')&&P.mlbYears>0)return '한국시리즈 우승 + 빅리그를 경험한 선수';
   if(h('KBO MVP'))return 'KBO 정규시즌 MVP';
   if(h('한국시리즈 우승'))return '한국시리즈 챔피언';

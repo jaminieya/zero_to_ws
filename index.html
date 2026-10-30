@@ -584,7 +584,14 @@ const roleLabel=()=>P.slot?`${ROLE[P.role]} · ${SLOT_NAME[P.slot]}`:ROLE[P.role
 const LV={HS:'고교야구',UNI:'2년제 대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',IND:'독립야구단',MIL:'군 복무'};
 /* 리그 평균 OVR (시즌 성적 기준). 구단 기준(teamBar)에 맞춤: KBO 구단 65~75 → 1군 70, MLB 구단 75~96 → 85 */
 const REQ={HS:45,UNI:58,KBO2:60,KBO1:70,A:63,AA:70,AAA:77,MLB:85,IND:55,MIL:60};
-const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1};
+const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1,
+  /* 개인 기록·업적 */
+  '퍼펙트 게임':6,'노히트노런':3,'완봉승':.5,'완투승':.3,'투수 트리플 크라운':6,'20승 시즌':2,'1점대 평균자책점':3,'200탈삼진 시즌':1,'40세이브 시즌':1,
+  '사이클링 히트':3,'한 경기 3홈런':1,'그랜드 슬램':.3,'끝내기 홈런':.3,'타자 트리플 크라운':6,'4할 타자':8,'50홈런 시즌':3,'40-40 클럽':5,'30-30 클럽':2,'200안타 시즌':2,
+  'KBO 통산 100승':2,'KBO 통산 150승':4,'KBO 통산 200세이브':3,'KBO 통산 2000탈삼진':5,'KBO 통산 2000안타':3,'KBO 통산 300홈런':3,'KBO 통산 400홈런':5,
+  'MLB 통산 100승':3,'MLB 통산 200승':8,'MLB 통산 300세이브':5,'MLB 통산 3000탈삼진':8,'MLB 통산 2000안타':4,'MLB 통산 3000안타':10,'MLB 통산 300홈런':4,'MLB 통산 500홈런':10};
+/* 수상·업적 정렬: 레전드 점수가 큰(중요한) 것부터, 같으면 먼저 얻은 순서 */
+const achSort=keys=>keys.map((k,i)=>[k,i]).sort((a,b)=>(PTS[b[0]]||0)-(PTS[a[0]]||0)||a[1]-b[1]).map(x=>x[0]);
 const isMin=l=>l==='A'||l==='AA'||l==='AAA';
 const isPro=l=>l==='KBO1'||l==='KBO2'||isMin(l)||l==='MLB';
 
@@ -677,7 +684,7 @@ function batOrder(){
 const TEAM_AWARD={'한국시리즈 우승':1,'한국시리즈 준우승':1,'월드시리즈 우승':1,'월드시리즈 준우승':1,'고교 전국대회 우승':1,'대학리그 우승':1,'WBC 우승':1,'WBC 4강':1,'프리미어12 우승':1,'프리미어12 4강':1,'올림픽 금메달':1,'올림픽 은메달':1,'올림픽 동메달':1,'아시안게임 금메달':1,'U-18 월드컵 우승':1,'U-23 월드컵 우승':1};
 function awardSplit(){
   const personal=[],team=[];
-  Object.keys(P.ach||{}).forEach(k=>{const label=k+(P.ach[k]>1?' ×'+P.ach[k]:'');(TEAM_AWARD[k]?team:personal).push(label)});
+  achSort(Object.keys(P.ach||{})).forEach(k=>{const label=k+(P.ach[k]>1?' ×'+P.ach[k]:'');(TEAM_AWARD[k]?team:personal).push(label)});
   return {personal,team};
 }
 function awardTags(list){return list.length?list.map(t=>`<span class="tag g">${t}</span>`).join(''):'<span class="sub">없음</span>'}
@@ -2236,7 +2243,51 @@ function awards(lg,idx,gf,sl,tr){
       if(beat(sl.sb,'sb'))add(L+' 도루왕');
     }
   }
-  const out=a.filter(Boolean);out.forEach(k=>A(k));return out;
+  const out=a.filter(Boolean);out.forEach(k=>A(k));
+  return (lg==='KBO1'||lg==='MLB')&&sl?out.concat(feats(lg,idx,sl,out)):out;
+}
+/* 개인 기록·업적 (1군·빅리그만)
+   경기 단위 기록은 실제 빈도를 기준으로 확률을 굴린다
+   - 노히트노런: MLB 선발 등판의 약 0.06%, KBO는 더 드물다. 그중 약 1/8이 퍼펙트 게임
+   - 완투승: KBO 에이스는 시즌 1~3회, MLB는 그보다 드물다. 완투의 약 40%가 완봉승
+   - 사이클링 히트: 경기당 약 0.007% (주전 타자 커리어에 한 번 나올까 말까)
+   - 그랜드 슬램: 홈런의 약 2.5% · 끝내기 홈런 약 1% · 한 경기 3홈런 약 0.25%
+   시즌·통산 이정표는 처음 달성할 때 한 번만(통산) 또는 해당 시즌마다(시즌) 기록 */
+function feats(lg,idx,sl,won){
+  const L=lg==='MLB'?'MLB':'KBO',B=AWARD_BAR[L],cc=P.car[L],out=[],up=Math.max(0,idx);
+  const roll=(n,p)=>{let c=0;for(let i=0;i<n;i++)if(Math.random()<p)c++;return c};
+  const add=(k,n=1)=>{if(n<1)return;for(let i=0;i<n;i++)A(k);out.push(k+(n>1?' ×'+n:''))};
+  const once=(k,ok)=>{if(ok&&!P.ach[k])add(k)};
+  const has=k=>won.includes(L+' '+k);
+  if(P.pitcher){
+    const era=sl.ip?sl.er*9/sl.ip:9;
+    if(isSP()){
+      const gs=sl.g,nh=roll(gs,(L==='MLB'?.0006:.0004)*(1+up*.8)),pf=roll(nh,.13);
+      add('퍼펙트 게임',pf);add('노히트노런',nh-pf);
+      const cg=roll(gs,(L==='MLB'?.006:.014)*(1+up)*(.7+P.st[3]/200)),sho=roll(cg,.4);
+      add('완봉승',sho);add('완투승',cg-sho);
+      if(has('다승왕')&&has('평균자책왕')&&has('탈삼진왕'))add('투수 트리플 크라운');
+      if(sl.w>=20)add('20승 시즌');
+      if(sl.ip>=B.ip&&era<2)add('1점대 평균자책점');
+      if(sl.k>=200)add('200탈삼진 시즌');
+    }else if(sl.sv>=40)add('40세이브 시즌');
+    if(L==='KBO'){once('KBO 통산 100승',cc.w>=100);once('KBO 통산 150승',cc.w>=150);once('KBO 통산 200세이브',cc.sv>=200);once('KBO 통산 2000탈삼진',cc.k>=2000)}
+    else{once('MLB 통산 100승',cc.w>=100);once('MLB 통산 200승',cc.w>=200);once('MLB 통산 300세이브',cc.sv>=300);once('MLB 통산 3000탈삼진',cc.k>=3000)}
+  }else{
+    const avg=sl.ab?sl.h/sl.ab:0;
+    add('사이클링 히트',roll(sl.g,.00007*(1+up*.6)*(.6+P.st[3]/120)));
+    add('한 경기 3홈런',roll(sl.hr,.0025));
+    add('그랜드 슬램',roll(sl.hr,.025));
+    add('끝내기 홈런',roll(sl.hr,.01));
+    if(has('타격왕')&&has('홈런왕')&&has('타점왕'))add('타자 트리플 크라운');
+    if(sl.pa>=B.pa&&avg>=.4)add('4할 타자');
+    if(sl.hr>=50)add('50홈런 시즌');
+    if(sl.hr>=40&&sl.sb>=40)add('40-40 클럽');else if(sl.hr>=30&&sl.sb>=30)add('30-30 클럽');
+    if(sl.h>=200)add('200안타 시즌');
+    if(L==='KBO'){once('KBO 통산 2000안타',cc.h>=2000);once('KBO 통산 300홈런',cc.hr>=300);once('KBO 통산 400홈런',cc.hr>=400)}
+    else{once('MLB 통산 2000안타',cc.h>=2000);once('MLB 통산 3000안타',cc.h>=3000);once('MLB 통산 300홈런',cc.hr>=300);once('MLB 통산 500홈런',cc.hr>=500)}
+  }
+  return out;
 }
 function postseason(t,league){
   let rounds;
@@ -2720,7 +2771,7 @@ function ending(){
   const s=score(),[g,gd]=gradeOf(s),ti=titleOf();
   const role=roleLabel();
   try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potG()})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
-  const ach=Object.keys(P.ach).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
+  const ach=achSort(Object.keys(P.ach)).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
   const why=P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다.':(P.retireWhy||'');
   const epi=(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;

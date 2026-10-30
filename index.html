@@ -1167,13 +1167,13 @@ function rollPot(diff){
    심각한 부상(severe): 선수 생명이 끝나 시즌 후 은퇴
    시즌 부상 확률 (난이도별)
    쉬움: 약 2%, 경미한 부상만
-   보통: 약 8% (31세부터 +5%p), 경미 80% · 부상 18% · 심각 2%
+   보통: 약 11% (31세부터 +5%p), 경미 80% · 부상 18% · 심각 2%
    어려움: 실제 MLB의 장기 부상자 명단(60일 IL) 수준. 투수 약 18%·타자 약 12%, 30세부터 해마다 +1%p
            경미 72% · 부상 25%(투수 28%) · 심각 3% */
 function injuryBase(){
   const d=P.diff==null?1:P.diff;
   if(d===0)return .02;
-  if(d===1)return .08+(P.age>31?.05:0);
+  if(d===1)return .11+(P.age>31?.05:0);
   return (P.pitcher?.18:.12)+Math.max(0,P.age-30)*.01;
 }
 function injurySeverity(){

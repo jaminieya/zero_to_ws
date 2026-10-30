@@ -523,7 +523,7 @@ function newPlayer(cr){
   P={name:cr.name||'무명의 유망주',region:cr.region,role:cr.role,pitcher:cr.kind==='P',kind:cr.kind,labels:cr.labels.slice(),st:cr.st.slice(),mental:50,pot:cr.pot,cust:Object.assign({},cr.cust),
      age:16,y:2027,grade:1,uniYear:1,lv:'HS',team:cr.highSchool||cr.region+' 모교',org:'',tstr:Math.random(),
      hist:[],ach:{},money:0,fame:0,kboYears:0,kbo1Years:0,mlbYears:0,proYears:0,
-     mil:'none',milLeft:0,milType:'',prevLv:'',deferred:false,contract:0,faYears:9,deal:null,
+     mil:'none',milLeft:0,milType:'',prevLv:'',deferred:false,contract:0,entryFrom:'',kboRegDays:0,kboService:0,faEligible:false,faUsed:false,deal:null,
      injured:null,rehab:0,restFlag:false,hot:0,retire:false,married:false,news:[],draftOrder:shuffle(KBO),done:false,
      bp:40,log:[],car:{KBO:car(),MLB:car()},played:false,shield:false,shopMsg:''};
 }
@@ -595,6 +595,15 @@ function cardHtml(c,opt){
 /* ----- 저장 / 불러오기 / 로그 ----- */
 function hasSave(){try{return !!localStorage.getItem('b2ws_save')}catch(e){return false}}
 function save(){try{localStorage.setItem('b2ws_save',JSON.stringify(P))}catch(e){}}
+function ensureFaState(){
+  if(!P)return;
+  if(!P.entryFrom)P.entryFrom=P.faYears===8?'UNI':'HS';
+  if(P.kboRegDays==null)P.kboRegDays=Math.max(0,(P.kbo1Years||0)*145);
+  P.kboService=Math.floor((P.kboRegDays||0)/145);
+  if(P.faUsed==null)P.faUsed=false;
+  P.faEligible=P.org==='KBO'&&!P.faUsed&&P.kboService>=(P.entryFrom==='UNI'?7:8);
+  if(P.offers)P.offers=null;
+}
 function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem('b2ws_save'));hub()}catch(e){try{alert('저장 데이터를 불러오지 못했습니다.')}catch(_){}menu()}}
 function L(m){P.log.push(`${P.y}년 · ${m}`);if(P.log.length>300)P.log.shift()}
 function hofRead(){try{return JSON.parse(localStorage.getItem('b2ws_hof')||'[]')}catch(e){return []}}
@@ -1152,10 +1161,11 @@ function ovrDeltaMark(){
 function mainTab(ny,na){
   const o=ovr(),last=P.hist.length?P.hist[P.hist.length-1]:null;
   const c=coachAdvice();
+  const faInfo=P.org==='KBO'?` · FA ${P.kboService||0}/${P.entryFrom==='UNI'?7:8}시즌 (${P.kboRegDays||0}일)`:'';
   const stats=`<div class="panel hp"><div class="ovrrow"><div><span class="sub">OVR</span><b>${o}${ovrDeltaMark()}</b></div><div><span class="sub">최근 시즌</span><b class="sm2">${last?last.lv:'-'}</b></div><div><span class="sub">최고 OVR</span><b>${Math.max(P.peak||0,o)}</b></div></div>
     ${P.labels.map((l,i)=>bar(l,P.st[i],P.lastDelta&&P.lastDelta[i])).join('')}${bar('멘탈',P.mental,P.lastMen)}${bar('명성',Math.min(P.fame,10)*10)}
     <p class="sub" style="margin-top:10px">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}보유 ${moneyPair(P.money)}</p></div>`;
-  const play=`<div class="panel hp"><div class="tbox team-play-row"><div><b>${P.team}</b><br><span class="sub">${lvLabel()} · ${na}세 · ${P.mil==='exempt'?'병역특례':P.mil==='done'?'병역필':P.mil==='none'?'병역 미필':'복무 중'}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
+  const play=`<div class="panel hp"><div class="tbox team-play-row"><div><b>${P.team}</b><br><span class="sub">${lvLabel()} · ${na}세 · ${P.mil==='exempt'?'병역특례':P.mil==='done'?'병역필':P.mil==='none'?'병역 미필':'복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
   const coach=`<div class="panel hp"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
   return `<div class="hgrid">${heroPanel()}${stats}${play}${coach}</div>`;
 }
@@ -1236,7 +1246,7 @@ function shopTab(){
 }
 function recTab(){return careerPanel()+logPanel()}
 function hub(){
-  foldBp();save();P.peak=Math.max(P.peak||0,ovr());
+  ensureFaState();foldBp();save();P.peak=Math.max(P.peak||0,ovr());
   const ny=P.y+(P.played?1:0),na=P.age+(P.played?1:0);
   if(!TABS.includes(HUBTAB))HUBTAB='main';
   if(P.offers&&P.offers.length&&!SEAS_MODE&&!PREP_OPEN)SEAS_MODE='offer';
@@ -1911,7 +1921,7 @@ function headline(idx,gf){
 function playSeason(){
   SEAS_MODE='';SEAS_EV=null;
   const lg=P.lv,lab=lvLabel();P.played=true;
-  const tags=[],news=[];let line='',idx=0,tr={t:''},gf=1,sl=null;
+  const tags=[],news=[];let line='',idx=0,tr={t:''},gf=1,sl=null,regTxt='';
   if(lg==='KBO1'||lg==='KBO2'){P.kboYears++;if(lg==='KBO1')P.kbo1Years++}
   if(lg==='MLB')P.mlbYears++;
   if(isPro(lg))P.proYears++;
@@ -1935,6 +1945,14 @@ function playSeason(){
     tr=teamResult(lg,idx);if(tr.tag)tags.push(tr.tag);
     awards(lg,idx,gf,sl,tr).forEach(a=>tags.push(a));
   }
+  if(lg==='KBO1'){
+    ensureFaState();
+    const before=P.kboService||0,days=gf>=.95?(idx>=-1?145:RI(105,140)):Math.max(5,Math.round(145*gf));
+    P.kboRegDays=(P.kboRegDays||0)+Math.min(145,days);P.kboService=Math.floor(P.kboRegDays/145);
+    const need=P.entryFrom==='UNI'?7:8;P.faEligible=!P.faUsed&&P.kboService>=need;
+    regTxt=`1군 등록 ${Math.min(145,days)}일 · 누적 ${P.kboRegDays}일 (${P.kboService}/${need}시즌 인정)`;
+    if(P.kboService>before)L(`FA 등록일수 — ${P.kboService}시즌 인정`);
+  }
   let pay=0;
   if(isPro(lg)){const cap=yearlyPay(ovr(),lg==='MLB');pay=P.deal?Math.min(P.deal,cap):cap}
   P.money=Math.round(((+P.money||0)+pay)*100)/100;
@@ -1956,7 +1974,7 @@ function playSeason(){
   const evTxt=P.hsRun?'':(P.eventNote?`<p class="sub">시즌 전: ${P.eventNote}</p>`:'');
   P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
   finishSnap();
-  const resTop=`<div class="res-top"><div class="rec"><small>내 성적</small><b style="font-size:14px;line-height:1.35">${line}</b><span class="gp">출전 ${gp}경기</span></div><div class="rec"><small>팀·리그</small><b style="font-size:14px;line-height:1.35">${tr.t||lab}</b></div><div class="rec"><small>연봉</small><b style="font-size:14px;line-height:1.35">${isPro(lg)?priceLabel(pay):'아마추어 · 없음'}</b></div></div>`;
+  const resTop=`<div class="res-top"><div class="rec"><small>내 성적</small><b style="font-size:14px;line-height:1.35">${line}</b><span class="gp">출전 ${gp}경기</span></div><div class="rec"><small>팀·리그</small><b style="font-size:14px;line-height:1.35">${tr.t||lab}</b></div><div class="rec"><small>연봉</small><b style="font-size:14px;line-height:1.35">${isPro(lg)?priceLabel(pay):'아마추어 · 없음'}</b></div>${regTxt?`<div class="rec"><small>FA 등록일수</small><b style="font-size:13px;line-height:1.35">${regTxt}</b></div>`:''}</div>`;
   SEAS_RES={title:`${P.y} 시즌 결산`,html:`<p class="sub">${P.age}세 · ${lab} · <b>${P.team}</b></p><div class="season-news">📰 ${hd}</div>${resTop}${press}<p class="line">${line}</p>${hsLine}${planTxt}${evTxt}<p>${tags.map(t=>`<span class="tag ${/우승|MVP|금메달/.test(t)?'':'g'}">${t}</span>`).join('')}</p>${tr.t?`<p>${tr.t}</p>`:''}${inj?`<p style="color:#ff9b8a">⚠ ${inj}</p>`:''}${payTxt?`<p class="sub">${payTxt}</p>`:''}${milEnd?'<p style="color:var(--gold)">★ 전역! 다시 야구장으로 돌아간다.</p>':''}`};
   SEAS_MODE='result';SEAS_EV=null;PREP_OPEN=false;HUBTAB='main';
   hub();
@@ -2071,11 +2089,33 @@ function pickClub(org,val){
 }
 
 /* ============ 시즌 후 진행 ============ */
+function completeTrade(team,asked){
+  const old=P.team,t=teamProfile(team);P.team=team;P.tstr=t?t.win/100:P.tstr;
+  if(asked)mental(-1);else mental(1);
+  const note=asked?'KBO에는 일반적인 트레이드 거부권이 없어 이적이 확정됐다.':'구단의 트레이드 결정을 받아들였다.';
+  L(`트레이드 — ${old} → ${team}`);
+  show(()=>panel('트레이드 통보',`<p><b>${old}</b>에서 <b>${team}</b>(으)로 트레이드됐다.</p><p>${note}</p>${B('새 팀에 합류한다',hub)}`));
+}
+function tradeNotice(){
+  const pool=KBO.filter(t=>t!==P.team),team=pick(pool);
+  show(()=>hud()+panel('갑작스러운 트레이드 통보',`<p>구단이 <b>${team}</b>과의 트레이드에 합의했다. KBO 선수에게는 원칙적으로 트레이드 팀을 선택할 권리가 없다.</p>`
+    +B('트레이드 거부권을 행사한다',()=>completeTrade(team,true),'alt')
+    +B('트레이드 거부권을 행사하지 않는다',()=>completeTrade(team,false))));
+}
 function afterSeason(){
   if(P.retire)return ending();
   if(P.lv==='HS'){if(P.grade<3){P.grade++;return hub()}return careerChoice()}
   if(P.lv==='UNI'){if(P.uniYear<4){P.uniYear++;return hub()}return draftIntro('UNI')}
-  if(isPro(P.lv))return openOffers();
+  ensureFaState();
+  if(P.org==='KBO'){
+    if(P.faEligible)return faScreen(false);
+    if(Math.random()<.08)return tradeNotice();
+    return hub();
+  }
+  if(P.org==='MLB'){
+    if((P.contract||1)<=1)return faScreen(true);
+    P.contract--;return hub();
+  }
   hub();
 }
 function nextSeason(first){
@@ -2137,7 +2177,7 @@ function draftResult(from){
   signKBO(team,pk,round,bonus,from,true);
 }
 function signKBO(team,pk,round,bonus,from,drafted){
-  P.org='KBO';P.team=team;P.lv=pk<=20?'KBO1':'KBO2';P.faYears=from==='HS'?9:8;P.tstr=(teamProfile(team)||{win:50}).win/100;P.money+=bonus;
+  P.org='KBO';P.team=team;P.lv=pk<=20?'KBO1':'KBO2';P.entryFrom=from;P.kboRegDays=0;P.kboService=0;P.faEligible=false;P.faUsed=false;P.tstr=(teamProfile(team)||{win:50}).win/100;P.money+=bonus;
   if(P.lv==='KBO1')A('KBO 1군 데뷔');
   let extra='';
   if((FAV[P.region]||[]).includes(team)){fame(2);mental(4);extra='<p style="color:var(--gold)">★ 어릴 적부터 응원하던 팀의 유니폼을 입게 됐다! (명성+2, 멘탈+4)</p>'}
@@ -2165,13 +2205,14 @@ function postingSign(){
   show(()=>panel('MLB 진출!',`<p><b>${club.name}</b>과(와) 계약했다. 연 ${payLabel(deal,'MLB')} × ${yrs}년.</p><p>${P.lv==='MLB'?'메이저리그 개막 로스터에 이름이 올랐다.':'마이너 '+P.lv+'에서 빅리그 콜업을 노린다.'}</p>${B('미국 생활 시작',hub)}`));
 }
 function faScreen(fromMLB){
-  const o=ovr(),offers=[];
+  ensureFaState();
+  const o=ovr(),offers=[],allowMLB=fromMLB||P.kboService>=8;
   let kt=shuffle(TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team&&teamFits(t,o)));
   if(!kt.length)kt=TEAMS.filter(t=>t.org==='KBO'&&t.name!==P.team).sort((a,b)=>a.pay-b.pay);
   kt=kt.slice(0,2);
   if(!fromMLB&&teamProfile(P.team)&&teamProfile(P.team).org==='KBO')kt.unshift(teamProfile(P.team));
   kt.slice(0,3).forEach(t=>offers.push({org:'KBO',team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,'KBO',t.pay,false)}));
-  if(o>=65||fromMLB){
+  if(allowMLB&&(o>=65||fromMLB)){
     let mlb=shuffle(TEAMS.filter(t=>t.org==='MLB'&&t.name!==P.team&&teamFits(t,Math.max(o,65))));
     if(!mlb.length)mlb=TEAMS.filter(t=>t.org==='MLB').sort((a,b)=>a.pay-b.pay);
     mlb.slice(0,fromMLB?3:2).forEach(t=>offers.push({org:'MLB',team:t.name,tstr:t.win/100,yrs:offerYears(t,o),deal:offerDeal(o,'MLB',t.pay,o<75),minor:o<75}));
@@ -2179,11 +2220,12 @@ function faScreen(fromMLB){
   }
   const lab=x=>`${x.team} · ${x.org==='MLB'&&x.minor?'마이너 계약 · ':''}${payLabel(x.deal,x.org)}/년 × ${x.yrs}년 · ${tier(x.tstr)}`;
   show(()=>hud()+panel('FA 시장이 열렸다',`<p>${fromMLB?'메이저리그 계약이 끝났다. 새 팀을 찾거나, 유턴할 수도 있다.':'KBO FA 자격 취득! 선택이 인생을 바꾼다.'}</p>`
-   +offers.map(x=>B((x.org==='MLB'?'[MLB] ':'[KBO] ')+lab(x),()=>pickOffer(x,fromMLB),x.org==='MLB'?'red':'')).join('')+`<p class="sub">강팀일수록 우승 확률이 높지만 보수는 선택의 문제입니다.</p>`));
+   +offers.map(x=>B((x.org==='MLB'?'[MLB] ':'[KBO] ')+lab(x),()=>pickOffer(x,fromMLB),x.org==='MLB'?'red':'')).join('')+`<p class="sub">${!fromMLB&&P.kboService<8?'대졸 국내 FA는 7시즌부터 가능하지만 해외 FA 계약은 8시즌을 채워야 합니다. ':''}강팀일수록 우승 확률이 높지만 보수는 선택의 문제입니다.</p>`));
 }
 function pickOffer(x,fromMLB){
-  const wasMLB=P.org==='MLB';
+  const wasMLB=P.org==='MLB',wasKboFa=!fromMLB&&P.org==='KBO';
   P.team=x.team;P.org=x.org;P.contract=x.yrs;P.deal=x.deal;P.tstr=x.tstr;L(`${x.org} FA 계약 — ${x.team}`);
+  if(wasKboFa){P.faUsed=true;P.faEligible=false}
   if(x.org==='MLB'){
     const o=ovr();
     P.lv=(x.minor||o<75)?(o>=70?'AAA':o>=62?'AA':'A'):'MLB';

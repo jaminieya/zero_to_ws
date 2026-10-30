@@ -305,6 +305,7 @@ window.B2_LOC={
 "계약 완료": "Contract signed",
 "계약금 {0}.": "Signing bonus {0}.",
 "계약을 유지한다": "Stay on your contract",
+"영구 자산 · 치트 아이템": "Permanent assets · cheat items",
 "{0} +2 (60%) · +1 (30%) · 효과 없음 (10%)": "{0} +2 (60%) · +1 (30%) · no effect (10%)",
 "핵심 능력 +2 (50%) · +1 (35%) · 효과 없음 (15%)": "Core stat +2 (50%) · +1 (35%) · no effect (15%)",
 "핵심 능력 2개에 각각 50% 확률로 +1~2": "Two core stats, each 50% to gain +1–2",

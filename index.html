@@ -1690,7 +1690,7 @@ function shopTab(){
   }).join('');
   const left=`<div class="panel shop-eq-panel"><h2>장비 업그레이드</h2><div class="eql">${eqItems}</div></div>`;
   const luxN=Object.keys(P.luxOwned||{}).length;
-  const store=`<div class="panel lux"><div class="luxh"><b>기타 상점</b><span class="sub">럭셔리 ${luxN}/${LUXURY.length} 보유</span></div><div class="store-btns">${B(`소모품<small>시즌 아이템 · ${SHOP.length}종</small>`,()=>{SHOPCONS=true;hub()})}${B(`럭셔리 박스<small>영구 자산 · ${LUXURY.length}종</small>`,()=>{SHOPLUX=true;hub()},'red')}</div></div>`;
+  const store=`<div class="panel lux"><div class="luxh"><b>기타 상점</b><span class="sub">럭셔리 ${luxN}/${LUXURY.length} 보유</span></div><div class="store-btns">${B(`소모품<small>시즌 아이템 · ${SHOP.length}종</small>`,()=>{SHOPCONS=true;hub()})}${B(`럭셔리 박스<small>영구 자산 · 치트 아이템</small>`,()=>{SHOPLUX=true;hub()},'red')}</div></div>`;
   /* 휴대폰: 프로필 박스를 누르면 커스터마이제이션 창이 열린다 */
   const ho=hx(()=>{if(isPhone()){SHOPCUSTWIN=true;hub()}});
   const hero=`<div class="panel hp shop-profile" onclick="H[${ho}]()"><h2 class="phone-only">프로필</h2><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><b>${P.name}</b><span class="sub">보유 ${moneyPair(P.money)}</span><span class="sub phone-only">눌러서 외형 바꾸기 ✎</span></div></div>`;
@@ -1730,15 +1730,15 @@ function shopTab(){
   }
   if(SHOPCONS){
     const cl=hx(()=>{SHOPCONS=false;hub()});
-    const consBody=SHOP.map(x=>{const used=consUsed(x.id);return `<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${txt(x.d)}</span></div>${B(used?'이번 시즌 사용함':priceLabel(x.p),()=>buy(x.id),!used&&P.money>=x.p?'':'dis')}</div>`}).join('')
-      +`<p style="margin-top:14px"><b>치트 아이템</b> <span class="sub">한 시즌 동안 능력치 하나를 99로 · 가격은 현재 연봉 2년치 · 1군/빅리그에서 뛰면 관련 개인 타이틀 확정 · 시즌당 1개</span></p>`
-      +cheatList().map((c,i)=>{const pro=isPro(P.lv),pr=cheatPrice(),on=P.cheat&&P.cheat.i===i,ok=pro&&!P.cheat&&P.money>=pr;
-        return `<div class="sitem sm cheat"><div><b>${c.n}</b><br><span class="sub">${P.labels[i]} 99 (한 시즌) · ${cheatAward(P.org==='MLB'?'MLB':'KBO',i)||'-'} 확정</span></div>${B(on?'사용 중':!pro?'프로 선수만':P.cheat?'이미 사용 중':priceLabel(pr),()=>buyCheat(i),ok?'red':'dis')}</div>`}).join('');
+    const consBody=SHOP.map(x=>{const used=consUsed(x.id);return `<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${txt(x.d)}</span></div>${B(used?'이번 시즌 사용함':priceLabel(x.p),()=>buy(x.id),!used&&P.money>=x.p?'':'dis')}</div>`}).join('');
     extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>소모품</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">시즌 소모품 · 보유 ${moneyPair(P.money)}</p>${consBody}</div></div></div>`;
   }
   if(SHOPLUX){
     const cl=hx(()=>{SHOPLUX=false;hub()});P.luxOwned=P.luxOwned||{};
-    const luxBody=LUXURY.map(x=>{const owned=!!P.luxOwned[x.id],ok=!owned&&P.money>=x.p;return `<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${luxTxt(x)}</span><br><span class="sub" style="color:#b8560a;font-weight:bold">${luxFx(x)}${owned?' · 보유 중':''}</span></div>${B(owned?'구매 완료':priceLabel(x.p),()=>buyLuxury(x.id),ok?'':'dis')}</div>`}).join('');
+    const luxBody=LUXURY.map(x=>{const owned=!!P.luxOwned[x.id],ok=!owned&&P.money>=x.p;return `<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${luxTxt(x)}</span><br><span class="sub" style="color:#b8560a;font-weight:bold">${luxFx(x)}${owned?' · 보유 중':''}</span></div>${B(owned?'구매 완료':priceLabel(x.p),()=>buyLuxury(x.id),ok?'':'dis')}</div>`}).join('')
+      +`<p style="margin-top:14px"><b>치트 아이템</b> <span class="sub">한 시즌 동안 능력치 하나를 99로 · 가격은 현재 연봉 2년치 · 1군/빅리그에서 뛰면 관련 개인 타이틀 확정 · 시즌당 1개</span></p>`
+      +cheatList().map((c,i)=>{const pro=isPro(P.lv),pr=cheatPrice(),on=P.cheat&&P.cheat.i===i,ok=pro&&!P.cheat&&P.money>=pr;
+        return `<div class="sitem sm cheat"><div><b>${c.n}</b><br><span class="sub">${P.labels[i]} 99 (한 시즌) · ${cheatAward(P.org==='MLB'?'MLB':'KBO',i)||'-'} 확정</span></div>${B(on?'사용 중':!pro?'프로 선수만':P.cheat?'이미 사용 중':priceLabel(pr),()=>buyCheat(i),ok?'red':'dis')}</div>`}).join('');
     extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>럭셔리 박스</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">한 번만 구매할 수 있는 영구 자산 · 보유 ${moneyPair(P.money)}</p>${luxBody}</div></div></div>`;
   }
   return `<div class="sgrid"><div class="shop-col">${left}</div>${mid}<div class="shop-col">${right}</div></div>${extra}`;

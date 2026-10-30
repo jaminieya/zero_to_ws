@@ -816,10 +816,29 @@ const mental=d=>{if(d<0&&hasTrait('heart'))d/=2;P.mental=C(P.mental+d,0,100)};
 /* 능력치 상한 = 잠재력 - 5 (S 중간값 90 → 85, 최고 99 → 94 · A 중간값 79 → 74 · B 중간값 74 → 69)
    훈련·장비·상점·럭셔리로 올려도 넘지 못한다(이미 넘은 값은 깎지 않는다) */
 const statCap=()=>C((P.pot||70)-5,45,94);
-const capSt=(v,old)=>C(v,15,Math.max(statCap(),Math.min(old,99)));
+/* 세부 능력치별 상한 = 잠재력 상한 + 포지션 보정 + 선수 유형 보정.
+   포지션마다 강점·약점이 달라서 한 선수가 모든 능력치를 채울 수 없다(OVR 90을 넘어도 약점이 남는다).
+   타자: 컨택·파워·선구안·주루·수비 / 투수: 구속·제구·구위·체력·회복력 */
+const POS_CAP={
+  MI:[0,-9,-1,3,4],   // 2루/중견: 발과 수비, 장타는 약하다
+  OF:[0,1,-1,3,-6],   // 외야: 발과 장타, 내야 수비 감각은 떨어진다
+  C:[-2,0,2,-12,5],   // 포수: 수비·선구안, 주루는 최하
+  CI:[0,4,0,-8,1],    // 1루/3루: 장타, 발은 느리다
+  DH:[1,4,1,-10,-12], // 지명타자: 타격 전념
+  SP:[0,2,0,4,-8],    // 선발: 체력·제구, 연투 회복은 약하다
+  CL:[4,-3,3,-12,3],  // 마무리: 구속·구위·회복, 긴 이닝은 못 던진다
+  MR:[1,0,1,-6,2]     // 계투: 짧게 자주
+};
+const TYPE_CAP={CO:[3,-6,2,1,0],BA:[0,0,0,0,0],SL:[-3,5,0,-3,-1],PW:[4,-5,2,0,0],CT:[-4,4,0,1,0],FN:[-3,2,3,0,0]};
+const statCapAt=i=>C(statCap()+((POS_CAP[slot()]||[])[i]||0)+((TYPE_CAP[P.role]||[])[i]||0),40,97);
+const capSt=(v,old,i)=>C(v,15,Math.max(statCapAt(i),Math.min(old,99)));
+/* 포지션별 중요도: 시즌 성적은 OVR 평균이 아니라 포지션 가중 평균으로 낸다 */
+const POS_W={MI:[1,.6,.9,1.2,1.3],OF:[1,1,1,1.2,.8],C:[.8,.9,1.1,.5,1.7],CI:[1.1,1.4,1,.6,.9],DH:[1.2,1.5,1.1,.5,.2],
+  SP:[1,1.2,1.1,1.3,.4],CL:[1.3,.9,1.3,.4,1.1],MR:[1.1,1,1.1,.7,1.1]};
+function posRating(){const w=POS_W[slot()]||[1,1,1,1,1];return P.st.reduce((a,v,i)=>a+v*w[i],0)/w.reduce((a,b)=>a+b,0)}
 /* 상한에 가까울수록 훈련·아이템 효과가 줄어든다: 남은 여유 12 이상이면 100%, 그 아래로 줄어 최소 25% */
-const nearCap=(i,d)=>d>0?d*C((statCap()-P.st[i])/12,.25,1):d;
-const bump=(i,d)=>{P.st[i]=capSt(P.st[i]+nearCap(i,d),P.st[i])};
+const nearCap=(i,d)=>d>0?d*C((statCapAt(i)-P.st[i])/12,.25,1):d;
+const bump=(i,d)=>{P.st[i]=capSt(P.st[i]+nearCap(i,d),P.st[i],i)};
 const bumpMain=d=>bump(RI(0,2),d);
 const tier=t=>t>.66?'우승 후보':t>.4?'중위권':'리빌딩 중';
 const kboSal=()=>yearlyPay(ovr(),false);
@@ -865,12 +884,17 @@ function slotOf(kind,st,bar){
 }
 /* 시즌마다 지금 팀 OVR 기준으로 보직·수비 위치를 다시 정한다 */
 function updateSlot(){
-  if(!P.slot||P.lv==='MIL')return '';
+  if(!P.slot||P.lv==='MIL'||P.posHold===P.y)return '';
   const ns=slotOf(P.pitcher?'P':'H',P.st,teamOvr());
   if(ns===P.slot)return '';
-  const msg=`${P.pitcher?'보직':'수비 위치'} 변경: ${SLOT_NAME[P.slot]} → ${SLOT_NAME[ns]}`;
-  P.slot=ns;L(msg);return msg;
+  const from=SLOT_NAME[P.slot];P.slot=ns;
+  /* 새 포지션 적응: 그 포지션 핵심 능력이 조금 오른다 (포지션 전환 효과의 상승분 절반) */
+  const up=Object.entries(POS_SWITCH[ns]||{}).filter(([,d])=>d>0).map(([i,d])=>{const b=P.st[i];bump(+i,Math.ceil(d/2));return `${P.labels[i]} +${Math.round((P.st[i]-b)*10)/10}`});
+  const msg=`${P.pitcher?'보직':'수비 위치'} 변경: ${from} → ${SLOT_NAME[ns]}${up.length?` (적응 훈련: ${up.join(', ')})`:''}`;
+  L(msg);return msg;
 }
+/* 포지션 전환 효과: 새 포지션에 맞게 능력치가 오르고 내려간다 (타자·투수 능력 번호) */
+const POS_SWITCH={MI:{4:3,3:2,1:-2},OF:{3:3,1:1,4:-1},C:{4:4,2:2,3:-3},CI:{1:3,0:1,3:-2},SP:{3:4,1:2,4:-2},CL:{0:3,2:3,3:-3},MR:{4:3,0:1,3:-1}};
 function rollStats(kind,role){
   const pitcher=kind==='P';
   const labels=pitcher?['구속','제구','구위','체력','회복력']:['컨택','파워','선구안','주루','수비'];
@@ -1702,7 +1726,7 @@ function buyLuxury(id){
   const s=LUXURY.find(x=>x.id===id);P.luxOwned=P.luxOwned||{};
   if(!s||P.luxOwned[id])return hub();
   if(!spend(s.p)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
-  if(s.ovr)P.st=P.st.map(v=>capSt(Math.round((v+s.ovr)*10)/10,v));
+  if(s.ovr)P.st=P.st.map((v,i)=>capSt(Math.round((v+s.ovr)*10)/10,v,i));
   if(s.fame)fame(s.fame);if(s.men)mental(s.men);P.luxOwned[id]=true;
   P.shopMsg=`${s.n} 구매 완료! ${luxFx(s)}`;L(`럭셔리 자산 — ${s.n} 구매 (${priceLabel(s.p)}, ${luxFx(s)})`);hub();
 }
@@ -1754,6 +1778,7 @@ function mainTab(ny,na){
   const faInfo=P.org==='KBO'?` · FA ${P.kboService||0}/${faNeed()}시즌 (${P.kboRegDays||0}일)`:'';
   const stats=`<div class="panel hp"><div class="ovrrow"><div><span class="sub">OVR</span><b>${o}${ovrDeltaMark()}</b></div><div><span class="sub">최근 시즌</span><b class="sm2">${last?last.lv:'-'}</b></div><div><span class="sub">최고 OVR</span><b>${Math.max(P.peak||0,o)}</b></div></div>
     ${P.labels.map((l,i)=>bar(l,P.st[i],P.lastDelta&&P.lastDelta[i])).join('')}${bar('멘탈',P.mental,P.lastMen)}${bar('명성',Math.min(P.fame,10)*10)}
+    <p class="sub" style="margin-top:8px">${SLOT_NAME[slot()]||''} 상한 ${P.labels.map((l,i)=>`${l} ${statCapAt(i)}`).join(' · ')}</p>
     ${P.traits&&P.traits.length?`<p class="sub" style="margin-top:8px">특성 ${traitTags()}</p><p class="sub">${traitText()}</p>`:''}
     <p class="sub" style="margin-top:10px">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}보유 ${moneyPair(P.money)}</p></div>`;
   const play=`<div class="panel hp home-play"><div class="tbox team-play-row"><div>${teamLink()} <span class="sub">팀 OVR ${teamOvr()}</span>${teamMerit()?`<br><span class="sub merit">${meritLine(P.team)}</span>`:''}<br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
@@ -2000,14 +2025,14 @@ const AGE_CURVE={
 };
 function grow(){
   const a=P.age,cv=AGE_CURVE[P.pitcher?'p':'h'];
-  P.st=P.st.map((s,i)=>{const c=C((P.pot-s)/25,.25,1.4),g=cv[i];let d;
+  P.st=P.st.map((s,i)=>{const c=C((statCapAt(i)-s)/20,.25,1.4),g=cv[i];let d;
     if(a<=18)d=R(1.5,5)*c;else if(a<=21)d=R(1,4)*c;else if(a<=26)d=R(0,2.5)*c;
     else if(a<g.from)d=g.late?R(-.5,1.2):R(-1,1);
     else d=-(.6+g.k*(a-g.from))+R(-.8,.8);
     if(a<=26&&d>0&&hasTrait('genius'))d*=1.3;
     if(a>=g.from&&d<0&&hasTrait('ageless'))d*=.5;
-    return capSt(Math.round((s+d)*10)/10,s)});
-  const q=k=>(P.eq&&P.eq[k])||0,add=(i,v)=>{if(v)P.st[i]=capSt(Math.round((P.st[i]+nearCap(i,v))*10)/10,P.st[i])};
+    return capSt(Math.round((s+d)*10)/10,s,i)});
+  const q=k=>(P.eq&&P.eq[k])||0,add=(i,v)=>{if(v)P.st[i]=capSt(Math.round((P.st[i]+nearCap(i,v))*10)/10,P.st[i],i)};
   eqList().forEach(e=>{if(e.s!=null)add(e.s,.3*q(e.id))});
   /* 팀 메리트 */
   const mg=meritFx('g'),my=meritFx('young');
@@ -2031,56 +2056,104 @@ function injure(sev){
 }
 
 /* ============ 이벤트 ============ */
+/* 이벤트 능력치 효과: spec={h:{능력 번호:변화}, p:{...}, men, fame}. 오르는 것(▲)과 내리는 것(▼)을 나눠 보여준다 */
+function sfd(spec){
+  const m=spec[P.pitcher?'p':'h']||{},up=[],dn=[];
+  Object.entries(m).forEach(([i,d])=>(d>0?up:dn).push(`${P.labels[i]} ${d>0?'+':''}${d}`));
+  if(spec.men)(spec.men>0?up:dn).push(`멘탈 ${spec.men>0?'+':''}${spec.men}`);
+  if(spec.fame)(spec.fame>0?up:dn).push(`명성 ${spec.fame>0?'+':''}${spec.fame}`);
+  return [up.length?'▲ '+up.join(' · '):'',dn.length?'▼ '+dn.join(' · '):''].filter(Boolean).join('  ');
+}
+function sfx(spec){
+  const m=spec[P.pitcher?'p':'h']||{},r=[];
+  Object.entries(m).forEach(([i,d])=>{const b=P.st[i];bump(+i,d);const a=Math.round((P.st[i]-b)*10)/10;r.push(`${P.labels[i]} ${a>=0?'+':''}${a}`)});
+  if(spec.men){mental(spec.men);r.push(`멘탈 ${spec.men>0?'+':''}${spec.men}`)}
+  if(spec.fame){fame(spec.fame);r.push(`명성 ${spec.fame>0?'+':''}${spec.fame}`)}
+  return r.length?` (${r.join(', ')})`:'';
+}
+/* 확률 선택지 설명: [[확률, spec 또는 문구], ...] */
+const odds=list=>list.map(([p,x])=>`${Math.round(p*100)}%: ${typeof x==='string'?x:sfd(x)}`).join(' / ');
+const ES={
+  scout:{h:{0:2,1:1},p:{0:2,2:1},fame:2},calm:{men:4},
+  camp:{h:{3:3,4:2},p:{3:3,1:2},men:3},lesson:{h:{0:3,3:-1},p:{1:3,0:-1}},
+  pitch:{fame:2,men:2},results:{h:{0:2,2:1},p:{1:2,2:1}},
+  winter:{h:{3:3,4:1},p:{3:3,4:1},men:2},usLab:{h:{1:4,3:-2},p:{0:4,1:-2},fame:1},krLab:{h:{0:3,2:1},p:{1:3,2:1},men:3},
+  formOk:{h:{0:4,2:1},p:{2:4,1:1}},formBad:{h:{0:-2},p:{2:-2}},
+  rivalOk:{h:{1:3},p:{0:3},fame:1},focus1:{h:{0:1},p:{1:1}},focus2:{h:{0:1},p:{2:1}},
+  advOk:{h:{1:3,0:-1},p:{2:3,1:-1},men:2},advBad:{h:{1:-1},p:{2:-1}},
+  newGear:{h:{0:-2},p:{1:-2}},slump:{h:{0:-2},p:{1:-2}},
+  defense:{h:{4:3,1:-1},p:{3:3,0:-1}},showBat:{h:{0:2,1:1,4:-1},p:{2:3,3:-1}}
+};
+/* 조사 '로/으로': 받침이 있으면(ㄹ 제외) 으로 */
+const ro=w=>{const c=String(w).charCodeAt(String(w).length-1)-0xAC00;return w+(c>=0&&c<11172&&c%28&&c%28!==8?'으로':'로')};
+/* 지금 포지션의 핵심 능력(전환 효과에서 가장 크게 오르는 능력) */
+const posKey=sl=>{const e=Object.entries(POS_SWITCH[sl]||{4:1});return e.sort((a,b)=>b[1]-a[1])[0][0]};
+/* 포지션 전환 제안: 지금과 다른 포지션 하나를 고른다 */
+function posTarget(){
+  const pool=P.pitcher?['SP','MR','CL']:['MI','OF','C','CI'];
+  if(!P.posT||P.posT.y!==P.y||P.posT.from!==slot())P.posT={y:P.y,from:slot(),to:pick(pool.filter(x=>x!==slot()))};
+  return P.posT.to;
+}
 const EV=[
 {w:()=>P.lv==='HS',t:'스탠드에 앉은 프로 스카우트들',x:'오늘 경기 포수 뒤편에 스피드건과 수첩을 든 스카우트가 여덟 명이나 앉았다. 시선이 따갑다.',c:[
- ['이를 악물고 전력으로 붙는다','명성·기량 상승 / 부상 위험',()=>{if(Math.random()<.6){fame(2);bumpMain(2);return '눈도장 쾅! 스카우트 수첩에 이름이 크게 적혔다. (명성+2, 기량 상승)'}injure('minor');return '힘이 너무 들어갔다. 경기 후 통증이 찾아왔다… (경미한 부상)'}],
- ['평소처럼 내 야구를 한다','멘탈 상승',()=>{mental(4);return '담담하게 자기 야구를 했다. 멘탈이 단단해졌다. (멘탈+4)'}]]},
+ ['이를 악물고 전력으로 붙는다',()=>odds([[.6,ES.scout],[.4,'경미한 부상']]),()=>{if(Math.random()<.6)return '눈도장 쾅! 스카우트 수첩에 이름이 크게 적혔다.'+sfx(ES.scout);injure('minor');return '힘이 너무 들어갔다. 경기 후 통증이 찾아왔다… (경미한 부상)'}],
+ ['평소처럼 내 야구를 한다',()=>sfd(ES.calm),()=>'담담하게 자기 야구를 했다. 멘탈이 단단해졌다.'+sfx(ES.calm)]]},
 {w:()=>P.lv==='HS',t:'여름 합숙, 지옥의 3주',x:'감독님이 선언했다. “이번 여름, 우리는 포기하지 않는다.”',c:[
- ['끝까지 버틴다','체력·기량·멘탈 상승 / 부상 위험',()=>{if(Math.random()<.72){bump(3,3);bumpMain(2);mental(3);return '이를 악물고 버텼다. 체력과 기량이 눈에 띄게 올랐다.'}injure('minor');return '버티다 몸이 먼저 비명을 질렀다. (경미한 부상)'}],
- ['개인 레슨을 병행한다','기량 상승',()=>{bumpMain(3);return '전담 레슨 덕에 폼이 안정됐다. (기량+3)'}]]},
+ ['끝까지 버틴다',()=>odds([[.72,ES.camp],[.28,'경미한 부상']]),()=>{if(Math.random()<.72)return '이를 악물고 버텼다.'+sfx(ES.camp);injure('minor');return '버티다 몸이 먼저 비명을 질렀다. (경미한 부상)'}],
+ ['개인 레슨을 병행한다',()=>sfd(ES.lesson),()=>'전담 레슨 덕에 폼이 안정됐지만 러닝 훈련은 줄었다.'+sfx(ES.lesson)]]},
 {w:()=>P.lv==='UNI',t:'대학 감독의 프로 인맥',x:'감독님이 프로 구단 스카우트 팀장과 식사 자리를 마련해 주었다.',c:[
- ['적극적으로 어필한다','명성·멘탈 상승',()=>{fame(2);mental(2);return '자신 있게 포부를 밝혔다. 이름이 스카우트 사이에 돌기 시작했다. (명성+2)'}],
- ['성적으로 보여주겠다고 한다','기량 상승',()=>{bumpMain(2);return '말보다 결과로. 훈련에 더 매진했다. (기량+2)'}]]},
+ ['적극적으로 어필한다',()=>sfd(ES.pitch),()=>'자신 있게 포부를 밝혔다. 이름이 스카우트 사이에 돌기 시작했다.'+sfx(ES.pitch)],
+ ['성적으로 보여주겠다고 한다',()=>sfd(ES.results),()=>'말보다 결과로. 훈련에 더 매진했다.'+sfx(ES.results)]]},
 {w:()=>isPro(P.lv),t:'비시즌, 어디서 몸을 만들까',x:'시즌이 끝났다. 비시즌을 어떻게 보낼까.',c:[
- ['전지훈련만 간다','체력·멘탈 상승',()=>{bump(3,3);mental(2);return '전지훈련에서 체력을 착실하게 쌓았다. (체력+3, 멘탈+2)'}],
- ['미국 사설 트레이닝 센터 간다','기량·명성 상승',()=>{bumpMain(3);bumpMain(2);fame(1);return '트랙맨·랩소도 데이터로 몸을 뜯어고쳤다. (기량 상승, 명성+1)'}],
- ['한국 사설 트레이닝 센터 간다','기량·멘탈 상승',()=>{bumpMain(3);mental(3);return '익숙한 환경에서 맞춤 훈련을 소화했다. (기량+3, 멘탈+3)'}]]},
+ ['전지훈련만 간다',()=>sfd(ES.winter),()=>'전지훈련에서 몸을 착실하게 쌓았다.'+sfx(ES.winter)],
+ ['미국 사설 트레이닝 센터 간다',()=>sfd(ES.usLab),()=>'벌크업과 데이터 훈련으로 몸을 뜯어고쳤다. 대신 몸이 무거워졌다.'+sfx(ES.usLab)],
+ ['한국 사설 트레이닝 센터 간다',()=>sfd(ES.krLab),()=>'익숙한 환경에서 맞춤 훈련을 소화했다.'+sfx(ES.krLab)]]},
 {w:()=>isPro(P.lv),t:'코치의 폼 수정 제안',x:'“지금 폼으로는 한계가 있어. 이렇게 바꿔보자.”',c:[
- ['받아들인다','기량 크게 상승 / 폼이 꼬일 위험',()=>{if(Math.random()<.55){bumpMain(4);return '새 폼이 맞아떨어졌다! (기량+4)'}bumpMain(-2);return '폼이 꼬였다. 감을 되찾는 데 시간이 걸린다. (기량-2)'}],
- ['내 스타일을 고수한다','멘탈 상승',()=>{mental(3);return '자신을 믿기로 했다. (멘탈+3)'}]]},
+ ['받아들인다',()=>odds([[.55,ES.formOk],[.45,ES.formBad]]),()=>Math.random()<.55?'새 폼이 맞아떨어졌다!'+sfx(ES.formOk):'폼이 꼬였다. 감을 되찾는 데 시간이 걸린다.'+sfx(ES.formBad)],
+ ['내 스타일을 고수한다',()=>sfd({men:3}),()=>'자신을 믿기로 했다.'+sfx({men:3})]]},
 {w:()=>isPro(P.lv)&&P.fame>=2,t:'야구 예능 출연 제의',x:'유명 예능 PD에게 연락이 왔다. 한 번 나가면 이름이 확 알려진다.',c:[
  ['출연한다','명성 상승 / 멘탈이 흔들릴 수 있음',()=>{fame(3);if(Math.random()<.3){mental(-3);return '화제가 됐지만 “야구나 잘하라”는 댓글도 많았다. (명성+3, 멘탈 소폭 하락)'}mental(2);return '인기 폭발! 팬이 눈에 띄게 늘었다. (명성+3)'}],
  ['정중히 거절한다','멘탈 상승',()=>{mental(2);return '야구에 집중하기로 했다. (멘탈+2)'}]]},
 {w:()=>P.lv==='KBO1'||P.lv==='AAA'||P.lv==='MLB',t:'라이벌의 등장',x:'동기 중 한 명이 먼저 리그를 폭격하고 있다. 기자들이 비교하기 시작했다.',c:[
- ['정면승부로 넘어선다','기량·명성 상승 / 멘탈 하락 위험',()=>{if(Math.random()<.5){bumpMain(3);fame(1);return '자극이 약이 됐다. (기량+3)'}mental(-4);return '의식하다 오히려 꼬였다. (멘탈-4)'}],
- ['내 페이스를 지킨다','멘탈 상승',()=>{mental(3);return '남 신경 쓰지 않고 루틴을 지켰다. (멘탈+3)'}]]},
+ ['정면승부로 넘어선다',()=>odds([[.5,ES.rivalOk],[.5,{men:-4}]]),()=>Math.random()<.5?'자극이 약이 됐다.'+sfx(ES.rivalOk):'의식하다 오히려 꼬였다.'+sfx({men:-4})],
+ ['내 페이스를 지킨다',()=>sfd({men:3}),()=>'남 신경 쓰지 않고 루틴을 지켰다.'+sfx({men:3})]]},
 {w:()=>isPro(P.lv)&&P.age>=25&&P.age<=34&&!P.married,t:'결혼 소식',x:'오래 만난 연인이 말했다. “이제 우리 결혼할까?”',c:[
  ['결혼한다','멘탈 크게 상승',()=>{P.married=true;mental(8);return '가정을 이뤘다. 마음이 한결 안정됐다. (멘탈+8)'}],
- ['야구에만 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '조금만 더 야구에 집중하기로 했다. (기량+1)'}]]},
+ ['야구에만 집중한다',()=>sfd(ES.focus1),()=>'조금만 더 야구에 집중하기로 했다.'+sfx(ES.focus1)]]},
 {w:()=>isPro(P.lv)&&!P.injured,t:'팔꿈치·무릎에 이상 신호',x:'트레이너가 고개를 갸웃한다. “이거 좀 위험한데…”',c:[
  ['참고 뛴다','시즌 성적 상승 / 대형 부상 위험',()=>{P.hot+=.5;if(Math.random()<.4){injure('major');return '성적은 좋았지만 결국 탈이 났다… (대형 부상)'}return '아슬아슬했지만 버텼다. 성적이 좋았다. (시즌 퍼포먼스 상승)'}],
  ['엔트리 말소하고 재활한다','부상 위험 감소',()=>{P.restFlag=true;mental(1);return '무리하지 않고 몸을 챙겼다. (부상 위험 감소)'}]]},
 {w:()=>P.lv==='KBO1'&&P.fame>=3&&!P.pitcher,t:'내 응원가가 생겼다',x:'팬들이 직접 만든 응원가가 경기장에 울려 퍼진다. 3루 응원석이 들썩인다.',c:[
  ['손을 번쩍 들어 화답한다','멘탈·명성 상승',()=>{mental(5);fame(1);return '팬들과 하나가 된 순간. (멘탈+5, 명성+1)'}],
- ['덤덤히 경기에 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '프로는 결과로 말한다. (기량+1)'}]]},
+ ['덤덤히 경기에 집중한다',()=>sfd(ES.focus1),()=>'프로는 결과로 말한다.'+sfx(ES.focus1)]]},
 {w:()=>P.lv==='KBO1'&&P.fame>=3&&P.pitcher,t:'내 등장곡이 생겼다',x:'마운드에 오르자 나만의 등장곡이 구장에 울려 퍼진다. 관중석의 시선이 한곳으로 모인다.',c:[
  ['리듬에 맞춰 마운드에 오른다','멘탈·명성 상승',()=>{mental(5);fame(1);return '등장곡과 함께 구장의 분위기를 장악했다. (멘탈+5, 명성+1)'}],
- ['덤덤히 투구에 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '노래보다 공으로 보여줬다. (기량+1)'}]]},
+ ['덤덤히 투구에 집중한다',()=>sfd(ES.focus2),()=>'노래보다 공으로 보여줬다.'+sfx(ES.focus2)]]},
 {w:()=>P.org==='MLB'&&!RULE.native,t:'언어의 장벽',x:'클럽하우스 농담을 반쯤 못 알아듣는다. 통역이 있어도 미묘한 분위기는 전달되지 않는다.',c:[
  ['영어 공부에 매달린다','멘탈·명성 상승',()=>{mental(5);fame(1);return '조금씩 말이 트이자 동료들과 가까워졌다. (멘탈+5)'}],
  ['한국인 통역·선배와 어울린다','멘탈 소폭 상승',()=>{mental(2);return '편안함을 택했다. 적응은 천천히. (멘탈+2)'}]]},
 {w:()=>P.org==='MLB',t:'도미니카 동료의 조언',x:'옆 라커의 베테랑이 말했다. “너 그 그립/스윙, 이렇게 바꿔봐. 내가 해봤는데…”',c:[
- ['귀 기울여 듣는다','기량 상승 / 안 맞을 수도 있음',()=>{if(Math.random()<.65){bumpMain(3);mental(2);return '새로운 접근이 통했다. (기량+3)'}bumpMain(-1);return '나랑은 안 맞았다… (기량-1)'}],
+ ['귀 기울여 듣는다',()=>odds([[.65,ES.advOk],[.35,ES.advBad]]),()=>Math.random()<.65?'새로운 접근이 통했다.'+sfx(ES.advOk):'나랑은 안 맞았다…'+sfx(ES.advBad)],
  ['내 방식대로 간다','멘탈 상승',()=>{mental(2);return '신념을 지켰다. (멘탈+2)'}]]},
 {bad:true,w:()=>isPro(P.lv),t:'장비 가방이 사라졌다',x:'원정 버스가 떠난 뒤 장비 가방 하나가 보이지 않는다. 구단 직원들도 난감한 표정이다.',c:[
- ['급히 새 장비로 뛴다','무작위 기량 하락',()=>{bump(RI(0,4),-2);return '손에 익지 않은 장비 탓에 감각이 흐트러졌다. (무작위 기량-2)'}],
+ ['급히 새 장비로 뛴다',()=>sfd(ES.newGear),()=>'손에 익지 않은 장비 탓에 감각이 흐트러졌다.'+sfx(ES.newGear)],
  ['끝까지 찾아본다','멘탈 하락 / 찾을 수도 있음',()=>{if(Math.random()<.45)return '창고 구석에서 가방을 찾았다. 한바탕 소동으로 끝났다.';mental(-3);return '결국 찾지 못했다. 허탈함이 오래 남았다. (멘탈-3)'}]]},
 {bad:true,w:()=>isPro(P.lv)&&P.age>=24,t:'악성 기사와 흔들리는 루틴',x:'확인되지 않은 사생활 기사가 포털 메인을 채웠다. 해명해도 댓글은 멈추지 않는다.',c:[
  ['정면으로 해명한다','명성·멘탈 하락 위험',()=>{if(Math.random()<.45){fame(-1);mental(-2);return '논쟁만 더 커졌다. (명성-1, 멘탈-2)'}return '팩트가 확인되며 조용히 지나갔다.'}],
  ['대응하지 않는다','멘탈 하락',()=>{mental(-2);return '시간이 해결했지만 마음에는 생채기가 남았다. (멘탈-2)'}]]},
 {bad:true,w:()=>P.lv==='HS'||P.lv==='UNI',t:'슬럼프가 길어지는 봄',x:'잘 맞은 타구와 공도 자꾸 결과가 나쁘다. 훈련을 더 해도 답이 보이지 않는다.',c:[
- ['훈련량을 더 늘린다','기량 하락 또는 부상 위험',()=>{if(Math.random()<.35){injure('minor');return '조급함에 몸까지 상했다. (경미한 부상)'}bumpMain(-2);return '폼이 더 꼬였다. (기량-2)'}],
+ ['훈련량을 더 늘린다',()=>odds([[.35,'경미한 부상'],[.65,ES.slump]]),()=>{if(Math.random()<.35){injure('minor');return '조급함에 몸까지 상했다. (경미한 부상)'}return '폼이 더 꼬였다.'+sfx(ES.slump)}],
  ['잠시 야구와 거리를 둔다','멘탈 소폭 하락',()=>{mental(-1);return '완전히 풀리진 않았지만 숨을 돌렸다. (멘탈-1)'}]]},
+{w:()=>P.lv!=='MIL'&&P.lv!=='HS',get t(){return P.pitcher?'보직 전환 제안':'수비 위치 전환 제안'},get x(){const to=posTarget();return `감독이 불렀다. “${P.pitcher?SLOT_NAME[to]+' 보직으로':ro(SLOT_NAME[to])} 가 보는 건 어때? 팀에 그 자리가 필요해.”`},
+ get c(){const to=posTarget(),fx=P.pitcher?{p:POS_SWITCH[to]}:{h:POS_SWITCH[to]},cur={[P.pitcher?'p':'h']:{[posKey(slot())]:1},men:2};return [
+  [`${ro(SLOT_NAME[to])} 전환한다`,()=>sfd(fx)+` · 이번 시즌 ${SLOT_NAME[to]} 고정`,()=>{const from=SLOT_NAME[slot()];P.slot=to;P.posHold=P.y;L(`포지션 전환 — ${from} → ${SLOT_NAME[to]}`);return `${from}에서 ${ro(SLOT_NAME[to])} 자리를 옮겼다. 새 포지션 훈련이 시작됐다.`+sfx(fx)}],
+  [`${SLOT_NAME[slot()]} 자리를 지킨다`,()=>sfd(cur),()=>`지금 자리에서 더 단단해지기로 했다.`+sfx(cur)]]}},
+{w:()=>isPro(P.lv)||P.lv==='UNI',get t(){return P.pitcher?'선발 로테이션 경쟁':`주전 ${SLOT_NAME[slot()]} 경쟁`},x:'같은 자리를 노리는 경쟁자가 캠프에 합류했다. 코치진이 지켜보고 있다.',
+ get c(){return P.pitcher?[
+  ['투구 수를 늘려 버틴다',()=>sfd(ES.defense),()=>'긴 이닝을 버티는 몸을 만들었다.'+sfx(ES.defense)],
+  ['결정구를 갈고닦는다',()=>sfd(ES.showBat),()=>'한 방에 잡는 공을 만들었다.'+sfx(ES.showBat)]]:[
+  ['수비 특훈으로 어필한다',()=>sfd(ES.defense),()=>'펑고 수천 개. 글러브가 손처럼 움직인다.'+sfx(ES.defense)],
+  ['방망이로 어필한다',()=>sfd(ES.showBat),()=>'배팅 케이지에서 살았다. 수비 훈련은 뒷전이었다.'+sfx(ES.showBat)]]}},
 {w:()=>true,t:'비 오는 날의 뜻밖의 휴식',x:'아침부터 비가 쏟아져 모든 일정이 취소됐다. 동료들과 숙소에서 시간을 보냈다.',c:[
  ['보드게임 대회를 연다','능력치 변화 없음',()=> '마지막 판에서 코치가 대역전했다. 야구 이야기는 하나도 하지 않은 하루였다.'],
  ['낮잠을 푹 잔다','능력치 변화 없음',()=> '알람도 없이 눈을 떴다. 별일 없어서 오히려 좋은 날이었다.']]},
@@ -2088,7 +2161,7 @@ const EV=[
  ['모자를 벗고 인사한다','능력치 변화 없음',()=> '관중이 웃고 박수를 보냈다. 경기 뒤 짧은 밈으로 남았다.'],
  ['못 본 척 집중한다','능력치 변화 없음',()=> '다음 이닝에 조용히 수정됐다. 기록에는 아무것도 남지 않았다.']]}
 ];
-function choiceOf(c){return typeof c[1]==='function'?{l:c[0],d:'',fn:c[1]}:{l:c[0],d:c[1],fn:c[2]}}
+function choiceOf(c){if(c.length===2)return {l:c[0],d:'',fn:c[1]};return {l:c[0],d:typeof c[1]==='function'?c[1]():c[1],fn:c[2]}}
 function bannerHtml(){return P.playBanner&&P.playBanner.text?`<p class="form-line ${P.playBanner.ok?'ok':'bad'}">${P.playBanner.text}</p>`:''}
 function setBanner(text,ok){
   const line=String(text||'').replace(/\s+/g,' ').trim();
@@ -2681,7 +2754,7 @@ function playSeason(){
     else{line='현역 복무 — 야구는 잠시 멈춤';tr={t:'조국의 부름에 응답했다.'}}
     inj='';
   }else{
-    idx=(ovr()-REQ[lg])/9+G()*.55+(P.mental-50)/250+P.hot+(mod.perf||0)*.22+DIFF_IDX[P.diff==null?1:P.diff]+meritPerf();P.hot=0;
+    idx=(posRating()-REQ[lg])/9+G()*.55+(P.mental-50)/250+P.hot+(mod.perf||0)*.22+DIFF_IDX[P.diff==null?1:P.diff]+meritPerf();P.hot=0;
     if(lg==='HS'&&P.hsRun){
       const wins=(P.hsRun.results||[]).filter(r=>r.round==='우승').length;
       idx+=Math.min(1.1,(P.hsRun.form||0)*.08+wins*.4);

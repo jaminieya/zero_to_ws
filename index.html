@@ -388,7 +388,7 @@ const FAV={서울:['LG 트윈스','두산 베어스','키움 히어로즈'],부�
 const GAME_NAME='벤치에서 월드시리즈까지';
 const ROLE={SP:'선발투수',MR:'중간계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
 const PITCH_ROLES=['SP','MR','CL'],HIT_ROLES=['IF','OF','DH'];
-const ROLE_SUB={SP:'선발',MR:'중견',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
+const ROLE_SUB={SP:'선발',MR:'중간계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
 const ROLE_DESC={SP:'긴 이닝을 책임지는 에이스',MR:'승부처를 이어주는 허리',CL:'9회, 경기를 끝내는 사람',IF:'유격수·3루·2루·1루',OF:'타격·주루·어깨',DH:'수비 없이 방망이로 승부'};
 const LV={HS:'고교야구',UNI:'대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',MIL:'군 복무'};
 const REQ={HS:42,UNI:52,KBO2:52,KBO1:60,A:52,AA:58,AAA:64,MLB:70,MIL:54};
@@ -451,8 +451,10 @@ const FAN_NICK=[
 ];
 function fanNick(){
   const o=ovr(),tier=o>=95?5:o>=85?4:o>=75?3:o>=65?2:o>=55?1:0;
-  if(P.fanNick&&P.fanTier===tier)return P.fanNick;
-  const pool=(P.pitcher?FAN_NICK[tier].p:FAN_NICK[tier].h);
+  const oldRoleNick=P.pitcher&&P.fanNick==='필승조';
+  if(P.fanNick&&P.fanTier===tier&&!oldRoleNick)return P.fanNick;
+  let pool=(P.pitcher?FAN_NICK[tier].p:FAN_NICK[tier].h).slice();
+  if(P.pitcher)pool=pool.map(x=>x==='필승조'?(P.role==='MR'?'중간 계투':P.role==='CL'?'마무리 투수':'선발 로테이션'):x);
   const seed=[...String(P.name)].reduce((a,c)=>a+c.charCodeAt(0),tier*13+1);
   P.fanNick=pool[seed%pool.length];P.fanTier=tier;
   return P.fanNick;
@@ -1395,9 +1397,12 @@ const EV=[
 {w:()=>isPro(P.lv)&&!P.injured,t:'팔꿈치·무릎에 이상 신호',x:'트레이너가 고개를 갸웃한다. “이거 좀 위험한데…”',c:[
  ['참고 뛴다','시즌 성적 상승 / 대형 부상 위험',()=>{P.hot+=.5;if(Math.random()<.4){injure('major');return '성적은 좋았지만 결국 탈이 났다… (대형 부상)'}return '아슬아슬했지만 버텼다. 성적이 좋았다. (시즌 퍼포먼스 상승)'}],
  ['엔트리 말소하고 재활한다','부상 위험 감소',()=>{P.restFlag=true;mental(1);return '무리하지 않고 몸을 챙겼다. (부상 위험 감소)'}]]},
-{w:()=>P.lv==='KBO1'&&P.fame>=3,t:'내 응원가가 생겼다',x:'팬들이 직접 만든 응원가가 경기장에 울려 퍼진다. 3루 응원석이 들썩인다.',c:[
+{w:()=>P.lv==='KBO1'&&P.fame>=3&&!P.pitcher,t:'내 응원가가 생겼다',x:'팬들이 직접 만든 응원가가 경기장에 울려 퍼진다. 3루 응원석이 들썩인다.',c:[
  ['손을 번쩍 들어 화답한다','멘탈·명성 상승',()=>{mental(5);fame(1);return '팬들과 하나가 된 순간. (멘탈+5, 명성+1)'}],
  ['덤덤히 경기에 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '프로는 결과로 말한다. (기량+1)'}]]},
+{w:()=>P.lv==='KBO1'&&P.fame>=3&&P.pitcher,t:'내 등장곡이 생겼다',x:'마운드에 오르자 나만의 등장곡이 구장에 울려 퍼진다. 관중석의 시선이 한곳으로 모인다.',c:[
+ ['리듬에 맞춰 마운드에 오른다','멘탈·명성 상승',()=>{mental(5);fame(1);return '등장곡과 함께 구장의 분위기를 장악했다. (멘탈+5, 명성+1)'}],
+ ['덤덤히 투구에 집중한다','기량 소폭 상승',()=>{bumpMain(1);return '노래보다 공으로 보여줬다. (기량+1)'}]]},
 {w:()=>P.org==='MLB',t:'언어의 장벽',x:'클럽하우스 농담을 반쯤 못 알아듣는다. 통역이 있어도 미묘한 분위기는 전달되지 않는다.',c:[
  ['영어 공부에 매달린다','멘탈·명성 상승',()=>{mental(5);fame(1);return '조금씩 말이 트이자 동료들과 가까워졌다. (멘탈+5)'}],
  ['한국인 통역·선배와 어울린다','멘탈 소폭 상승',()=>{mental(2);return '편안함을 택했다. 적응은 천천히. (멘탈+2)'}]]},
@@ -1889,7 +1894,7 @@ function pressBox(idx,gf,nick,fresh){
   let paper,crowd;
   if(P.lv==='MIL'&&P.milType!=='상무'){paper='군 복무 소식이 짧은 기사로 남았다.';crowd='팬들은 전역 날짜를 세고 있다.'}
   else if(gf<.45){paper='언론은 성적보다 공백을 먼저 적었다.';crowd='팬 댓글은 회복을 기다리는 쪽이 많았다.'}
-  else if(idx>1.6){paper='스포츠 지면이 시즌을 크게 다뤘다.';crowd='응원가 사이에 별명이 먼저 나왔다.'}
+  else if(idx>1.6){paper='스포츠 지면이 시즌을 크게 다뤘다.';crowd=P.pitcher?'등장곡과 함께 별명이 먼저 나왔다.':'응원가 사이에 별명이 먼저 나왔다.'}
   else if(idx>.3){paper='지역 방송과 신문이 이름을 꾸준히 올렸다.';crowd='팬 반응은 자리를 잡았다는 평이 많았다.'}
   else if(idx>-.5){paper='기사는 짧고, 평가는 갈렸다.';crowd='팬들은 응원과 걱정 사이를 오갔다.'}
   else{paper='부진을 짚는 기사가 더 많았다.';crowd='댓글은 차가웠고, 별명도 가볍게 돌았다.'}

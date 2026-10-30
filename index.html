@@ -168,6 +168,7 @@ html:lang(en) .row{grid-template-columns:5.6em minmax(0,1fr) 2.4em 2.8em}
 .tbox{border:3px solid var(--paper);background:#06130b;padding:10px 12px}
 .eq-ev{color:#c0392b;font-weight:700}
 .merit{color:#b8560a;font-weight:700}
+.scard-aw{display:flex;flex-direction:column;gap:3px;font-size:12px;text-align:left}.scard-legend{margin:4px 0 8px;text-align:center}.hof-tabs{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.hof-tabs .btn{margin:0;padding:6px 10px;min-height:0}.story{line-height:1.8;text-align:justify}
 .team-link{background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left}.team-link span{font-size:12px;text-decoration:underline;opacity:.85}
 .mkt-info p{margin:4px 0}.mkt-msg{font-weight:700;margin:10px 0}.hub-modal .wbody{overflow:auto}
 .team-play-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -1009,7 +1010,33 @@ function koSaveNames(){
 }
 function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem(SK('b2ws_save')));setLeague(P.league||LEAGUE_HOME[LANG]||'KBO',P.nat);koSaveNames();hub()}catch(e){try{alert('저장 데이터를 불러오지 못했습니다.')}catch(_){}menu()}}
 function L(m){P.log.push(`${P.y}년 · ${m}`);if(P.log.length>300)P.log.shift()}
-function hofRead(){try{return JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]')}catch(e){return []}}
+/* ===== 오늘의 명전: 포지션별 탑10, 각 기록은 게임이 끝난 시점부터 24시간 유지 =====
+   새 기록은 그 포지션 탑10에 들 때만 저장(못 들면 저장하지 않음). 점수는 결과지의 레전드 점수.
+   HOF_API에 공유 서버 주소를 넣으면 기록을 서버에 보내고 서버 목록을 받아 모두가 같은 명전을 본다.
+   서버 약속: GET HOF_API → {포지션:[기록...]}, POST HOF_API (기록 1개) → 같은 형식. 비어 있으면 이 기기에만 저장 */
+const HOF_KEY='b2ws_hof_day',HOF_TTL=24*3600*1000,HOF_API='';
+const HOF_POS=['C','CI','MI','OF','DH','SP','MR','CL'];
+try{localStorage.removeItem(SK('b2ws_hof'))}catch(e){} /* 예전(두 자릿수 점수) 명예의 전당 기록 정리 */
+function hofLoad(){
+  let d={};try{d=JSON.parse(localStorage.getItem(SK(HOF_KEY))||'{}')}catch(e){}
+  const now=Date.now();HOF_POS.forEach(k=>{d[k]=(d[k]||[]).filter(e=>now-e.t<HOF_TTL).sort((a,b)=>b.score-a.score).slice(0,10)});
+  return d;
+}
+function hofSave(d){try{localStorage.setItem(SK(HOF_KEY),JSON.stringify(d))}catch(e){}}
+/* 등재되면 순위(1~10), 못 들면 0 */
+function hofSubmit(e){
+  const d=hofLoad(),l=d[e.pos]||(d[e.pos]=[]);
+  if(l.length>=10&&e.score<=l[l.length-1].score)return 0;
+  l.push(e);l.sort((a,b)=>b.score-a.score);d[e.pos]=l.slice(0,10);hofSave(d);
+  if(HOF_API)try{fetch(HOF_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(e)}).catch(()=>{})}catch(_){}
+  return d[e.pos].indexOf(e)+1;
+}
+function hofSync(done){
+  if(!HOF_API)return done&&done();
+  try{fetch(HOF_API).then(r=>r.json()).then(srv=>{const d=hofLoad();HOF_POS.forEach(k=>{const m=new Map();(srv[k]||[]).concat(d[k]).forEach(e=>m.set(e.id,e));d[k]=[...m.values()]});hofSave(d);done&&done()}).catch(()=>done&&done())}catch(e){done&&done()}
+}
+function hofRead(){const d=hofLoad();return HOF_POS.flatMap(k=>d[k]).sort((a,b)=>b.score-a.score)}
+const hofLeft=e=>{const h=Math.max(0,(HOF_TTL-(Date.now()-e.t))/3600000);return h>=1?`${Math.floor(h)}시간 남음`:`${Math.max(1,Math.round(h*60))}분 남음`};
 const SETKEY='b2ws_set_v1';
 let HUBMKT=false,SET={crt:true,rm:false},HUBSET=false,HUBSHARE=false,HUBCOFFEE=false,HUBRETIRE=false,SETCONF='',PREP_SEL=[],PREP_OPEN=false;
 const COFFEE_ACCOUNT='000-000-000000',CONTACT_EMAIL='janedoe@nowhere';
@@ -1028,14 +1055,18 @@ function fmtCarLine(c){
   if(!c||!c.g)return '';
   return P.pitcher?`${c.w}승 ${c.l}패 ${c.sv}세이브 ${c.hd}홀드 · 평균자책 ${c.ip?f2(c.er*9/c.ip):'-'} · ${c.k}탈삼진 · ${c.ip}이닝`:`타율 ${c.ab?rate(c.h/c.ab):'-'} · ${c.hr}홈런 · ${c.rbi}타점 · ${c.sb}도루 · ${c.ab}타석`;
 }
-function shareCardFrontHtml(){
-  const cu=P.cust||defCust(),o=ovr();
+const bestOvr=()=>Math.max(P.peak||0,ovr());
+function shareCardFrontHtml(res){
+  const cu=P.cust||defCust(),o=res?bestOvr():ovr();
   const th=CARDTH[cu.theme]||CARDTH[2],labels=(P.labels||[]).concat(['멘탈']),vals=P.st.concat([P.mental]);
   const stats=labels.slice(0,6).map((l,i)=>`<span class="scard-stat"><span>${l}</span><b>${Math.round(vals[i]||0)}</b></span>`).join('');
-  return `<div class="scard scard-front" style="--sc1:${th.c};--sc2:${th.c2}"><div class="scard-top scard-ovr"><b>${o}</b>OVR</div><div class="scard-top scard-club"><b>#${cu.num}</b>${P.team}</div><div class="scard-visual">${avatar(cu,15,P.team)}</div><div class="scard-bottom"><div class="scard-name">${P.name}</div><div class="scard-stats">${stats}</div></div></div>`;
+  return `<div class="scard scard-front" style="--sc1:${th.c};--sc2:${th.c2}"><div class="scard-top scard-ovr"><b>${o}</b>${res?'BEST OVR':'OVR'}</div><div class="scard-top scard-club"><b>#${cu.num}</b>${P.team}</div><div class="scard-visual">${avatar(cu,15,P.team)}</div><div class="scard-bottom"><div class="scard-name">${P.name}</div><div class="scard-stats">${stats}</div></div></div>`;
 }
-function shareCardBackHtml(){
+/* 결과지 뒷면: 레전드 점수와 수상 목록(중요한 순) */
+function resultAwards(){return achSort(Object.keys(P.ach)).map(k=>k+(P.ach[k]>1?' ×'+P.ach[k]:''))}
+function shareCardBackHtml(res){
   const cu=P.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2];
+  if(res){const s=score(),aw=resultAwards();return `<div class="scard scard-back" style="--sc1:${th.c};--sc2:${th.c2}"><div class="scard-back-inner"><h3>AWARDS</h3><p class="scard-legend"><b>${gradeOf(s)[0]}</b> · ${s} / 999</p><div class="scard-cstat scard-aw">${aw.length?aw.slice(0,14).map(a=>`<span>${a}</span>`).join(''):'<p class="sub">수상 없음</p>'}${aw.length>14?`<span class="sub">외 ${aw.length-14}개</span>`:''}</div></div></div>`}
   let cs='';
   if(P.car.KBO.g>0)cs+=`<p><b>KBO</b> (${P.car.KBO.g}시즌)<br>${fmtCarLine(P.car.KBO)}</p>`;
   if(P.car.MLB.g>0)cs+=`<p><b>MLB</b> (${P.car.MLB.g}시즌)<br>${fmtCarLine(P.car.MLB)}</p>`;
@@ -1066,12 +1097,21 @@ function drawShareAvatar(x,W,H,imgs){
   const ubw=bw*uniS,ubh=AVL.BH*uniS;dr(imgs[i++],(AVL.W-ubw)/2,AVL.BY+(AVL.BH-ubh)/2,ubw,ubh);
   const hw=AVL.HW*AVL.SH,head=[(AVL.W-hw)/2,0,hw,AVL.HH*AVL.SH];dr(imgs[i++],...head);if(cu.eyeblack)dr(imgs[i++],...head);dr(imgs[i],...head);
 }
-function drawShareCardTo(x,W,H,side,avatarImgs){
-  const cu=P.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2],o=ovr();
+function drawShareCardTo(x,W,H,side,avatarImgs,res){
+  const cu=P.cust||defCust(),th=CARDTH[cu.theme]||CARDTH[2],o=res?bestOvr():ovr();
   const bg=x.createLinearGradient(0,0,W,H);bg.addColorStop(0,th.c2);bg.addColorStop(.58,'#07170e');bg.addColorStop(1,'#020805');x.fillStyle=bg;x.fillRect(0,0,W,H);
   x.globalAlpha=.1;x.strokeStyle='#fff';x.lineWidth=W*.012;for(let i=-H;i<W;i+=W*.11){x.beginPath();x.moveTo(i,0);x.lineTo(i+H,H);x.stroke()}x.globalAlpha=1;
   x.strokeStyle=th.c;x.lineWidth=Math.max(8,W/54);x.strokeRect(W*.035,H*.025,W*.93,H*.95);
   x.strokeStyle='#fff';x.lineWidth=2;x.strokeRect(W*.055,H*.04,W*.89,H*.92);
+  if(side==='back'&&res){
+    const sc=score();x.fillStyle=th.c;x.font=`bold ${Math.round(W/16)}px sans-serif`;x.textAlign='center';x.fillText('AWARDS',W/2,H*.16);
+    x.fillStyle='#fff';x.font=`bold ${Math.round(W/22)}px sans-serif`;x.fillText(`${gradeOf(sc)[0]} · ${sc} / 999`,W/2,H*.22);
+    const aw=resultAwards();x.textAlign='left';x.font=`${Math.round(W/30)}px sans-serif`;x.fillStyle='#dcecdf';
+    if(!aw.length){x.textAlign='center';x.fillText(TR('수상 없음'),W/2,H*.4)}
+    aw.slice(0,16).forEach((a,i)=>x.fillText('• '+TR(a),W*.1,H*(.3+i*.04)));
+    if(aw.length>16){x.fillStyle='#9fc7a6';x.fillText(TR(`외 ${aw.length-16}개`),W*.1,H*(.3+16*.04))}
+    return;
+  }
   if(side==='back'){
     x.fillStyle=th.c;x.font=`bold ${Math.round(W/16)}px sans-serif`;x.textAlign='center';x.fillText('CAREER STATS',W/2,H*.2);
     let y=H*.34;x.textAlign='left';x.fillStyle='#fff';x.font=`bold ${Math.round(W/25)}px sans-serif`;
@@ -1091,7 +1131,7 @@ function drawShareCardTo(x,W,H,side,avatarImgs){
   }
   drawShareAvatar(x,W,H,avatarImgs);
   x.textAlign='center';x.fillStyle=th.c;x.font=`bold ${Math.round(W/7)}px sans-serif`;x.fillText(String(o),W*.16,H*.15);
-  x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;x.fillText('OVR',W*.16,H*.19);
+  x.fillStyle='#fff';x.font=`bold ${Math.round(W/30)}px sans-serif`;x.fillText(res?'BEST OVR':'OVR',W*.16,H*.19);
   x.textAlign='right';x.fillStyle=th.c;x.font=`bold ${Math.round(W/17)}px sans-serif`;x.fillText('#'+cu.num,W*.88,H*.13);
   x.fillStyle='#fff';x.font=`bold ${Math.round(W/32)}px sans-serif`;x.fillText(P.team,W*.88,H*.18);
   x.fillStyle='rgba(3,10,6,.88)';x.fillRect(W*.075,H*.69,W*.85,H*.235);x.strokeStyle=th.c;x.lineWidth=3;x.strokeRect(W*.075,H*.69,W*.85,H*.235);
@@ -1105,38 +1145,38 @@ function drawShareCard(){
   if(f&&P)drawShareCardTo(f.getContext('2d'),540,756,'front');
   if(b&&P)drawShareCardTo(b.getContext('2d'),540,756,'back');
 }
-function shareCardBlob(cb){
+function shareCardBlob(cb,res){
   const W=540,H=756,gap=24,cv=document.createElement('canvas');
   cv.width=W*2+gap;cv.height=H;
   const x=cv.getContext('2d');
   x.fillStyle='#050d08';x.fillRect(0,0,cv.width,cv.height);
   loadShareAvatar().then(imgs=>{
-    drawShareCardTo(x,W,H,'front',imgs);
-    x.save();x.translate(W+gap,0);drawShareCardTo(x,W,H,'back');x.restore();
+    drawShareCardTo(x,W,H,'front',imgs,res);
+    x.save();x.translate(W+gap,0);drawShareCardTo(x,W,H,'back',null,res);x.restore();
     cv.toBlob(b=>cb(b),'image/png');
   });
 }
-function shareCardImage(){
+function shareCardImage(res){
   shareCardBlob(b=>{
     if(!b){try{alert('카드를 만들지 못했습니다.')}catch(_){}return}
-    const file=new File([b],`${(P.name||'player').replace(/\s/g,'_')}-cards.png`,{type:'image/png'});
+    const file=new File([b],`${(P.name||'player').replace(/\s/g,'_')}-${res?'result':'cards'}.png`,{type:'image/png'});
     if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
       navigator.share({files:[file],text:TR(careerShareText())}).catch(()=>{});
       return;
     }
     const url=URL.createObjectURL(b),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(()=>URL.revokeObjectURL(url),4000);
     try{alert('앞·뒷면 카드 PNG를 저장했습니다.')}catch(_){}
-  });
+  },res);
 }
 function hubShareModal(){
   const cl=H.length;H.push(closeHubModals);
-  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>커리어 카드</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><div class="share-card-row">${shareCardFrontHtml()}${shareCardBackHtml()}</div><canvas id="shareCvFront" class="share-cv-hid" width="540" height="756"></canvas><canvas id="shareCvBack" class="share-cv-hid" width="540" height="756"></canvas><div class="share-card-actions">${B('이미지 저장',shareCardImage)}${B('닫기',closeHubModals,'alt')}</div></div></div></div>`;
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>커리어 카드</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><div class="share-card-row">${shareCardFrontHtml()}${shareCardBackHtml()}</div><canvas id="shareCvFront" class="share-cv-hid" width="540" height="756"></canvas><canvas id="shareCvBack" class="share-cv-hid" width="540" height="756"></canvas><div class="share-card-actions">${B('이미지 저장',()=>shareCardImage(false))}${B('닫기',closeHubModals,'alt')}</div></div></div></div>`;
 }
 function hubSettingsModal(){
   const row=(k,t,d)=>{const ix=H.length;H.push(()=>toggleSet(k));return `<button type="button" class="stg-row ${SET[k]?'on':''}" onclick="H[${ix}]()"><span><b>${t}</b><small>${d}</small></span><i class="stg-sw"><em></em></i></button>`};
   let data;
   if(SETCONF==='save')data=`<p class="sub">저장된 커리어를 삭제할까요? 되돌릴 수 없습니다.</p><div>${B('삭제',()=>{try{localStorage.removeItem(SK('b2ws_save'))}catch(e){}SETCONF='';closeHubModals();menu()},'red')}${B('취소',()=>{SETCONF='';hub()},'alt')}</div>`;
-  else if(SETCONF==='all')data=`<p class="sub">저장·명예의 전당 기록을 모두 지울까요?</p><div>${B('전부 삭제',()=>{try{localStorage.removeItem(SK('b2ws_save'));localStorage.removeItem(SK('b2ws_hof'))}catch(e){}SETCONF='';closeHubModals();menu()},'red')}${B('취소',()=>{SETCONF='';hub()},'alt')}</div>`;
+  else if(SETCONF==='all')data=`<p class="sub">저장·명예의 전당 기록을 모두 지울까요?</p><div>${B('전부 삭제',()=>{try{localStorage.removeItem(SK('b2ws_save'));localStorage.removeItem(SK(HOF_KEY))}catch(e){}SETCONF='';closeHubModals();menu()},'red')}${B('취소',()=>{SETCONF='';hub()},'alt')}</div>`;
   else{
     data=`<p class="sub" style="margin-top:8px"><b>데이터</b></p><div>${B('커리어 저장 삭제',()=>{if(hasSave()){SETCONF='save';hub()}},hasSave()?'alt':' dis')}${B('전체 데이터 삭제',()=>{SETCONF='all';hub()},'alt')}</div>`;
   }
@@ -1278,9 +1318,9 @@ function hubLogo(){
 }
 function hofBanner(){
   const l=hofRead();
-  const list=!l.length?'<span class="sub" style="color:#6b5230">아직 명예의 전당에 오른 선수가 없습니다.</span>':l.slice(0,3).map((r,i)=>`<span class="hof-entry"><b>#${i+1}</b>${r.name} <span class="sub">${r.grade} · ${r.score}점</span></span>`).join('');
+  const list=!l.length?'<span class="sub" style="color:#6b5230">오늘의 명전에 오른 선수가 아직 없습니다.</span>':l.slice(0,3).map((r,i)=>`<span class="hof-entry"><b>#${i+1}</b>${r.name} <span class="sub">${SLOT_NAME[r.pos]||''} · ${r.grade} · ${r.score}점</span></span>`).join('');
   const shop=P.shopMsg?`<span class="hof-shopmsg">${P.shopMsg}</span>`:'';
-  return `<div class="hof-banner"><span class="hof-title">🏆 명예의 전당</span><div class="hof-list">${list}</div>${shop}</div>`;
+  return `<div class="hof-banner"><span class="hof-title">🏆 오늘의 명전</span><div class="hof-list">${list}</div>${shop}</div>`;
 }
 
 /* ----- 메인 화면: 잠실야구장 야간 경기 (LG 트윈스 vs 두산 베어스) + 팝업 윈도우 ----- */
@@ -1444,9 +1484,18 @@ function menu(){
     return {title:'메인 메뉴',body:`${B('새 게임',newGame,'mbtn')}${hasSave()?B('이어하기',loadGame,'mbtn'):'<button class="btn mbtn dis" disabled>이어하기</button>'}${B('명예의 전당',hofScreen,'mbtn')}${info}${langPicker()}<p class="sub" style="text-align:center">창 바깥을 누르면 메인 화면으로 돌아갑니다.</p>`};
   });
 }
+let HOFTAB='';
 function hofScreen(){
-  const l=hofRead();
-  stagePage(()=>({title:'HALL OF FAME',cls:'wide',body:(l.length?`<div class="hofgrid">${l.map((r,i)=>`<div class="hofrow">${r.card||''}<div><b style="color:#a02a1a;font-size:20px">#${i+1} · ${r.grade}등급</b><br>${r.title}<br><span class="sub">${r.name} (${r.role}) · ${r.score}점<br>KBO ${r.kbo||0}시즌 · MLB ${r.mlb||0}시즌</span></div></div>`).join('')}</div>`:'<p>아직 은퇴한 선수가 없습니다. 첫 전설을 만들어 보세요.</p>')+B('← 메뉴로',menu,'alt')}));
+  hofSync(()=>{
+    const d=hofLoad();if(!HOF_POS.includes(HOFTAB))HOFTAB=HOF_POS.find(k=>d[k].length)||'SP';
+    stagePage(()=>{
+      const tabs=`<div class="hof-tabs">${HOF_POS.filter(k=>k!=='DH'||d.DH.length).map(k=>B(`${SLOT_NAME[k]} <small>${d[k].length}</small>`,()=>{HOFTAB=k;hofScreen()},k===HOFTAB?'':'alt')).join('')}</div>`;
+      const l=d[HOFTAB];
+      const rows=l.length?`<div class="hofgrid">${l.map((r,i)=>`<div class="hofrow"><div><b style="color:#a02a1a;font-size:20px">#${i+1} · ${r.grade}등급 · ${r.score}점</b><br>${r.name} <span class="sub">(${r.role}) · BEST OVR ${r.peak||'-'}</span><br>${r.title}<br><span class="sub">KBO ${r.kbo||0}시즌 · MLB ${r.mlb||0}시즌 · ${hofLeft(r)}</span></div></div>`).join('')}</div>`
+        :`<p>오늘 ${SLOT_NAME[HOFTAB]} 명전에 오른 선수가 없습니다.</p>`;
+      return {title:'오늘의 명전',cls:'wide',body:`<p class="sub">포지션별 탑10 · 각 기록은 게임이 끝난 뒤 24시간 동안 남습니다</p>${tabs}${rows}`+B('← 메뉴로',menu,'alt')};
+    });
+  });
 }
 
 /* ----- 선수 생성 (이름 · 출신 · 난이도) ----- */
@@ -1898,7 +1947,7 @@ function shopTab(){
 }
 function recTab(){return careerPanel()+logPanel()}
 function hub(){
-  ensureFaState();foldBp();if(P.eq)eqMigrate();if(!P.traits)P.traits=rollTraits(P.pitcher);save();P.peak=Math.max(P.peak||0,ovr());
+  ensureFaState();foldBp();if(P.eq)eqMigrate();if(!P.traits)P.traits=rollTraits(P.pitcher);save();if(ovr()>(P.peak||0)){P.peak=ovr();P.peakAge=P.age}
   const ny=P.y+(P.played?1:0),na=P.age+(P.played?1:0);
   if(!TABS.includes(HUBTAB))HUBTAB='main';
   if(P.offers&&P.offers.length&&!SEAS_MODE&&!PREP_OPEN)SEAS_MODE='offer';
@@ -2041,6 +2090,7 @@ function grow(){
 }
 /* 부상을 입히고 능력치를 깎는다. 투수는 구속·구위, 타자는 파워·주루가 주로 떨어진다 */
 function injure(sev){
+  P.injCount=(P.injCount||0)+1;
   if(sev==='surg')sev='major';
   if(P.diff===0)sev='minor'; /* 쉬움: 큰 부상 없음 */
   P.injured=sev;
@@ -2082,6 +2132,7 @@ const ES={
   rivalOk:{h:{1:3},p:{0:3},fame:1},focus1:{h:{0:1},p:{1:1}},focus2:{h:{0:1},p:{2:1}},
   advOk:{h:{1:3,0:-1},p:{2:3,1:-1},men:2},advBad:{h:{1:-1},p:{2:-1}},
   newGear:{h:{0:-2},p:{1:-2}},slump:{h:{0:-2},p:{1:-2}},
+  manage:{h:{2:1,3:-1},p:{1:1,0:-1}},grindOld:{h:{1:1,3:1},p:{0:1,3:1}},prove:{h:{0:2},p:{1:2}},
   defense:{h:{4:3,1:-1},p:{3:3,0:-1}},showBat:{h:{0:2,1:1,4:-1},p:{2:3,3:-1}}
 };
 /* 조사 '로/으로': 받침이 있으면(ㄹ 제외) 으로 */
@@ -2154,6 +2205,16 @@ const EV=[
   ['결정구를 갈고닦는다',()=>sfd(ES.showBat),()=>'한 방에 잡는 공을 만들었다.'+sfx(ES.showBat)]]:[
   ['수비 특훈으로 어필한다',()=>sfd(ES.defense),()=>'펑고 수천 개. 글러브가 손처럼 움직인다.'+sfx(ES.defense)],
   ['방망이로 어필한다',()=>sfd(ES.showBat),()=>'배팅 케이지에서 살았다. 수비 훈련은 뒷전이었다.'+sfx(ES.showBat)]]}},
+/* 은퇴 전조 ① 몸의 신호 ② 구단의 싸늘한 시선 ③ 은퇴를 묻는 기자 — 실제 은퇴(방출·노쇠) 1~2시즌 전에 뜬다 */
+{bad:true,w:()=>isPro(P.lv)&&P.age>=32&&P.age<45,t:'예전 같지 않은 몸',x:'아침에 일어나면 무릎이 먼저 말을 건다. 회복이 하루씩 늦어지고, 트레이너가 자꾸 고개를 갸웃한다.',c:[
+ ['관리 루틴으로 바꾼다',()=>sfd(ES.manage)+' · 다음 시즌 부상 확률 ↓',()=>{P.shield=true;return '경험으로 버티는 법을 배웠다. 대신 순발력은 조금 내려놓았다.'+sfx(ES.manage)}],
+ ['더 세게 몰아붙인다',()=>odds([[.6,ES.grindOld],[.4,'경미한 부상']]),()=>{if(Math.random()<.6)return '아직 몸은 대답해 줬다.'+sfx(ES.grindOld);injure('minor');return '결국 몸이 먼저 무너졌다. (경미한 부상)'}]]},
+{bad:true,w:()=>isPro(P.lv)&&P.age>=29&&nearRelease(),t:'구단의 싸늘한 시선',x:'프런트 회의에서 젊은 선수들 이름만 오간다는 소문이 들린다. 다음 계약은 장담할 수 없다.',c:[
+ ['훈련량을 늘려 증명한다',()=>odds([[.5,ES.prove],[.5,'경미한 부상']]),()=>{if(Math.random()<.5)return '이를 악물고 기량을 끌어올렸다.'+sfx(ES.prove);injure('minor');return '조급함이 화를 불렀다. (경미한 부상)'}],
+ ['조용히 다음 인생을 준비한다',()=>sfd({men:3}),()=>'지도자 연수 과정을 알아보기 시작했다. 마음이 한결 편해졌다.'+sfx({men:3})]]},
+{w:()=>isPro(P.lv)&&P.age>=35,t:'은퇴를 묻는 기자',x:'“은퇴 시점은 생각해 보셨나요?” 기자회견장이 순간 조용해졌다.',c:[
+ ['“아직 보여줄 게 남았다”',()=>sfd({men:3}),()=>'단호한 한마디가 헤드라인이 됐다.'+sfx({men:3})],
+ ['“올해가 마지막일 수도 있다”',()=>sfd({fame:2,men:-2}),()=>'은퇴 투어 이야기가 나오기 시작했다. 원정 구장마다 박수가 쏟아졌다.'+sfx({fame:2,men:-2})]]},
 {w:()=>true,t:'비 오는 날의 뜻밖의 휴식',x:'아침부터 비가 쏟아져 모든 일정이 취소됐다. 동료들과 숙소에서 시간을 보냈다.',c:[
  ['보드게임 대회를 연다','능력치 변화 없음',()=> '마지막 판에서 코치가 대역전했다. 야구 이야기는 하나도 하지 않은 하루였다.'],
  ['낮잠을 푹 잔다','능력치 변화 없음',()=> '알람도 없이 눈을 떴다. 별일 없어서 오히려 좋은 날이었다.']]},
@@ -2949,11 +3010,31 @@ function nextSeason(first){
   P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
   if(!first){P.age++;P.y++}
   if(P.outLeft>0)P.news.push('재활 시즌: 작년 부상으로 이번 시즌도 뛸 수 없다.');
-  const why=retireCheck();if(why){P.retire=true;P.retireWhy=why;return ending()}
+  const why=retireCheck();
+  if(why){
+    /* 방출 사유면 바로 은퇴하지 않고 재계약 불가 통보부터. 통보 뒤 2시즌 안에 다시 걸리면 그때 은퇴 */
+    if(P.age<45&&!(P.nonRenewY&&P.y-P.nonRenewY<=2)){P.nonRenewY=P.y;return nonRenewScreen(why,first)}
+    P.retire=true;P.retireWhy=why;return ending();
+  }
+  seasonStart(first);
+}
+function seasonStart(first){
   if(!first){const cv=AGE_CURVE[P.pitcher?'p':'h'],fall=P.labels.filter((l,i)=>cv[i].from===P.age);
     if(fall.length)P.news.push(`에이징 커브: ${fall.join('·')} 능력이 떨어지기 시작했다. 나이는 속일 수 없다.`)}
   if(RULE.mil!=='none'&&isPro(P.lv)&&P.mil==='none'&&P.age>=27)return militaryChoice(P.age===27&&!P.deferred);
   proceed();
+}
+/* 은퇴 전조 ③ 재계약 불가 통보: 연봉 반토막으로 1년 더 · 입단 테스트(45%) · 은퇴 */
+function nonRenewScreen(why,first){
+  const retire=w=>{P.retire=true;P.retireWhy=w;ending()};
+  show(()=>hud()+panel('재계약 불가 통보',`<p>시즌을 앞두고 단장실에 불려 갔다. “미안하지만, 내년 구상에 네 자리는 없다.”</p><p class="sub">${P.age}세 · OVR ${ovr()} · ${lvLabel()}</p>`
+    +B('<b>연봉을 절반으로 깎고 1년만 더 뛴다</b><span class="sub">▼ 연봉 50% · 멘탈 -5 · 내년에도 기량이 안 되면 은퇴</span>',()=>{P.deal=Math.max(.05,Math.round(currentPay()*.5*100)/100);P.contract=1;mental(-5);L('재계약 불가 통보 — 연봉 삭감 후 잔류');P.news.push('자존심을 내려놓고 연봉 반토막에 사인했다. 마지막일지도 모르는 시즌이다.');seasonStart(first)},'choice')
+    +B('<b>입단 테스트로 새 팀을 찾는다</b><span class="sub">45%: 약팀과 1년 최저 계약 / 55%: 은퇴</span>',()=>{
+      const t=TEAMS.filter(x=>x.org===P.org&&x.name!==P.team).sort((a,b)=>teamBar(a)-teamBar(b))[0];
+      if(t&&Math.random()<.45){const old=P.team;P.team=t.name;P.tstr=t.win/100;P.deal=Math.max(.05,Math.round(yearlyPay(ovr(),false)*.6*100)/100);P.contract=1;
+        L(`입단 테스트 합격 — ${old} → ${t.name}`);P.news.push(`입단 테스트 끝에 ${t.name} 유니폼을 입었다. 다시 한번 기회가 왔다.`);return seasonStart(first)}
+      retire('입단 테스트를 돌았지만 받아주는 팀은 없었다. 그렇게 현역 생활이 끝났다.')},'choice')
+    +B('<b>여기서 유니폼을 벗는다</b><span class="sub">은퇴하고 결과지를 받는다</span>',()=>retire(why),'choice')));
 }
 /* 강제 은퇴 (새 시즌 시작 시 판정)
    - 45세: 신체 한계. MLB 최고령급(콜론·힐 45세), KBO 오승환 43세 은퇴
@@ -2969,6 +3050,8 @@ function retireCheck(){
   if(P.age>=36&&(P.lv==='KBO2'||P.lv==='AAA'))return '다시 1군 무대를 밟을 수 없다는 걸 받아들였다. 정든 유니폼을 벗기로 했다.';
   return '';
 }
+/* 방출이 가까운지: 최하위 리그 기준 +5 아래이거나, 나이에 비해 리그가 낮다 */
+function nearRelease(){return ovr()<(P.org==='MLB'?REQ.A:REQ.KBO2)-1||(P.age>=32&&(P.lv==='A'||P.lv==='AA'))||(P.age>=34&&(P.lv==='KBO2'||P.lv==='AAA'))}
 function proceed(){PREP_SEL=[];movement();P.news.forEach(n=>L(n));trainScreen()}
 function movement(){
   const o=ovr()+R(-3,3);
@@ -3196,19 +3279,71 @@ function titleOf(){
   if(P.kbo1Years>0||P.mlbYears>0)return '프로 1군 선수';
   return '프로의 문턱에서 멈춘 도전자';
 }
+/* ===== 한 문단 일대기: 커리어 유형을 고르고, 유형마다 준비한 템플릿 중 하나에 기록을 채운다 ===== */
+const STORY={
+  legend:[
+    '{region}의 작은 운동장에서 공을 던지던 아이, {name}. {hs} 시절만 해도 누구도 그 이름을 기억하지 않았다. 그러나 {first} 유니폼을 입은 뒤 {name}은(는) 리그의 역사를 하나씩 다시 썼다. {peakAge}세에 BEST OVR {peak}에 도달했고, {awards}의 영광이 뒤따랐다. {champ}{age}세에 마지막 인사를 건넸을 때, 구장은 오래도록 그 이름을 불렀다. 사람들은 그를 이렇게 기억한다. “{title}.”',
+    '처음엔 벤치였다. {hs} 더그아웃 맨 끝자리에서 {name}은(는) 매일 밤 글러브를 닦았다. {first}에서 시작된 프로 생활은 {years}을 지나며 전설이 되었다. {awards}. {best} 그 시즌의 기억은 지금도 팬들의 입에 오르내린다. {champ}{age}세, 등번호가 영구결번으로 걸리던 날 그는 처음 벤치에 앉았던 소년을 떠올렸다.'],
+  star:[
+    '{region} 출신 {name}은(는) {hs}을(를) 거쳐 {first}에서 프로의 문을 열었다. {years} 동안 꾸준히 이름을 알렸고, {peakAge}세에는 BEST OVR {peak}로 리그 정상급 선수가 되었다. {awards}. {champ}{reason} 화려한 전설은 아니었어도, 한 시대의 팬들에게 {name}은(는) 분명 “우리 팀의 스타”였다.',
+    '{name}의 야구는 늘 성실했다. {hs}에서, {first}에서, 그리고 {teams}에서. {best} {awards}. {champ}{age}세에 은퇴를 선언하던 날, 동료들은 “저 선수만큼 준비된 사람은 없었다”고 입을 모았다.'],
+  mlb:[
+    '{region}의 소년 {name}은(는) 더 큰 무대를 꿈꿨다. {hs}를 지나 {first}, 그리고 마침내 메이저리그. 낯선 언어와 긴 원정 속에서도 {mlb}시즌을 버텼고, BEST OVR {peak}까지 올라섰다. {awards}. {champ}{reason} 바다 건너에서 그가 남긴 발자국은 다음 세대의 길이 되었다.',
+    '“메이저리그에서 뛰고 싶다.” {hs} 시절 {name}의 일기장 첫 줄이었다. 그 꿈은 {mlb}시즌의 빅리그 커리어로 이뤄졌다. {best} {awards}. {age}세에 고향으로 돌아온 그는 아이들에게 말했다. “문은 생각보다 가까이 있다.”'],
+  journey:[
+    '{name}의 커리어는 이삿짐과 함께였다. {teams}. 유니폼 색이 바뀔 때마다 그는 새 사물함에 이름표를 붙였다. {peakAge}세에 BEST OVR {peak}까지 올랐고, {awards}. {reason} 어느 팀의 레전드도 아니었지만, 그를 거쳐 간 모든 팀이 그를 기억했다.',
+    '떠돌이라는 말이 늘 따라다녔다. 그러나 {name}은(는) 가는 곳마다 제 몫을 했다. {teams}을(를) 거치며 {years}을 뛰었다. {best} {age}세, 마지막 짐을 싸던 날 그는 처음으로 웃으며 말했다. “어디서든 야구는 야구였다.”'],
+  injury:[
+    '{name}은(는) 누구보다 빨리 정상에 다가갔다. {hs}을(를) 거쳐 {first}에서 BEST OVR {peak}까지 올랐을 때, 사람들은 그의 이름 앞에 “차세대”를 붙였다. 그러나 몸은 버텨주지 않았다. {inj}번의 부상, 그리고 끝내 찾아온 큰 부상. {reason} 너무 일찍 끝난 이야기여서, 팬들은 아직도 “만약”이라는 말을 꺼낸다.',
+    '재활실은 {name}에게 두 번째 집이었다. {inj}번 쓰러지고 그만큼 다시 일어섰다. {best} {awards}. {age}세에 결국 유니폼을 벗었지만, 그가 버틴 시간들은 그 자체로 하나의 기록이었다.'],
+  late:[
+    '{name}은(는) 늦게 핀 꽃이었다. 20대 내내 {first}의 벤치와 2군을 오갔고, 누구도 기대하지 않았다. 그런데 {peakAge}세, 거짓말처럼 BEST OVR {peak}까지 치솟았다. {best} {awards}. {reason} 야구는 늦게 시작해도 된다는 것을 그가 증명했다.',
+    '서른이 넘어서야 {name}의 시간이 왔다. {hs}와 {first}에서 보낸 긴 무명 시절은 {peakAge}세의 전성기를 위한 준비였다. {awards}. {age}세에 은퇴하며 그는 후배들에게 한마디를 남겼다. “포기하지 마. 내 전성기는 서른 넘어서 왔다.”'],
+  bust:[
+    '{hs} 시절 {name}의 별명은 “괴물”이었다. 스카우트들은 앞다퉈 그의 이름을 적었다. 그러나 {first}에서의 시간은 생각보다 길고 무거웠다. BEST OVR {peak}. 기대에 미치지 못한 숫자였다. {reason} 그래도 그는 마지막까지 성실했고, 그 사실은 누구도 부정하지 못한다.',
+    '“재능은 충분했는데.” 사람들은 {name}을(를) 그렇게 기억한다. {years}, 그는 늘 한 발짝 모자랐다. {reason} 유니폼을 벗은 뒤 그는 유소년 코치가 되었고, 아이들에게 재능보다 꾸준함을 가르쳤다.'],
+  never:[
+    '{name}은(는) 끝내 1군 무대를 밟지 못했다. {hs}에서, {first}에서 매일 같은 시간에 배트를 쥐었다. BEST OVR {peak}. 화려한 기록은 없지만, 그는 누구보다 오래 경기장에 남아 공을 주웠다. {reason} 야구는 그에게 이긴 날보다 버틴 날을 더 많이 남겼다.',
+    '프로의 벽은 높았다. {name}의 이름은 2군 기록지에만 남았다. 그래도 {age}세까지 포기하지 않았다. {reason} 은퇴 후 그는 동네 리틀야구단 감독이 되었다. 아이들은 그를 “우리 감독님”이라고 부른다.'],
+  ordinary:[
+    '{region} 출신 {name}. {hs}을(를) 거쳐 {first}에서 프로가 되었고, {years} 동안 자기 자리를 지켰다. 최고의 순간은 {peakAge}세, BEST OVR {peak}. {best} {awards}. {reason} 거창하지 않았지만, 그의 야구는 분명 누군가의 주말을 행복하게 만들었다.',
+    '{name}의 야구 인생은 한 문장으로 요약된다. “늘 그 자리에 있었다.” {first}에서 {teams}까지, {years}. {best} {age}세에 조용히 은퇴를 발표했고, 팬들은 조용히 박수를 보냈다.']
+};
+function lifeStory(){
+  const g=gradeOf(score())[0],pro=P.hist.filter(h=>/KBO|MLB|마이너|퓨처스|메이저/.test(h.lv));
+  const teams=[...new Set(pro.map(h=>h.team))],first=pro[0]?pro[0].team:P.team;
+  const best=P.hist.slice().sort((a,b)=>b.tags.length-a.tags.length)[0];
+  const aw=achSort(Object.keys(P.ach).filter(k=>!FEAT_KEYS.has(k)&&!/데뷔/.test(k))).slice(0,3);
+  const champ=(P.ach['한국시리즈 우승']||0)+(P.ach['월드시리즈 우승']||0);
+  const type=P.injRetire||(P.injCount||0)>=4?'injury':g==='S'?'legend':P.mlbYears>=3&&'AB'.includes(g)?'mlb':teams.length>=4?'journey':(P.peakAge||0)>=30&&'ABC'.includes(g)?'late':'AB'.includes(g)?'star':!P.kbo1Years&&!P.mlbYears?'never':P.potG==='S'&&'DE'.includes(g)?'bust':'ordinary';
+  const yrs=(P.kbo1Years||0)+(P.mlbYears||0);
+  const v={name:P.name,region:P.region,hs:P.hist[0]?P.hist[0].team:P.team,first,teams:teams.join(', ')||P.team,peak:bestOvr(),peakAge:P.peakAge||P.age,age:P.age,
+    years:yrs?`${yrs}시즌의 1군 생활`:`${P.proYears||0}시즌의 프로 생활`,mlb:P.mlbYears||0,inj:P.injCount||0,title:titleOf(),
+    awards:aw.length?aw.join(', ')+' 등의 이름이 그의 커리어를 장식했다':'트로피는 없었지만 출석부는 늘 꽉 차 있었다',
+    best:best&&best.tags.length?`${best.y}년, ${best.age}세의 ${best.team} 시절(${best.line})은 그의 가장 빛나는 시즌이었다.`:'',
+    champ:champ?`우승 반지는 ${champ}개. `:'',reason:P.injRetire?'큰 부상이 그의 마지막 시즌이 되었다.':P.retireWhy?P.retireWhy:`${P.age}세에 스스로 은퇴를 선택했다.`};
+  /* 조사 정리: 은(는)·이(가)·을(를)·와(과)를 앞 글자 받침에 맞춘다 */
+  const jo=(t,a,b)=>t.replace(new RegExp(`([가-힣A-Za-z0-9])${a}\\(${b}\\)`,'g'),(_,c)=>{const k=c.charCodeAt(0)-0xAC00;return c+(k>=0&&k<11172&&k%28?a:b)});
+  let t=pick(STORY[type]).replace(/\{(\w+)\}/g,(_,k)=>v[k]==null?'':v[k]).replace(/\s+/g,' ').trim();
+  [['은','는'],['이','가'],['을','를'],['과','와']].forEach(([a,b])=>{t=jo(t,a,b)});
+  return t;
+}
 function ending(){
   P.done=true;try{localStorage.removeItem(SK('b2ws_save'))}catch(e){}
   const s=score(),[g,gd]=gradeOf(s),ti=titleOf();
   const role=roleLabel();
-  try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potG()})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
+  const pos=slot(),rank=hofSubmit({id:Date.now()+'-'+Math.random().toString(36).slice(2,8),name:P.name,role,pos,grade:g,score:s,title:ti,peak:bestOvr(),kbo:P.kbo1Years,mlb:P.mlbYears,t:Date.now()});
+  const story=lifeStory();
   const ach=achSort(Object.keys(P.ach)).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
   const why=P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다.':(P.retireWhy||'');
   const epi=(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
   show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점 / 999</p><p class="sub">${(o=>`팀 수상 ${o.team} · 개인 수상 ${o.personal} · 업적 ${o.feat} · 커리어 ${o.career}`)(scoreParts())}</p>${why?`<p>${why}</p>`:''}<p>${epi}</p></div>`
+   +panel('결과지',`<div class="share-card-row">${shareCardFrontHtml(true)}${shareCardBackHtml(true)}</div><p class="sub" style="text-align:center">${rank?`🏆 오늘의 명전 ${SLOT_NAME[pos]} ${rank}위에 올랐다! (24시간 동안 기록)`:`오늘의 명전 ${SLOT_NAME[pos]} 탑10에는 들지 못했다.`}</p><div style="text-align:center">${B('결과지 이미지 저장',()=>shareCardImage(true))}</div>`)
+   +panel('한 문단 일대기',`<p class="story">${story}</p>`)
    +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>${RULE.mil==='none'?'':`병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · `}통산 수입 ${won(P.money)}</p><p>${ach}</p>`)
    +panel('시즌별 기록',`<div class="scroll"><table><tr><th>연도</th><th>나이</th><th>소속</th><th>리그</th><th>성적</th><th>기록</th></tr>${P.hist.map(h=>`<tr><td>${h.y}</td><td>${h.age}</td><td>${h.team}</td><td>${h.lv}</td><td>${h.line}</td><td>${h.tags.join(', ')}</td></tr>`).join('')}</table></div>`)
-   +`<div>${B('결과 공유(복사)',()=>{const txt=TR(share)+location.href;if(navigator.share){navigator.share({text:TR(share),url:location.href}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('복사했어요!'),()=>prompt('복사해서 공유하세요',txt))}else prompt('복사해서 공유하세요',txt)})}${B('Hall of Fame',hofScreen)}${B('메인 메뉴',menu,'alt')}</div>`);
+   +`<div>${B('결과 공유(복사)',()=>{const txt=TR(share)+location.href;if(navigator.share){navigator.share({text:TR(share),url:location.href}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('복사했어요!'),()=>prompt('복사해서 공유하세요',txt))}else prompt('복사해서 공유하세요',txt)})}${B('오늘의 명전',hofScreen)}${B('메인 메뉴',menu,'alt')}</div>`);
 }
 title();
 </script>

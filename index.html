@@ -355,6 +355,7 @@ body::after{background:repeating-linear-gradient(0deg,rgba(8,31,67,.07) 0 1px,tr
 @media(max-width:600px){.pcard .gear-icon{width:118px;height:112px}}
 /* 데스크톱에서는 휴대폰 전용 문구를 숨긴다 */
 .phone-only{display:none}
+.ent-slot{margin:0 0 4px}
 /* 휴대폰 상점: 프로필 → 장비 업그레이드 → 기타 상점 순서, 커스터마이제이션은 창으로 */
 @media(max-width:760px){
 .phone-only{display:block}.shop-profile h2.phone-only{margin-bottom:8px}.shop-profile{cursor:pointer}
@@ -535,7 +536,9 @@ const ROLE={CO:'컨택트 타자',BA:'밸런스 타자',SL:'슬러거',PW:'강�
 const PITCH_ROLES=['PW','CT','FN'],HIT_ROLES=['CO','BA','SL'];
 const ROLE_SUB={CO:'컨택트',BA:'밸런스',SL:'슬러거',PW:'강속구형',CT:'제구형',FN:'기교파',SP:'선발',MR:'계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
 const ROLE_DESC={CO:'정확하게 맞히고 빠르게 달린다',BA:'모든 능력이 고르다',SL:'한 방으로 경기를 뒤집는다',PW:'구속은 빠르지만 제구가 흔들린다',CT:'구속은 느려도 원하는 곳에 꽂는다',FN:'지치지 않고 오래 던진다',SP:'긴 이닝을 책임지는 에이스',MR:'승부처를 이어주는 허리',CL:'9회, 경기를 끝내는 사람',IF:'유격수·3루·2루·1루',OF:'타격·주루·어깨',DH:'수비 없이 방망이로 승부'};
-const isSP=()=>P.role==='SP'||['PW','CT','FN'].includes(P.role);
+const slot=()=>P.slot||(['PW','CT','FN'].includes(P.role)?'SP':P.role);
+const isSP=()=>slot()==='SP';
+const roleLabel=()=>P.slot?`${ROLE[P.role]} · ${SLOT_NAME[P.slot]}`:ROLE[P.role];
 const LV={HS:'고교야구',UNI:'2년제 대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',IND:'독립야구단',MIL:'군 복무'};
 const REQ={HS:42,UNI:52,KBO2:52,KBO1:60,A:52,AA:58,AAA:64,MLB:70,IND:50,MIL:54};
 const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1};
@@ -608,7 +611,7 @@ function fanNick(){
   const oldRoleNick=P.pitcher&&P.fanNick==='필승조';
   if(P.fanNick&&P.fanTier===tier&&!oldRoleNick)return P.fanNick;
   let pool=(P.pitcher?FAN_NICK[tier].p:FAN_NICK[tier].h).slice();
-  if(P.pitcher)pool=pool.map(x=>x==='필승조'?(P.role==='MR'?'계투 요원':P.role==='CL'?'마무리 투수':'선발 로테이션'):x);
+  if(P.pitcher)pool=pool.map(x=>x==='필승조'?(slot()==='MR'?'계투 요원':slot()==='CL'?'마무리 투수':'선발 로테이션'):x);
   const seed=[...String(P.name)].reduce((a,c)=>a+c.charCodeAt(0),tier*13+1);
   P.fanNick=pool[seed%pool.length];P.fanTier=tier;
   return P.fanNick;
@@ -617,7 +620,7 @@ function batOrder(){
   if(P.pitcher)return '투수';
   const con=P.st[0],pow=P.st[1],eye=P.st[2],spd=P.st[3],def=P.st[4],o=ovr();
   const best=Math.max(con,pow,eye,spd,def);
-  if(o<48)return (P.role==='IF'&&def>=con?8:9)+'번 타자';
+  if(o<48)return (['IF','C','CI','MI'].includes(slot())&&def>=con?8:9)+'번 타자';
   if(spd===best&&spd>=54)return '1번 타자';
   if(pow===best&&pow>=con+3&&pow>=58)return '4번 타자';
   if(o>=72&&con+eye>=pow+spd-6)return '3번 타자';
@@ -657,23 +660,38 @@ const mlbSal=()=>yearlyPay(ovr(),true)/EOK_PER_M;
 const lvLabel=()=>P.lv==='HS'?`고교야구 ${P.grade}학년`:P.lv==='UNI'?`대학야구 ${P.uniYear}학년`:P.lv==='MIL'?`군 복무(${P.milType})`:LV[P.lv];
 const panel=(h,b)=>`<div class="panel"><h2>${h}</h2>${b}</div>`;
 
-/* 구속 · 제구 · 구위 · 체력 · 회복력
+/* 유형별 능력치 범위 [최소, 최대]. 범위 안에서 뽑은 뒤 합계 225(OVR 45)로 맞춘다.
+   투수 (구속 · 제구 · 구위 · 체력 · 회복력)
    구속: 강속구형 > 기교파 > 제구형      제구: 제구형 > 기교파 > 강속구형
-   구위: 강속구형 >= 기교파 > 제구형     체력: 기교파 >= 제구형 > 강속구형
-   회복력: 기교파 > 제구형 > 강속구형 */
-const PITCH_FIXED={PW:[58,32,52,43,40],CT:[39,56,43,45,42],FN:[44,43,48,46,44]};
-/* 컨택 · 파워 · 선구안 · 주루 · 수비 (합계 225 = OVR 45)
-   컨택: 컨택트 > 밸런스 > 슬러거      파워: 슬러거 > 밸런스 > 컨택트
-   주루: 컨택트 > 밸런스 > 슬러거      밸런스는 모든 능력 45 */
-const HIT_FIXED={CO:[56,34,48,50,37],BA:[45,45,45,45,45],SL:[38,60,47,37,43]};
+   구위: 강속구형 >= 기교파 > 제구형     체력·회복력: 대체로 기교파 > 제구형 > 강속구형 (보직이 갈리도록 범위가 겹친다)
+   타자 (컨택 · 파워 · 선구안 · 주루 · 수비)
+   컨택트는 컨택, 슬러거는 파워가 높다. 주루·수비는 넓게 잡아 수비 위치가 갈리도록 한다 */
+const STAT_RANGE={
+  PW:[[55,61],[29,35],[49,55],[36,46],[34,44]],
+  CT:[[36,41],[53,59],[40,44],[40,50],[37,46]],
+  FN:[[42,47],[41,46],[45,49],[43,53],[40,50]],
+  CO:[[52,60],[30,38],[44,52],[40,58],[30,52]],
+  BA:[[42,48],[42,48],[42,48],[34,56],[34,56]],
+  SL:[[34,42],[56,64],[43,51],[28,46],[32,54]]
+};
+function rollRange(rg){
+  const st=rg.map(([a,b])=>RI(a,b));let d=225-st.reduce((x,y)=>x+y,0),g=0;
+  while(d!==0&&g++<5000){const i=RI(0,4),sg=d>0?1:-1;if(st[i]+sg>=rg[i][0]&&st[i]+sg<=rg[i][1]){st[i]+=sg;d-=sg}}
+  return st;
+}
+/* 보직·수비 위치. 투수는 체력·회복력, 타자는 주루·수비로 정한다 */
+const SLOT_NAME={SP:'선발',MR:'계투',CL:'마무리',C:'포수',CI:'1루/3루',MI:'2루/중견',OF:'외야'};
+function slotOf(kind,st){
+  if(kind==='P')return st[3]>=46?'SP':st[4]>=42?'MR':'CL';
+  const fast=st[3]>=45,good=st[4]>=45;
+  return fast&&good?'MI':fast?'OF':good?'C':'CI';
+}
 function rollStats(kind,role){
   const pitcher=kind==='P';
   const labels=pitcher?['구속','제구','구위','체력','회복력']:['컨택','파워','선구안','주루','수비'];
   const st=labels.map(()=>RI(34,50));
   /* 투수 유형은 고정 능력치 (합계 225 = OVR 45) */
-  const fixed=PITCH_FIXED[role]||HIT_FIXED[role];
-  if(fixed)return {labels,st:fixed.slice(),pot:Math.round(C(58+Math.abs(G())*16+R(0,6),58,97))};
-  if(PITCH_FIXED[role])return {labels,st:PITCH_FIXED[role].slice(),pot:Math.round(C(58+Math.abs(G())*16+R(0,6),58,97))};
+  if(STAT_RANGE[role])return {labels,st:rollRange(STAT_RANGE[role]),pot:Math.round(C(58+Math.abs(G())*16+R(0,6),58,97))};
   if(role==='CL'){st[0]+=5;st[2]+=7;st[1]-=3;st[3]-=5}
   if(role==='MR'){st[0]+=2;st[2]+=3;st[3]-=1}
   if(role==='SP'){st[1]+=6;st[3]+=6;st[2]-=1}
@@ -689,7 +707,7 @@ const potG=()=>P.potG||potG();
 function defCust(){return {skin:0,hcol:0,style:0,cap:0,body:1,theme:2,num:RI(1,99),nick:'',hand:'우투우타'}}
 function newPlayer(cr){
   const car=()=>({g:0,w:0,l:0,sv:0,hd:0,ip:0,k:0,er:0,ab:0,h:0,hr:0,rbi:0,sb:0});
-  P={name:cr.name||'무명의 유망주',region:cr.region,role:cr.role,pitcher:cr.kind==='P',kind:cr.kind,labels:cr.labels.slice(),st:cr.st.slice(),mental:50,pot:cr.pot,cust:Object.assign({},cr.cust),
+  P={name:cr.name||'무명의 유망주',region:cr.region,role:cr.role,slot:slotOf(cr.kind,cr.st),pitcher:cr.kind==='P',kind:cr.kind,labels:cr.labels.slice(),st:cr.st.slice(),mental:50,pot:cr.pot,cust:Object.assign({},cr.cust),
      age:16,y:2027,grade:1,uniYear:1,lv:'HS',team:cr.highSchool||cr.region+' 모교',org:'',tstr:Math.random(),
      hist:[],ach:{},money:0,fame:0,kboYears:0,kbo1Years:0,mlbYears:0,proYears:0,
      mil:'none',milLeft:0,milType:'',prevLv:'',deferred:false,contract:0,entryFrom:'',kboRegDays:0,kboService:0,faEligible:false,faUsed:false,deal:null,
@@ -788,7 +806,7 @@ function closeHubModals(){HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=
 function careerShareText(){
   if(!P)return '';
   const o=ovr(),g=potG(),ti=titleOf();
-  return `⚾ 「${GAME_NAME}」\n${P.name} · ${ROLE[P.role]} · OVR ${o} · ${g}급 유망주\n${lvLabel()} · ${P.team} · ${P.y}년 (${P.age}세)\n${ti}\nKBO 1군 ${P.kbo1Years||0}시즌 · MLB ${P.mlbYears||0}시즌 · 보유 ${won(P.money)}\n`;
+  return `⚾ 「${GAME_NAME}」\n${P.name} · ${roleLabel()} · OVR ${o} · ${g}급 유망주\n${lvLabel()} · ${P.team} · ${P.y}년 (${P.age}세)\n${ti}\nKBO 1군 ${P.kbo1Years||0}시즌 · MLB ${P.mlbYears||0}시즌 · 보유 ${won(P.money)}\n`;
 }
 function fmtCarLine(c){
   if(!c||!c.g)return '';
@@ -1228,7 +1246,7 @@ function roleIcon(kind){
 function posePage(){
   const pc=(k,name)=>`<div class="pcard ${CR.kind===k?'on':''}" onclick="pickKind('${k}')">${roleIcon(k)}<b>${name}</b></div>`;
   const roles=CR.kind==='P'?PITCH_ROLES:CR.kind==='H'?HIT_ROLES:[];
-  const ents=roles.length?roles.map(x=>{const o=CR.opts[x];return `<div class="ent ${CR.role===x?'on':''}" onclick="pickRole('${x}')"><div class="eh"><b class="et">${ROLE_SUB[x]}</b><span>OVR <b>45</b></span></div>${o.labels.map((l,i)=>bar(l,o.st[i])).join('')}</div>`}).join(''):'<p class="sub" style="grid-column:1/-1;text-align:center">투수 또는 타자를 선택하세요.</p>';
+  const ents=roles.length?roles.map(x=>{const o=CR.opts[x];return `<div class="ent ${CR.role===x?'on':''}" onclick="pickRole('${x}')"><div class="eh"><b class="et">${ROLE_SUB[x]}</b><span>OVR <b>45</b></span></div><p class="sub ent-slot">${CR.kind==='P'?'보직':'수비'}: <b>${SLOT_NAME[slotOf(CR.kind,o.st)]}</b></p>${o.labels.map((l,i)=>bar(l,o.st[i])).join('')}</div>`}).join(''):'<p class="sub" style="grid-column:1/-1;text-align:center">투수 또는 타자를 선택하세요.</p>';
   stagePage(()=>({title:'포지션 선택',cls:'wide',body:`<div class="pgrid">${pc('P','투수')}${pc('H','타자')}</div><div class="ents">${ents}</div><div style="text-align:center;margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center">${B('◀ 이전',createScreen,'alt')}${B('다음 ▶',()=>{CR.cust=randCust();customPage()},CR.st&&CR.role?'':'dis')}</div>`}));
 }
 function readCustText(){const u=document.getElementById('no'),h=document.getElementById('hd');if(u)CR.cust.num=C(parseInt(u.value)||0,0,99);if(h)CR.cust.hand=h.value}
@@ -1295,7 +1313,7 @@ function beginCareer(){
   P.diff=CR.diff;P.potG=CR.potG;P.money=DIFF_CASH[CR.diff];P.bp=0;P.bpFold=true;
   const g=potG();
   L(`고교 야구부 입단 — ${P.team} (난이도 ${DIFFS[CR.diff].k})`);
-  show(()=>panel('2027년 봄',`<p><b>${P.team}</b> 야구장. 후보 선수 명단 맨 아래에 <b>${P.name}</b>의 이름이 적혀 있다.</p><p>“쟤는 벤치나 지켜라.” 감독님은 눈길도 주지 않았다.</p><p>그래도 매일 밤 글러브를 닦으며 다짐한다. 언젠가 <b>한국시리즈</b>를 거쳐, <b>월드시리즈</b> 무대에 서겠다고.</p><p class="sub">${ROLE[P.role]} · ${P.region} 출신 · 스카우트 사전 평가: ${g}급 유망주 · 난이도 ${DIFFS[CR.diff].k}</p>${B('라커룸으로',hub)}`));
+  show(()=>panel('2027년 봄',`<p><b>${P.team}</b> 야구장. 후보 선수 명단 맨 아래에 <b>${P.name}</b>의 이름이 적혀 있다.</p><p>“쟤는 벤치나 지켜라.” 감독님은 눈길도 주지 않았다.</p><p>그래도 매일 밤 글러브를 닦으며 다짐한다. 언젠가 <b>한국시리즈</b>를 거쳐, <b>월드시리즈</b> 무대에 서겠다고.</p><p class="sub">${roleLabel()} · ${P.region} 출신 · 스카우트 사전 평가: ${g}급 유망주 · 난이도 ${DIFFS[CR.diff].k}</p>${B('라커룸으로',hub)}`));
 }
 
 /* ----- 허브: 상점 | 선수 정보·플레이 | 커리어 STAT·LOG ----- */
@@ -1342,7 +1360,7 @@ function shopPanel(){
 }
 function centerPanel(ny,na){
   const o=ovr();
-  return `<div class="panel"><h2>선수 정보</h2><div class="two">${cardHtml(P,{ovr:o,pot:potG()})}<div>${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div></div><p style="margin-top:12px"><b>${P.name}</b> · ${ROLE[P.role]} · ${P.region} 출신</p><p class="sub">${lvLabel()} · ${P.team}</p><p class="sub">다음 시즌 ${ny}년 (${na}세)${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''} · 명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}</p>${B('▶ 게임 플레이하기',playNext,'play')}</div>`;
+  return `<div class="panel"><h2>선수 정보</h2><div class="two">${cardHtml(P,{ovr:o,pot:potG()})}<div>${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div></div><p style="margin-top:12px"><b>${P.name}</b> · ${roleLabel()} · ${P.region} 출신</p><p class="sub">${lvLabel()} · ${P.team}</p><p class="sub">다음 시즌 ${ny}년 (${na}세)${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''} · 명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}</p>${B('▶ 게임 플레이하기',playNext,'play')}</div>`;
 }
 function careerPanel(){
   const f=c=>{if(!c.g)return '<span class="sub">기록 없음</span>';return P.pitcher?`${c.w}승 ${c.l}패 ${c.sv}세이브 ${c.hd}홀드<br>평균자책 ${c.ip?f2(c.er*9/c.ip):'-'} · ${c.k}탈삼진 · ${c.ip}이닝`:`타율 ${c.ab?rate(c.h/c.ab):'-'} · ${c.hr}홈런<br>${c.rbi}타점 · ${c.sb}도루`};
@@ -1366,7 +1384,7 @@ function setTab(t){HUBTAB=t;SHOPCUSTWIN=false;HUBSET=false;HUBSHARE=false;HUBCOF
 function heroPanel(){
   const cu=P.cust;
   const rt=H.length;H.push(()=>{HUBRETIRE=true;hub()});
-  return `<div class="panel hp"><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><div class="hcap-top"><div class="hcap-id"><b>${P.name}</b></div><span class="sub">${ROLE[P.role]} · ${P.age}세 · ${batOrder()} · ${cu.hand}</span></div><div class="fan-row"><div class="fan-nick">“${fanNick()}”</div><button class="btn alt retire-now" onclick="H[${rt}]()">지금 은퇴하기</button></div></div></div>`;
+  return `<div class="panel hp"><div class="hfield">${avatar(cu,14,P.team)}<span class="hnum">#${cu.num}</span></div><div class="hcap"><div class="hcap-top"><div class="hcap-id"><b>${P.name}</b></div><span class="sub">${roleLabel()} · ${P.age}세 · ${batOrder()} · ${cu.hand}</span></div><div class="fan-row"><div class="fan-nick">“${fanNick()}”</div><button class="btn alt retire-now" onclick="H[${rt}]()">지금 은퇴하기</button></div></div></div>`;
 }
 function ovrDeltaMark(){
   let d=P.lastOvrDelta;
@@ -1500,7 +1518,7 @@ function bar(l,v,d){
   const mark=n?`<em class="${n>0?'up':'dn'}">${n>0?'▲':'▼'}${Math.abs(n)}</em>`:'<em></em>';
   return `<div class="row"><span>${l}</span><div class="bar"><i style="width:${Math.round(C(v,0,100))}%"></i></div><b>${Math.round(v)}</b>${mark}</div>`;
 }
-function hud(){return `<div class="panel hud"><div><div style="float:left;margin-right:10px">${avatar(P.cust,3,P.team)}</div><b>${P.name}</b> <span class="sub">${ROLE[P.role]} · ${P.age}세 · ${batOrder()}</span><br><span class="sub">${P.y}년 · ${lvLabel()}<br>${P.team}</span></div><div class="ovr">OVR<b>${ovr()}</b></div><div class="bars">${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div><div class="meta2 sub">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''}</div></div>`}
+function hud(){return `<div class="panel hud"><div><div style="float:left;margin-right:10px">${avatar(P.cust,3,P.team)}</div><b>${P.name}</b> <span class="sub">${roleLabel()} · ${P.age}세 · ${batOrder()}</span><br><span class="sub">${P.y}년 · ${lvLabel()}<br>${P.team}</span></div><div class="ovr">OVR<b>${ovr()}</b></div><div class="bars">${P.labels.map((l,i)=>bar(l,P.st[i])).join('')}${bar('멘탈',P.mental)}</div><div class="meta2 sub">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}명성 ${'★'.repeat(Math.min(P.fame,10))||'-'}${P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':''}</div></div>`}
 function flavor(){
   switch(P.lv){
     case 'HS':return '3월 주말리그부터 5월 황금사자기, 여름 청룡기·대통령배·봉황대기, 10월 전국체전까지. 달력대로 시즌이 흘러간다.';
@@ -2031,7 +2049,7 @@ function roleGames(lg,idx,gf){
       return RI(1,4);
     }
     else if(lg==='HS'){lo=5;hi=14}else if(lg==='UNI'){lo=8;hi=18}else if(isMin(lg)||lg==='KBO2'){lo=18;hi=28}else{lo=10;hi=22}
-  }else if(P.role==='MR'||P.role==='CL'){
+  }else if(slot()==='MR'||slot()==='CL'){
     if(lg==='KBO1'||lg==='MLB'){lo=45;hi=68}else if(lg==='HS'){lo=8;hi=20}else if(lg==='UNI'){lo=14;hi=28}else{lo=28;hi=52}
   }else{
     const full=lg==='HS'?26:lg==='UNI'?34:lg==='KBO2'?96:lg==='KBO1'?144:lg==='MLB'?162:lg==='A'?110:lg==='AA'?130:lg==='AAA'?142:80;
@@ -2045,11 +2063,11 @@ function statline(lg,idx,gf){
   const sc=lg==='HS'?.72:lg==='UNI'?.8:min?.92:1,hit=lg==='HS'||lg==='UNI'?1.08:1;
   if(P.pitcher){
     const sp=isSP();
-    const ip=Math.max(0,Math.round(g*(sp?R(4.7,6.1):P.role==='MR'?R(.9,1.35):R(.85,1.2))*sc*(.85+P.st[3]/330)));
+    const ip=Math.max(0,Math.round(g*(sp?R(4.7,6.1):slot()==='MR'?R(.9,1.35):R(.85,1.2))*sc*(.85+P.st[3]/330)));
     const era=C(4.35-idx*.95+G()*.3,.9,9.5),k9=C(7.2+idx*1.5+(P.st[0]-60)/22,3.5,14);
     const k=Math.round(ip*k9/9),er=era*ip/9;
     if(sp){const dec=Math.min(g,Math.round(ip/6*.72)),wp=C(.5+idx*.08+G()*.05,.15,.9),w=Math.round(dec*wp),l=dec-w;return {g,line:`${w}승 ${l}패 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd:0,ip,k,er}}
-    if(P.role==='CL'){const sv=idx>-.2?Math.round(C(g*(.3+idx*.06),0,g*.72)):RI(0,Math.min(4,g));return {g,line:`${sv}세이브 ERA ${f2(era)} ${k}K ${ip}이닝`,w:0,l:0,sv,hd:0,ip,k,er}}
+    if(slot()==='CL'){const sv=idx>-.2?Math.round(C(g*(.3+idx*.06),0,g*.72)):RI(0,Math.min(4,g));return {g,line:`${sv}세이브 ERA ${f2(era)} ${k}K ${ip}이닝`,w:0,l:0,sv,hd:0,ip,k,er}}
     const hd=idx>-.2?Math.round(C(g*(.22+idx*.05),0,g*.58)):RI(0,Math.min(5,g)),w=Math.round(hd/5),l=Math.round(hd/7);
     return {g,line:`${w}승 ${l}패 ${hd}홀드 ERA ${f2(era)} ${k}K ${ip}이닝`,w,l,sv:0,hd,ip,k,er};
   }
@@ -2076,7 +2094,8 @@ const AWARD_BAR={
 function seasonWar(sl){
   if(!sl)return 0;
   if(P.pitcher){const era=sl.ip?sl.er*9/sl.ip:9,lev=isSP()?1:1.6;return ((4.4-era)*sl.ip/9/9.5)*lev+sl.ip*.011}
-  const pos=P.role==='IF'?.6:P.role==='DH'?-1.5:0;
+  /* 포지션 보정(600타석 기준 승리 기여): 포수 > 2루/중견 > 1루/3루 = 외야 > 지명타자 */
+  const pos={C:1.2,MI:.5,CI:-.5,OF:-.5,IF:.6,DH:-1.5}[slot()]||0;
   return (sl.ops-.720)*sl.pa*.045+sl.pa/300+(sl.sb-10)*.02+pos*sl.pa/600;
 }
 function awards(lg,idx,gf,sl,tr){
@@ -2093,8 +2112,8 @@ function awards(lg,idx,gf,sl,tr){
       const era=sl.ip?sl.er*9/sl.ip:9;
       if(lg==='MLB'&&sl.ip>=150&&war>=rival(...B.cy))add('사이영상');
       if(lg==='KBO1'&&sl.ip>=B.ip&&war>=rival(...B.ggP))add('KBO 골든글러브');
-      if(P.role==='CL')beat(sl.sv,'sv')&&add(L+' 세이브왕');
-      else if(P.role==='MR'){if(B.hd&&beat(sl.hd,'hd'))add('KBO 홀드왕')}
+      if(slot()==='CL')beat(sl.sv,'sv')&&add(L+' 세이브왕');
+      else if(slot()==='MR'){if(B.hd&&beat(sl.hd,'hd'))add('KBO 홀드왕')}
       else{
         if(beat(sl.w,'w'))add(L+' 다승왕');
         if(sl.ip>=B.ip&&beat(era,'era',true))add(L+' 평균자책왕');
@@ -2104,7 +2123,7 @@ function awards(lg,idx,gf,sl,tr){
       const avg=sl.ab?sl.h/sl.ab:0;
       if(lg==='KBO1'&&sl.g>=96&&war>=rival(...B.gg))add('KBO 골든글러브');
       if(lg==='MLB'){
-        if(P.role!=='DH'&&sl.g>=100&&P.st[4]+idx*2>=rival(...B.glove))add('MLB 골드글러브');
+        if(slot()!=='DH'&&sl.g>=100&&P.st[4]+idx*2>=rival(...B.glove))add('MLB 골드글러브');
         if(sl.pa>=400&&sl.ops>=rival(...B.ss))add('MLB 실버슬러거');
       }
       if(sl.pa>=B.pa&&beat(avg,'avg'))add(L+' 타격왕');
@@ -2570,7 +2589,7 @@ function titleOf(){
 function ending(){
   P.done=true;try{localStorage.removeItem(SK('b2ws_save'))}catch(e){}
   const s=score(),[g,gd]=gradeOf(s),ti=titleOf();
-  const role=ROLE[P.role];
+  const role=roleLabel();
   try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potG()})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
   const ach=Object.keys(P.ach).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
   const epi=g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.';

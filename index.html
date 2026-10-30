@@ -1161,19 +1161,27 @@ function rollPot(diff){
   const floor={S:90,A:80,B:70}[g];
   return {g,pot:Math.round(C(floor+Math.abs(G())*5+R(0,2),floor,99))};
 }
-/* 시즌 부상 확률. 어려움은 실제 MLB 수준: 시즌마다 선수 약 3분의 1이 부상자 명단(IL)에 오르고, 투수가 타자보다 높고, 30세가 넘으면 늘어난다 */
+/* 부상 단계
+   경미한 부상(minor): 약 6개월 이탈 → 시즌 절반 결장, 능력치 소폭 하락
+   부상(major): 1~2년 이탈 → 이번 시즌 전체 + 다음 시즌까지 결장할 수 있음, 능력치·잠재력 하락
+   심각한 부상(severe): 선수 생명이 끝나 시즌 후 은퇴
+   시즌 부상 확률 (난이도별)
+   쉬움: 약 2%, 경미한 부상만
+   보통: 약 8% (31세부터 +5%p), 경미 80% · 부상 18% · 심각 2%
+   어려움: 실제 MLB의 장기 부상자 명단(60일 IL) 수준. 투수 약 18%·타자 약 12%, 30세부터 해마다 +1%p
+           경미 72% · 부상 25%(투수 28%) · 심각 3% */
 function injuryBase(){
   const d=P.diff==null?1:P.diff;
-  if(d===0)return .015;
+  if(d===0)return .02;
   if(d===1)return .08+(P.age>31?.05:0);
-  return (P.pitcher?.36:.27)+Math.max(0,P.age-30)*.015;
+  return (P.pitcher?.18:.12)+Math.max(0,P.age-30)*.01;
 }
 function injurySeverity(){
   const d=P.diff==null?1:P.diff,r=Math.random();
   if(d===0)return 'minor';
-  if(d===1)return r<.6?'minor':r<.92?'major':'surg';
-  /* 어려움: IL 대부분은 짧은 부상, 시즌 아웃 수술은 투수 약 6%·타자 약 3% */
-  return r<.62?'minor':r<(P.pitcher?.94:.97)?'major':'surg';
+  if(d===1)return r<.8?'minor':r<.98?'major':'severe';
+  const maj=P.pitcher?.28:.25;
+  return r<.97-maj?'minor':r<.97?'major':'severe';
 }
 function newGame(force){
   if(hasSave()&&force!==true){
@@ -1643,11 +1651,19 @@ function grow(){
   if(q('gear'))for(let i=0;i<5;i++)add(i,.1*q('gear'));
   if(q('recov'))mental(2*q('recov'));
 }
+/* 부상을 입히고 능력치를 깎는다. 투수는 구속·구위, 타자는 파워·주루가 주로 떨어진다 */
 function injure(sev){
+  if(sev==='surg')sev='major';
   if(P.diff===0)sev='minor'; /* 쉬움: 큰 부상 없음 */
   P.injured=sev;
-  if(sev==='major'){bump(RI(0,4),-RI(1,3))}
-  if(sev==='surg'){if(P.pitcher){bump(0,-RI(2,4));bump(1,-RI(1,3))}else{bump(1,-RI(2,4));bump(3,-RI(1,3))}}
+  const core=P.pitcher?[0,2]:[1,3];
+  if(sev==='minor'){bump(pick(core),-RI(1,2));if(Math.random()<.5)bump(RI(0,4),-1)}
+  if(sev==='major'){
+    bump(core[0],-RI(2,4));bump(core[1],-RI(2,4));bump(RI(0,4),-RI(1,2));
+    P.pot=Math.max(50,(P.pot||70)-RI(1,3)); /* 후유증: 잠재력 하락 */
+    P.outLeft=RI(0,1); /* 이번 시즌 + 0~1시즌 더 결장 = 1~2년 */
+  }
+  if(sev==='severe'){bump(core[0],-RI(4,6));bump(core[1],-RI(4,6))}
 }
 
 /* ============ 이벤트 ============ */
@@ -2203,6 +2219,7 @@ function pressBox(idx,gf,nick,fresh){
   return `<div class="press-box"><b>언론 · 팬</b><p>${paper}</p><p>${crowd}</p><p class="nick-line">${born}</p></div>`;
 }
 function headline(idx,gf){
+  if(gf===0)return `${P.name}, 부상 재활로 시즌 전체를 결장했다`;
   if(gf<.5)return `${P.name}, 부상으로 시즌의 절반을 날렸다`;
   if(idx>2)return `“이 선수가 리그를 지배한다” — ${P.name}, 압도적인 시즌`;
   if(idx>1)return `${P.name}, 팀의 핵심으로 우뚝`;
@@ -2218,12 +2235,15 @@ function playSeason(){
   if(lg==='KBO1'||lg==='KBO2'){P.kboYears++;if(lg==='KBO1')P.kbo1Years++}
   if(lg==='MLB')P.mlbYears++;
   if(isPro(lg))P.proYears++;
-  const rehab=P.rehab;P.rehab=0;
+  let outSeason=false;
+  if(P.outLeft>0&&lg!=='MIL'&&!P.injured){P.outLeft--;outSeason=true}
   const mod=P.mod||{inj:0,perf:0};
-  if(lg!=='MIL'&&!P.injured&&Math.random()<C(injuryBase()+(P.diff===0?.3:1)*(-(P.restFlag?.05:0)-(P.shield?.04:0)-.012*((P.eq&&P.eq.helmet)||0)+(P.prepInjExtra||0)+(mod.inj||0)),P.diff===0?0:.01,P.diff===2?.65:P.diff===0?.05:.45)){injure(injurySeverity())}
+  if(lg!=='MIL'&&!P.injured&&!outSeason&&Math.random()<C(injuryBase()+(P.diff===0?.3:1)*(-(P.restFlag?.05:0)-(P.shield?.04:0)-.012*((P.eq&&P.eq.helmet)||0)+(P.prepInjExtra||0)+(mod.inj||0)),P.diff===0?0:.01,P.diff===2?.65:P.diff===0?.05:.45)){injure(injurySeverity())}
   let inj='';
-  if(P.injured){gf=P.injured==='minor'?.82:P.injured==='major'?.5:.12;inj=P.injured==='minor'?'경미한 부상으로 일부 경기를 결장했다.':P.injured==='major'?'큰 부상으로 시즌의 절반을 날렸다.':(P.pitcher?'토미 존 수술':'큰 수술')+'을 받고 시즌을 거의 접었다.';if(P.injured==='surg')P.rehab=1}
-  else if(rehab)gf=.75;
+  if(outSeason){gf=0;inj='작년 부상의 재활로 시즌 전체를 결장했다.'}
+  else if(P.injured==='minor'){gf=.5;inj='경미한 부상으로 약 6개월을 쉬었다. (능력치 하락)'}
+  else if(P.injured==='major'){gf=0;inj=(P.pitcher?'팔꿈치 인대 수술':'큰 수술')+'로 시즌 전체를 결장했다. '+(P.outLeft?'다음 시즌까지 재활이 이어진다.':'내년 복귀를 목표로 재활한다.')+' (능력치·잠재력 하락)'}
+  else if(P.injured==='severe'){gf=.3;inj='선수 생명을 위협하는 부상. 시즌 뒤 유니폼을 벗기로 했다.';P.retire=true;P.injRetire=true}
   if(lg==='MIL'){
     if(P.milType==='상무'){idx=(ovr()-REQ.KBO2)/9+G()*.5;sl=statline('KBO2',idx,1);line='상무(퓨처스) '+sl.line;tr={t:`퓨처스리그 ${RI(1,9)}위`}}
     else{line='현역 복무 — 야구는 잠시 멈춤';tr={t:'조국의 부름에 응답했다.'}}
@@ -2234,13 +2254,16 @@ function playSeason(){
       const wins=(P.hsRun.results||[]).filter(r=>r.round==='우승').length;
       idx+=Math.min(1.1,(P.hsRun.form||0)*.08+wins*.4);
     }
+    if(gf===0){line='부상 재활 — 시즌 전체 결장';tr=teamResult(lg,idx-1);if(tr.tag)tags.push(tr.tag)}
+    else{
     sl=statline(lg,idx,gf);line=sl.line;if(lg==='KBO1'||lg==='MLB'){const cc=P.car[lg==='MLB'?'MLB':'KBO'];cc.g++;['w','l','sv','hd','ip','k','er','ab','h','hr','rbi','sb'].forEach(k=>{cc[k]=(cc[k]||0)+(sl[k]||0)})}
     tr=teamResult(lg,idx);if(tr.tag)tags.push(tr.tag);
     awards(lg,idx,gf,sl,tr).forEach(a=>tags.push(a));
+    }
   }
   if(lg==='KBO1'){
     ensureFaState();
-    const before=P.kboService||0,days=gf>=.95?(idx>=-1?145:RI(105,140)):Math.max(5,Math.round(145*gf));
+    const before=P.kboService||0,days=gf===0?0:gf>=.95?(idx>=-1?145:RI(105,140)):Math.max(5,Math.round(145*gf));
     P.kboRegDays=(P.kboRegDays||0)+Math.min(145,days);P.kboService=Math.floor(P.kboRegDays/145);
     const need=faNeed();P.faEligible=!P.faUsed&&P.kboService>=need;
     regTxt=`1군 등록 ${Math.min(145,days)}일 · 누적 ${P.kboRegDays}일 (${P.kboService}/${need}시즌 인정)`;
@@ -2414,7 +2437,7 @@ function nextSeason(first){
   P.news=[];
   P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
   if(!first){P.age++;P.y++}
-  if(P.rehab)P.news.push('재활 시즌: 작년 수술의 여파로 컨디션이 완전하지 않다.');
+  if(P.outLeft>0)P.news.push('재활 시즌: 작년 부상으로 이번 시즌도 뛸 수 없다.');
   if(isPro(P.lv)&&(P.age>=42||(P.age>=30&&ovr()<46))){P.retire=true;return ending()}
   if(RULE.mil!=='none'&&isPro(P.lv)&&P.mil==='none'&&P.age>=27)return militaryChoice(P.age===27&&!P.deferred);
   proceed();
@@ -2611,7 +2634,7 @@ function ending(){
   const role=roleLabel();
   try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potG()})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
   const ach=Object.keys(P.ach).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
-  const epi=g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.';
+  const epi=(P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다. ':'')+(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
   show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점</p><p>${epi}</p></div>`
    +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>${RULE.mil==='none'?'':`병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · `}통산 수입 ${won(P.money)}</p><p>${ach}</p>`)

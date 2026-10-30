@@ -791,8 +791,8 @@ function rollStats(kind,role){
   const pot=Math.round(C(58+Math.abs(G())*16+R(0,6),58,97));
   return {labels,st:st.map(v=>C(v,20,70)),pot};
 }
-const potGrade=p=>p>=90?'S':p>=80?'A':p>=70?'B':'C';
-/* 스카우트 등급은 하한선: S는 90 이상, A는 80 이상, B는 70 이상. 실제 잠재력은 등급보다 높을 수 있다 */
+const potGrade=p=>p>=80?'S':p>=75?'A':p>=70?'B':'C';
+/* 스카우트 등급은 하한선: S는 80 이상, A는 75 이상, B는 70 이상. 실제 잠재력은 등급보다 높을 수 있다 */
 const potG=()=>P.potG||potG();
 function defCust(){return {skin:0,hcol:0,style:0,cap:0,body:1,theme:2,num:RI(1,99),nick:'',hand:'우투우타'}}
 function newPlayer(cr){
@@ -1308,7 +1308,10 @@ const DIFF_GRADE=[{S:.5,A:.35,B:.15},{A:.5,B:.3,S:.2},{B:.55,A:.3,S:.15}];
 function rollPot(diff){
   const w=DIFF_GRADE[diff==null?1:diff];let x=Math.random(),g='B';
   for(const k of Object.keys(w)){if((x-=w[k])<0){g=k;break}}
-  const floor={S:90,A:80,B:70}[g];
+  /* S: 하한 80 · 중간값 90 · 상위 10% 95 · 상위 0.1%만 99 (분위수 곡선에서 뽑는다)
+     A: 하한 75 · B: 하한 70 (하한선 + |정규분포|×5 + 0~2) */
+  if(g==='S'){const u=Math.random();return {g,pot:u>=.999?99:Math.floor(lerpKnots(u,[[0,80],[.1,86],[.5,90.5],[.9,95],[.999,98.99]]))}}
+  const floor={A:75,B:70}[g];
   return {g,pot:Math.round(C(floor+Math.abs(G())*5+R(0,2),floor,99))};
 }
 /* 부상 단계

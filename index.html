@@ -657,13 +657,17 @@ const mlbSal=()=>yearlyPay(ovr(),true)/EOK_PER_M;
 const lvLabel=()=>P.lv==='HS'?`고교야구 ${P.grade}학년`:P.lv==='UNI'?`대학야구 ${P.uniYear}학년`:P.lv==='MIL'?`군 복무(${P.milType})`:LV[P.lv];
 const panel=(h,b)=>`<div class="panel"><h2>${h}</h2>${b}</div>`;
 
+/* 구속 · 제구 · 구위 · 체력 · 회복력
+   구속: 강속구형 > 기교파 > 제구형      제구: 제구형 > 기교파 > 강속구형
+   구위: 강속구형 >= 기교파 > 제구형     체력: 기교파 >= 제구형 > 강속구형
+   회복력: 기교파 > 제구형 > 강속구형 */
+const PITCH_FIXED={PW:[58,32,52,43,40],CT:[39,56,43,45,42],FN:[44,43,48,46,44]};
 function rollStats(kind,role){
   const pitcher=kind==='P';
   const labels=pitcher?['구속','제구','구위','체력','회복력']:['컨택','파워','선구안','주루','수비'];
   const st=labels.map(()=>RI(34,50));
-  if(role==='PW'){st[0]+=9;st[2]+=3;st[1]-=7}
-  if(role==='CT'){st[1]+=9;st[0]-=6;st[2]+=1}
-  if(role==='FN'){st[3]+=9;st[4]+=3;st[0]-=3}
+  /* 투수 유형은 고정 능력치 (합계 225 = OVR 45) */
+  if(PITCH_FIXED[role])return {labels,st:PITCH_FIXED[role].slice(),pot:Math.round(C(58+Math.abs(G())*16+R(0,6),58,97))};
   if(role==='CL'){st[0]+=5;st[2]+=7;st[1]-=3;st[3]-=5}
   if(role==='MR'){st[0]+=2;st[2]+=3;st[3]-=1}
   if(role==='SP'){st[1]+=6;st[3]+=6;st[2]-=1}

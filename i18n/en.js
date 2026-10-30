@@ -305,6 +305,8 @@ window.B2_LOC={
 "계약 완료": "Contract signed",
 "계약금 {0}.": "Signing bonus {0}.",
 "계약을 유지한다": "Stay on your contract",
+"{0} · 레전드 점수 {1}점 / 999": "{0} · Legend score {1} / 999",
+"팀 수상 {0} · 개인 수상 {1} · 업적 {2} · 커리어 {3}": "Team awards {0} · Individual awards {1} · Feats {2} · Career {3}",
 "{0} 상한 {1}": "{0} caps {1}",
 "수비 위치 전환 제안": "Position switch offer",
 "보직 전환 제안": "Role switch offer",

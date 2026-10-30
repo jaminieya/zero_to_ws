@@ -3163,8 +3163,22 @@ function pickOffer(x,fromMLB){
 }
 
 /* ============ 엔딩 ============ */
-function score(){let s=0;for(const k in P.ach)s+=(PTS[k]||0)*P.ach[k];s+=P.kbo1Years*.3+P.mlbYears*.7+P.fame*.2;return Math.round(s)}
-function gradeOf(s){return s>=90?['S','전설']:s>=60?['A','명예의 전당급']:s>=36?['B','리그 정상급 스타']:s>=18?['C','주전급 베테랑']:s>=8?['D','1군 생활을 한 선수']:['E','무명으로 남은 도전자']}
+/* 레전드 점수 (최대 999): 팀 수상 > 개인 수상 > 업적 > 커리어 순으로 비중이 크다.
+   항목별 원점수(PTS × 횟수)를 포화 곡선 cap × (1 - e^(-원점수/k))로 바꿔 상한에 가까워질수록 덜 오른다.
+   팀 수상 최대 400 · 개인 수상 최대 330 · 업적 최대 170 · 커리어(1군 시즌·명성) 최대 99 */
+const FEAT_KEYS=new Set(['퍼펙트 게임','노히트노런','완봉승','완투승','투수 트리플 크라운','20승 시즌','1점대 평균자책점','200탈삼진 시즌','40세이브 시즌',
+  '사이클링 히트','한 경기 3홈런','그랜드 슬램','끝내기 홈런','타자 트리플 크라운','4할 타자','50홈런 시즌','40-40 클럽','30-30 클럽','200안타 시즌','MLB 빅리그 데뷔','KBO 1군 데뷔']);
+const achCat=k=>TEAM_AWARD[k]?'team':FEAT_KEYS.has(k)||/ 통산 /.test(k)?'feat':'personal';
+const LEGEND={team:{cap:400,k:40},personal:{cap:330,k:75},feat:{cap:170,k:30}};
+function scoreParts(){
+  const raw={team:0,personal:0,feat:0};
+  for(const k in P.ach)raw[achCat(k)]+=(PTS[k]||0)*P.ach[k];
+  const o={};for(const c in LEGEND)o[c]=Math.round(LEGEND[c].cap*(1-Math.exp(-raw[c]/LEGEND[c].k)));
+  o.career=Math.round(Math.min(99,(P.kbo1Years||0)*2.5+(P.mlbYears||0)*4.5+Math.min(P.fame||0,20)*1.5));
+  return o;
+}
+function score(){const o=scoreParts();return Math.min(999,o.team+o.personal+o.feat+o.career)}
+function gradeOf(s){return s>=600?['S','전설']:s>=450?['A','명예의 전당급']:s>=280?['B','리그 정상급 스타']:s>=150?['C','주전급 베테랑']:s>=60?['D','1군 생활을 한 선수']:['E','무명으로 남은 도전자']}
 function titleOf(){
   const a=P.ach,h=k=>a[k]>0;
   const mlbBest=h('MLB MVP')||h('사이영상')||h('MLB MVP·사이영상급');
@@ -3191,7 +3205,7 @@ function ending(){
   const why=P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다.':(P.retireWhy||'');
   const epi=(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
-  show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점</p>${why?`<p>${why}</p>`:''}<p>${epi}</p></div>`
+  show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점 / 999</p><p class="sub">${(o=>`팀 수상 ${o.team} · 개인 수상 ${o.personal} · 업적 ${o.feat} · 커리어 ${o.career}`)(scoreParts())}</p>${why?`<p>${why}</p>`:''}<p>${epi}</p></div>`
    +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>${RULE.mil==='none'?'':`병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · `}통산 수입 ${won(P.money)}</p><p>${ach}</p>`)
    +panel('시즌별 기록',`<div class="scroll"><table><tr><th>연도</th><th>나이</th><th>소속</th><th>리그</th><th>성적</th><th>기록</th></tr>${P.hist.map(h=>`<tr><td>${h.y}</td><td>${h.age}</td><td>${h.team}</td><td>${h.lv}</td><td>${h.line}</td><td>${h.tags.join(', ')}</td></tr>`).join('')}</table></div>`)
    +`<div>${B('결과 공유(복사)',()=>{const txt=TR(share)+location.href;if(navigator.share){navigator.share({text:TR(share),url:location.href}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('복사했어요!'),()=>prompt('복사해서 공유하세요',txt))}else prompt('복사해서 공유하세요',txt)})}${B('Hall of Fame',hofScreen)}${B('메인 메뉴',menu,'alt')}</div>`);

@@ -109,7 +109,7 @@ html.rm .soft-ball,.html.rm .impact{display:none}
 .scard{--sc1:#f6c21b;--sc2:#7a5d00;position:relative;flex:0 1 300px;width:min(300px,82vw);aspect-ratio:5/7;overflow:hidden;border:5px solid var(--sc1);border-radius:14px;background:radial-gradient(circle at 50% 34%,color-mix(in srgb,var(--sc1) 34%,transparent),transparent 37%),repeating-linear-gradient(135deg,transparent 0 18px,rgba(255,255,255,.045) 18px 21px),linear-gradient(155deg,var(--sc2),#07170e 58%,#020805);box-shadow:7px 7px 0 #000;min-width:0}
 .scard::after{content:"";position:absolute;inset:7px;border:2px solid color-mix(in srgb,var(--sc1) 75%,white);border-radius:9px;pointer-events:none;z-index:5}
 .scard-front .scard-visual{position:absolute;inset:12% 4% 24%;display:flex;justify-content:center;align-items:flex-end}
-.scard-front .scard-visual .av{width:72%!important;height:auto!important;max-height:100%}
+.scard-front .scard-visual .av{width:72%!important;height:auto!important;aspect-ratio:512/889;max-height:100%}
 .scard-top{position:absolute;z-index:3;top:7%;font-weight:900;color:#fff;text-shadow:2px 2px 0 #000;line-height:1.05}
 .scard-ovr{left:8%;font-size:13px;text-align:center}.scard-ovr b{display:block;color:var(--sc1);font-size:31px}
 .scard-club{right:8%;max-width:48%;font-size:12px;text-align:right}.scard-club b{display:block;color:var(--sc1);font-size:21px}

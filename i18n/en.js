@@ -305,6 +305,8 @@ window.B2_LOC={
 "계약 완료": "Contract signed",
 "계약금 {0}.": "Signing bonus {0}.",
 "계약을 유지한다": "Stay on your contract",
+"이적을 접고 이번 시즌도 뛴다 (멘탈 -3)": "Drop the move and play this season (Mental -3)",
+"이적은 무산됐다. 마음을 다잡고 이번 시즌도 뛰기로 했다. (멘탈 -3)": "The move fell through. You decided to play on this season. (Mental -3)",
 "이적": "Transfer",
 "이적을 신청한다": "Request a transfer",
 "구단이 허락하면 나를 원하는 구단들과 협상한다. 핵심 선수이거나 계약이 많이 남았을수록 허락받기 어렵다": "If the club agrees, you negotiate with clubs that want you. Harder if you are a core player or have years left",

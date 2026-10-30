@@ -166,6 +166,7 @@ html:lang(en) .row{grid-template-columns:5.6em minmax(0,1fr) 2.4em 2.8em}
 .ovrrow{display:flex;justify-content:space-between;text-align:center;border-top:3px solid var(--paper);border-bottom:3px solid var(--paper);padding:8px 0;margin-bottom:12px}.ovrrow>div{flex:1}.ovrrow span{display:block;font-size:12px}.ovrrow b{font-size:32px;color:var(--gold);display:block}.ovrrow b.sm2{font-size:18px;line-height:40px}
 .hp .row{margin:6px 0}
 .tbox{border:3px solid var(--paper);background:#06130b;padding:10px 12px}
+.eq-ev{color:#c0392b;font-weight:700}
 .team-link{background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left}.team-link span{font-size:12px;text-decoration:underline;opacity:.85}
 .mkt-info p{margin:4px 0}.mkt-msg{font-weight:700;margin:10px 0}.hub-modal .wbody{overflow:auto}
 .team-play-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
@@ -605,7 +606,7 @@ const roleLabel=()=>P.slot?`${ROLE[P.role]} · ${SLOT_NAME[P.slot]}`:ROLE[P.role
 const LV={HS:'고교야구',UNI:'2년제 대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',IND:'독립야구단',MIL:'군 복무'};
 /* 리그 평균 OVR (시즌 성적 기준). 구단 기준(teamBar)에 맞춤: KBO 구단 65~75 → 1군 70, MLB 구단 75~96 → 85 */
 const REQ={HS:45,UNI:58,KBO2:60,KBO1:70,A:63,AA:70,AAA:77,MLB:85,IND:55,MIL:60};
-const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1,
+const PTS={'한국시리즈 우승':8,'한국시리즈 준우승':2,'한국시리즈 MVP':6,'KBO MVP':12,'KBO 골든글러브':4,'KBO 올스타':1,'KBO 신인왕':4,'KBO 타이틀홀더':4,'최동원상':8,'일구상':4,'KBO 타격왕':3,'KBO 홈런왕':3,'KBO 타점왕':3,'KBO 도루왕':3,'KBO 출루율왕':3,'KBO 다승왕':3,'KBO 평균자책왕':3,'KBO 탈삼진왕':3,'KBO 세이브왕':3,'KBO 홀드왕':3,'퓨처스리그 MVP':2,'고교 대회 MVP':2,'대학 최우수선수':2,'월드시리즈 우승':14,'월드시리즈 준우승':4,'월드시리즈 MVP':8,'MLB MVP·사이영상급':20,'MLB MVP':18,'사이영상':16,'MLB 올스타':3,'MLB 신인왕':6,'골드글러브·실버슬러거':3,'MLB 골드글러브':3,'MLB 실버슬러거':3,'플래티넘 글러브':4,'MLB 구원왕':5,'행크 에런상':6,'올MLB':5,'MLB 컴백상':3,'DH 올해의 선수':3,'MLB 타격왕':3,'MLB 출루율왕':3,'MLB 홈런왕':3,'MLB 타점왕':3,'MLB 도루왕':3,'MLB 다승왕':3,'MLB 평균자책왕':3,'MLB 탈삼진왕':3,'MLB 세이브왕':3,'WBC 우승':8,'WBC 4강':3,'프리미어12 우승':6,'프리미어12 4강':2,'올림픽 금메달':12,'올림픽 은메달':7,'올림픽 동메달':6,'아시안게임 금메달':4,'U-18 월드컵 우승':3,'U-23 월드컵 우승':2,'MLB 빅리그 데뷔':3,'KBO 1군 데뷔':1,'고교 전국대회 우승':2,'고교 최고 유망주':2,'대학리그 우승':1,
   /* 개인 기록·업적 */
   '퍼펙트 게임':6,'노히트노런':3,'완봉승':.5,'완투승':.3,'투수 트리플 크라운':6,'20승 시즌':2,'1점대 평균자책점':3,'200탈삼진 시즌':1,'40세이브 시즌':1,
   '사이클링 히트':3,'한 경기 3홈런':1,'그랜드 슬램':.3,'끝내기 홈런':.3,'타자 트리플 크라운':6,'4할 타자':8,'50홈런 시즌':3,'40-40 클럽':5,'30-30 클럽':2,'200안타 시즌':2,
@@ -1512,15 +1513,41 @@ function beginCareer(){
 }
 
 /* ----- 허브: 상점 | 선수 정보·플레이 | 커리어 STAT·LOG ----- */
+/* 소모품: 효과는 확률. 각 소모품은 시즌마다 1번만 살 수 있다. fn은 결과 문장을 돌려준다 */
+const roll3=(a,b,c)=>{const x=Math.random();return x<a?2:x<a+b?1:0};
 const SHOP=[
- {id:'weight',n:'웨이트·러닝 패키지',d:'체력/주루 +3',p:.12,fn:()=>bump(3,3)},
- {id:'coach',n:'전담 코치 레슨',d:'핵심 능력 +3',p:.25,fn:()=>bumpMain(3)},
- {id:'tech',n:'트랙맨·랩소도 분석',d:'핵심 능력 2개 +2',p:.35,fn:()=>{bumpMain(2);bumpMain(2)}},
- {id:'mind',n:'멘탈 코치 상담',d:'멘탈 +8',p:.15,fn:()=>mental(8)},
- {id:'rehab',n:'재활·케어 센터',d:'다음 시즌 부상 확률 감소',p:.2,fn:()=>{P.shield=true}},
- {id:'diet',n:'영양 식단·보충제',d:'다음 시즌 컨디션 상승',p:.08,fn:()=>{P.hot+=.25}},
- {id:'pr',n:'에이전트·SNS 홍보',d:'명성 +2',p:.45,fn:()=>fame(2)}
+ {id:'weight',n:'웨이트·러닝 패키지',d:()=>`${P.labels[3]} +2 (60%) · +1 (30%) · 효과 없음 (10%)`,p:.12,fn:()=>{const v=roll3(.6,.3);bump(3,v);return v?`${P.labels[3]} +${v}`:'효과가 없었다'}},
+ {id:'coach',n:'전담 코치 레슨',d:'핵심 능력 +2 (50%) · +1 (35%) · 효과 없음 (15%)',p:.25,fn:()=>{const v=roll3(.5,.35),i=RI(0,2);bump(i,v);return v?`${P.labels[i]} +${v}`:'레슨이 몸에 붙지 않았다'}},
+ {id:'tech',n:'트랙맨·랩소도 분석',d:'핵심 능력 2개에 각각 50% 확률로 +1~2',p:.35,fn:()=>{const r=[];for(let k=0;k<2;k++){const i=RI(0,2);if(Math.random()<.5){const v=RI(1,2);bump(i,v);r.push(`${P.labels[i]} +${v}`)}}return r.length?r.join(', '):'분석은 했지만 달라진 게 없다'}},
+ {id:'mind',n:'멘탈 코치 상담',d:'멘탈 +3~10',p:.15,fn:()=>{const v=RI(3,10);mental(v);return `멘탈 +${v}`}},
+ {id:'rehab',n:'재활·케어 센터',d:'80% 확률로 다음 시즌 부상 확률 감소',p:.2,fn:()=>{if(Math.random()<.8){P.shield=true;return '몸 상태가 좋아졌다 (부상 확률 감소)'}return '큰 차이를 못 느꼈다'}},
+ {id:'diet',n:'영양 식단·보충제',d:'다음 시즌 컨디션 상승 (효과 크기 랜덤)',p:.08,fn:()=>{const v=R(0,.4);P.hot+=v;return v>.25?'컨디션 최고!':v>.1?'컨디션 상승':'체감 효과는 미미했다'}},
+ {id:'pr',n:'에이전트·SNS 홍보',d:'명성 +2 (60%) · +1 (30%) · 역풍 -1 (10%)',p:.45,fn:()=>{const x=Math.random();if(x<.1){fame(-1);return '홍보가 역풍을 맞았다 (명성 -1)'}const v=x<.7?2:1;fame(v);return `명성 +${v}`}}
 ];
+/* 치트 아이템: 한 시즌 동안 능력치 하나를 99로. 가격은 현재 연봉 2년치(프로만).
+   1군·빅리그에서 시즌을 뛰면 그 능력과 관련된 개인 타이틀을 무조건 받는다 */
+const CHEAT={
+  h:[{n:'골든 아이',d:'컨택',aw:'타격왕'},{n:'강철 배트',d:'파워',aw:'홈런왕'},{n:'매의 눈',d:'선구안',aw:'출루율왕'},{n:'번개 스파이크',d:'주루',aw:'도루왕'},{n:'황금 장갑',d:'수비',aw:'GLOVE'}],
+  p:[{n:'로켓 암',d:'구속',aw:'탈삼진왕'},{n:'정밀 조준경',d:'제구',aw:'평균자책왕'},{n:'공간 파괴',d:'구위',aw:'다승왕'},{n:'무한 스태미나',d:'체력',aw:'다승왕'},{n:'불사조의 어깨',d:'회복력',aw:'평균자책왕'}]
+};
+const cheatList=()=>CHEAT[P.pitcher?'p':'h'];
+const cheatPrice=()=>Math.max(.1,Math.round(currentPay()*2*100)/100);
+function cheatAward(L,i=P.cheat&&P.cheat.i){
+  const c=cheatList()[i];if(!c)return '';
+  if(P.pitcher&&slot()==='CL')return L+' 세이브왕';
+  if(P.pitcher&&slot()==='MR')return L==='KBO'?'KBO 홀드왕':'';
+  if(c.aw==='GLOVE')return L==='KBO'?'KBO 골든글러브':'MLB 골드글러브';
+  return L+' '+c.aw;
+}
+const shopY=()=>P.y+(P.played?1:0);
+const consUsed=id=>!!(P.consBuy&&P.consBuy.y===shopY()&&P.consBuy[id]);
+function buyCheat(i){
+  const c=cheatList()[i];if(!c||P.cheat||!isPro(P.lv))return hub();
+  const pr=cheatPrice();
+  if(!spend(pr)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
+  P.cheat={i,prev:P.st[i],y:shopY()};P.st[i]=99;
+  P.shopMsg=`${c.n} 사용! 이번 시즌 ${P.labels[i]} 99.`;L(`치트 아이템 — ${c.n} (${priceLabel(pr)})`);hub();
+}
 /* 럭셔리 자산: 한 번만 구매. ovr=영구 능력치, fame=명성, men=멘탈. 가격 순 */
 const LUXURY=[
  {id:'watch',n:'한정판 시계 컬렉션',t:'손목 위의 작은 트로피.',p:4,men:4},
@@ -1539,8 +1566,10 @@ const luxFx=x=>[x.ovr?`영구 OVR +${x.ovr}`:'',x.fame?`명성 +${x.fame}`:'',x.
 const luxTxt=x=>typeof x.t==='function'?x.t():x.t;
 function buy(id){
   const s=SHOP.find(x=>x.id===id);
+  if(consUsed(id)){P.shopMsg='이번 시즌에는 이미 사용했습니다.';return hub()}
   if(!spend(s.p)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
-  s.fn();P.shopMsg=`${s.n} 구매 완료!`;L(`상점 — ${s.n} 구매 (${priceLabel(s.p)})`);hub();
+  if(!P.consBuy||P.consBuy.y!==shopY())P.consBuy={y:shopY()};P.consBuy[id]=true;
+  const r=s.fn();P.shopMsg=`${s.n}: ${r}`;L(`상점 — ${s.n} (${priceLabel(s.p)}) → ${r}`);hub();
 }
 function buyLuxury(id){
   const s=LUXURY.find(x=>x.id===id);P.luxOwned=P.luxOwned||{};
@@ -1551,7 +1580,7 @@ function buyLuxury(id){
   P.shopMsg=`${s.n} 구매 완료! ${luxFx(s)}`;L(`럭셔리 자산 — ${s.n} 구매 (${priceLabel(s.p)}, ${luxFx(s)})`);hub();
 }
 function shopPanel(){
-  return `<div class="panel"><h2>상점</h2><p class="sub">보유 ${moneyPair(P.money)}</p>${SHOP.map(s=>`<div class="item"><b>${s.n}</b><br><span class="sub">${s.d}</span><br>${B(priceLabel(s.p),()=>buy(s.id),P.money>=s.p?'':'dis')}</div>`).join('')}<p class="sub">상점 금액은 시즌 연봉으로 쌓인 돈을 씁니다.</p></div>`;
+  return `<div class="panel"><h2>상점</h2><p class="sub">보유 ${moneyPair(P.money)}</p>${SHOP.map(s=>`<div class="item"><b>${s.n}</b><br><span class="sub">${txt(s.d)}</span><br>${B(priceLabel(s.p),()=>buy(s.id),P.money>=s.p?'':'dis')}</div>`).join('')}<p class="sub">상점 금액은 시즌 연봉으로 쌓인 돈을 씁니다.</p></div>`;
 }
 function centerPanel(ny,na){
   const o=ovr();
@@ -1603,25 +1632,44 @@ function mainTab(ny,na){
   const coach=`<div class="panel hp home-coach"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
   return `<div class="hgrid">${heroPanel()}${stats}${play}${coach}</div>`;
 }
-const EQUIP=[
- {id:'helmet',n:()=>'헬멧',d:'부상 확률 -1.2% / 레벨'},
- {id:'glove',n:()=>'글러브',d:()=>P.pitcher?'제구 성장 +0.3 / 레벨':'수비 성장 +0.3 / 레벨'},
- {id:'spike',n:()=>'스파이크',d:'주루·체력 성장 +0.3 / 레벨'},
- {id:'weapon',n:()=>P.pitcher?'피칭 장비':'배트',d:()=>P.pitcher?'구위 성장 +0.3 / 레벨':'컨택 성장 +0.3 / 레벨'},
- {id:'gear',n:()=>'트레이닝 기어',d:'전 능력 성장 +0.1 / 레벨'},
- {id:'recov',n:()=>'회복 장비',d:'시즌 멘탈 +2 / 레벨'}
-];
-const EQ_MAX=5,eqCost=l=>Math.round((.1+.08*l)*100)/100,CUST_COST=.05;
+/* 장비: 투수·타자가 다르다. s=성장이 붙는 능력치 번호(시즌마다 +0.3/레벨), inj=부상 확률 -1.2%/레벨 */
+const EQUIP_SET={
+  h:[{id:'helmet',n:'배팅 헬멧',inj:1},{id:'bat',n:'배트',s:1},{id:'bglove',n:'배팅 장갑',s:0},{id:'goggle',n:'비전 고글',s:2},{id:'spike',n:'러닝 스파이크',s:3},{id:'glove',n:'수비 글러브',s:4}],
+  p:[{id:'wball',n:'웨이티드 볼',s:0},{id:'glove',n:'투수 글러브',s:1},{id:'sensor',n:'피칭 센서',s:2},{id:'spike',n:'피칭 스파이크',s:3},{id:'recov',n:'회복 장비',s:4},{id:'helmet',n:'컴프레션 웨어',inj:1}]
+};
+const eqList=()=>EQUIP_SET[P.pitcher?'p':'h'].map(e=>Object.assign({},e,{d:e.inj?'부상 확률 -1.2% / 레벨':`${P.labels[e.s]} 성장 +0.3 / 레벨`}));
+/* 업그레이드 비용은 지수적으로: Lv1 고교·대학 용돈(1천만 원) → Lv2 KBO 평균 연봉(1.5억) → Lv3 KBO 상위·MLB 평균(22.5억) → Lv4 MLB 최상위(337.5억)
+   Lv5는 일반 구매 불가. Lv3 이상일 때 이벤트로 등장하고, Lv3 가격으로 Lv4를 건너뛰고 바로 살 수 있다 */
+const EQ_MAX=5,EQ_BUY_MAX=4,eqCost=l=>Math.round(.1*Math.pow(15,l)*100)/100,EQ5_COST=eqCost(2),CUST_COST=.05;
+/* Lv5 한정판 이벤트: 시즌마다 35% 확률로 Lv3~4 장비 하나에 열린다 */
+function eqEvent(){
+  const y=shopY();
+  if(!P.eqEv||P.eqEv.y!==y){const ok=eqList().filter(e=>{const l=eqLv(e.id);return l>=3&&l<EQ_MAX});P.eqEv={y,id:ok.length&&Math.random()<.35?pick(ok).id:null}}
+  return P.eqEv.id;
+}
+function eqBuy5(id){
+  const l=eqLv(id);if(eqEvent()!==id||l<3||l>=EQ_MAX)return hub();
+  if(!spend(EQ5_COST)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
+  P.eq[id]=EQ_MAX;P.eqEv.id=null;
+  const e=eqList().find(x=>x.id===id);P.shopMsg=`한정판 ${e.n} Lv.5 획득!`;L(`상점 — 한정판 이벤트 ${e.n} Lv.5`);hub();
+}
+/* 예전 저장의 장비(weapon·gear)를 새 장비로 옮긴다 */
+function eqMigrate(){
+  const q=P.eq;if(!q||q.v2)return;
+  if(q.weapon)q[P.pitcher?'sensor':'bglove']=Math.max(q[P.pitcher?'sensor':'bglove']||0,q.weapon);
+  if(!P.pitcher&&q.recov)delete q.recov;
+  delete q.weapon;delete q.gear;q.v2=1;
+}
 let SHOPSEL=0,SHOPCONS=false,SHOPLUX=false,SHOPCU=null,SHOPEDIT=null,SHOPCUSTWIN=false;
 const isPhone=()=>{try{return matchMedia('(max-width:760px)').matches}catch(e){return false}};
 const txt=v=>typeof v==='function'?v():v;
 function eqLv(id){return (P.eq&&P.eq[id])||0}
 function eqBuy(id){
   const l=eqLv(id),c=eqCost(l);
-  if(l>=EQ_MAX)return hub();
+  if(l>=EQ_BUY_MAX)return hub();
   if(!spend(c)){P.shopMsg='보유 금액이 부족합니다.';return hub()}
   P.eq=P.eq||{};P.eq[id]=l+1;
-  const e=EQUIP.find(x=>x.id===id);P.shopMsg=`${txt(e.n)} Lv.${l+1} 업그레이드 완료!`;L(`상점 — ${txt(e.n)} Lv.${l+1}`);hub();
+  const e=eqList().find(x=>x.id===id);P.shopMsg=`${e.n} Lv.${l+1} 업그레이드 완료!`;L(`상점 — ${e.n} Lv.${l+1}`);hub();
 }
 function custSave(){
   const same=JSON.stringify(SHOPCU)===JSON.stringify(P.cust);
@@ -1633,13 +1681,14 @@ function shopTab(){
   const hx=f=>{H.push(f);return H.length-1};
   const cu=SHOPCU;
   /* 왼쪽: 장비 업그레이드 */
-  if(SHOPSEL<0||SHOPSEL>=EQUIP.length)SHOPSEL=0;
-  const eqList=EQUIP.map((e,i)=>{
+  if(SHOPSEL<0||SHOPSEL>=eqList().length)SHOPSEL=0;
+  const ev=eqEvent();
+  const eqItems=eqList().map((e,i)=>{
     const ix=hx(()=>{SHOPSEL=i;hub()}),sl=eqLv(e.id),sel=i===SHOPSEL;
-    const up=sel?`<div class="eq-upgrade"><span class="sub">Lv.${sl} / ${EQ_MAX}</span><div class="pips">${Array.from({length:EQ_MAX},(_,j)=>`<i class="${j<sl?'f':''}"></i>`).join('')}</div>${sl>=EQ_MAX?'<p class="sub">최대 레벨입니다.</p>':`<p class="sub">다음 레벨: ${txt(e.d)}</p>${B(`업그레이드 · ${priceLabel(eqCost(sl))}`,()=>eqBuy(e.id),P.money>=eqCost(sl)?'':'dis')}`}</div>`:'';
-    return `<div class="eqi ${sel?'on':''}"><div class="eqi-main" onclick="H[${ix}]()"><div><b>${txt(e.n)}</b><br><span class="sub">${txt(e.d)}</span></div><span class="lv">Lv.${sl}</span></div>${up}</div>`;
+    const up=sel?`<div class="eq-upgrade"><span class="sub">Lv.${sl} / ${EQ_MAX}</span><div class="pips">${Array.from({length:EQ_MAX},(_,j)=>`<i class="${j<sl?'f':''}"></i>`).join('')}</div>${sl>=EQ_MAX?'<p class="sub">최대 레벨입니다.</p>':sl>=EQ_BUY_MAX?'<p class="sub">Lv.5는 한정판 이벤트로만 등장합니다.</p>':`<p class="sub">다음 레벨: ${e.d}</p>${B(`업그레이드 · ${priceLabel(eqCost(sl))}`,()=>eqBuy(e.id),P.money>=eqCost(sl)?'':'dis')}`}${ev===e.id?`<p class="eq-ev">🔥 한정판 이벤트! Lv.${sl}에서 바로 Lv.5로</p>${B(`한정판 Lv.5 · ${priceLabel(EQ5_COST)}`,()=>eqBuy5(e.id),P.money>=EQ5_COST?'red':'red dis')}`:''}</div>`:'';
+    return `<div class="eqi ${sel?'on':''}"><div class="eqi-main" onclick="H[${ix}]()"><div><b>${e.n}</b>${ev===e.id?' <span class="eq-ev">🔥</span>':''}<br><span class="sub">${e.d}</span></div><span class="lv">Lv.${sl}</span></div>${up}</div>`;
   }).join('');
-  const left=`<div class="panel shop-eq-panel"><h2>장비 업그레이드</h2><div class="eql">${eqList}</div></div>`;
+  const left=`<div class="panel shop-eq-panel"><h2>장비 업그레이드</h2><div class="eql">${eqItems}</div></div>`;
   const luxN=Object.keys(P.luxOwned||{}).length;
   const store=`<div class="panel lux"><div class="luxh"><b>기타 상점</b><span class="sub">럭셔리 ${luxN}/${LUXURY.length} 보유</span></div><div class="store-btns">${B(`소모품<small>시즌 아이템 · ${SHOP.length}종</small>`,()=>{SHOPCONS=true;hub()})}${B(`럭셔리 박스<small>영구 자산 · ${LUXURY.length}종</small>`,()=>{SHOPLUX=true;hub()},'red')}</div></div>`;
   /* 휴대폰: 프로필 박스를 누르면 커스터마이제이션 창이 열린다 */
@@ -1681,7 +1730,10 @@ function shopTab(){
   }
   if(SHOPCONS){
     const cl=hx(()=>{SHOPCONS=false;hub()});
-    const consBody=SHOP.map(x=>`<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${x.d}</span></div>${B(priceLabel(x.p),()=>buy(x.id),P.money>=x.p?'':'dis')}</div>`).join('');
+    const consBody=SHOP.map(x=>{const used=consUsed(x.id);return `<div class="sitem sm"><div><b>${x.n}</b><br><span class="sub">${txt(x.d)}</span></div>${B(used?'이번 시즌 사용함':priceLabel(x.p),()=>buy(x.id),!used&&P.money>=x.p?'':'dis')}</div>`}).join('')
+      +`<p style="margin-top:14px"><b>치트 아이템</b> <span class="sub">한 시즌 동안 능력치 하나를 99로 · 가격은 현재 연봉 2년치 · 1군/빅리그에서 뛰면 관련 개인 타이틀 확정 · 시즌당 1개</span></p>`
+      +cheatList().map((c,i)=>{const pro=isPro(P.lv),pr=cheatPrice(),on=P.cheat&&P.cheat.i===i,ok=pro&&!P.cheat&&P.money>=pr;
+        return `<div class="sitem sm cheat"><div><b>${c.n}</b><br><span class="sub">${P.labels[i]} 99 (한 시즌) · ${cheatAward(P.org==='MLB'?'MLB':'KBO',i)||'-'} 확정</span></div>${B(on?'사용 중':!pro?'프로 선수만':P.cheat?'이미 사용 중':priceLabel(pr),()=>buyCheat(i),ok?'red':'dis')}</div>`}).join('');
     extra+=`<div class="backdrop b2" onclick="H[${cl}]()"><div class="win wide" onclick="event.stopPropagation()"><div class="wbar"><span>소모품</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody"><p class="sub">시즌 소모품 · 보유 ${moneyPair(P.money)}</p>${consBody}</div></div></div>`;
   }
   if(SHOPLUX){
@@ -1693,7 +1745,7 @@ function shopTab(){
 }
 function recTab(){return careerPanel()+logPanel()}
 function hub(){
-  ensureFaState();foldBp();save();P.peak=Math.max(P.peak||0,ovr());
+  ensureFaState();foldBp();if(P.eq)eqMigrate();save();P.peak=Math.max(P.peak||0,ovr());
   const ny=P.y+(P.played?1:0),na=P.age+(P.played?1:0);
   if(!TABS.includes(HUBTAB))HUBTAB='main';
   if(P.offers&&P.offers.length&&!SEAS_MODE&&!PREP_OPEN)SEAS_MODE='offer';
@@ -1826,9 +1878,7 @@ function grow(){
     else d=-(.6+g.k*(a-g.from))+R(-.8,.8);
     return C(Math.round((s+d)*10)/10,15,99)});
   const q=k=>(P.eq&&P.eq[k])||0,add=(i,v)=>{if(v)P.st[i]=C(Math.round((P.st[i]+v)*10)/10,15,99)};
-  add(0,.3*q('weapon'));add(P.pitcher?1:4,.3*q('glove'));add(3,.3*q('spike'));
-  if(q('gear'))for(let i=0;i<5;i++)add(i,.1*q('gear'));
-  if(q('recov'))mental(2*q('recov'));
+  eqList().forEach(e=>{if(e.s!=null)add(e.s,.3*q(e.id))});
 }
 /* 부상을 입히고 능력치를 깎는다. 투수는 구속·구위, 타자는 파워·주루가 주로 떨어진다 */
 function injure(sev){
@@ -1836,13 +1886,14 @@ function injure(sev){
   if(P.diff===0)sev='minor'; /* 쉬움: 큰 부상 없음 */
   P.injured=sev;
   const core=P.pitcher?[0,2]:[1,3];
-  if(sev==='minor'){bump(pick(core),-RI(1,2));if(Math.random()<.5)bump(RI(0,4),-1)}
+  /* 능력치 하락은 한 해 성장(고교 +1.5~5)과 상점 영구 상승을 웃돌도록 크게 잡는다 */
+  if(sev==='minor'){bump(pick(core),-RI(2,4));bump(RI(0,4),-RI(1,2))}
   if(sev==='major'){
-    bump(core[0],-RI(2,4));bump(core[1],-RI(2,4));bump(RI(0,4),-RI(1,2));
-    P.pot=Math.max(50,(P.pot||70)-RI(1,3)); /* 후유증: 잠재력 하락 */
+    bump(core[0],-RI(4,7));bump(core[1],-RI(4,7));bump(RI(0,4),-RI(2,3));bump(RI(0,4),-RI(2,3));
+    P.pot=Math.max(50,(P.pot||70)-RI(2,4)); /* 후유증: 잠재력 하락 */
     P.outLeft=RI(0,1); /* 이번 시즌 + 0~1시즌 더 결장 = 1~2년 */
   }
-  if(sev==='severe'){bump(core[0],-RI(4,6));bump(core[1],-RI(4,6))}
+  if(sev==='severe'){bump(core[0],-RI(7,10));bump(core[1],-RI(7,10));bump(RI(0,4),-RI(3,5))}
 }
 
 /* ============ 이벤트 ============ */
@@ -2347,6 +2398,7 @@ function awards(lg,idx,gf,sl,tr){
       if(beat(sl.sb,'sb'))add(L+' 도루왕');
     }
   }
+  if((lg==='KBO1'||lg==='MLB')&&sl&&P.cheat){const k=cheatAward(lg==='MLB'?'MLB':'KBO');if(k&&!a.includes(k))add(k)}
   const out=a.filter(Boolean);out.forEach(k=>A(k));
   return (lg==='KBO1'||lg==='MLB')&&sl?out.concat(feats(lg,idx,sl,out)):out;
 }
@@ -2526,6 +2578,7 @@ function playSeason(){
   let milEnd=false;
   if(lg==='MIL'){P.milLeft--;if(P.milLeft<=0){P.mil='done';P.lv=P.prevLv;milEnd=true}}
   P.injured=null;P.restFlag=false;P.prepInjExtra=0;
+  if(P.cheat){P.st[P.cheat.i]=P.cheat.prev;P.cheat=null} /* 치트 아이템은 한 시즌만 */
   const hd=headline(idx,gf);
   const gp=sl&&sl.g!=null?sl.g:seasonGames(lg,gf);
   const hadNick=P.fanNick,hadTier=P.fanTier,nick=fanNick();

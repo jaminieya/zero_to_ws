@@ -166,6 +166,8 @@ html:lang(en) .row{grid-template-columns:5.6em minmax(0,1fr) 2.4em 2.8em}
 .ovrrow{display:flex;justify-content:space-between;text-align:center;border-top:3px solid var(--paper);border-bottom:3px solid var(--paper);padding:8px 0;margin-bottom:12px}.ovrrow>div{flex:1}.ovrrow span{display:block;font-size:12px}.ovrrow b{font-size:32px;color:var(--gold);display:block}.ovrrow b.sm2{font-size:18px;line-height:40px}
 .hp .row{margin:6px 0}
 .tbox{border:3px solid var(--paper);background:#06130b;padding:10px 12px}
+.team-link{background:none;border:0;padding:0;margin:0;color:inherit;font:inherit;cursor:pointer;text-align:left}.team-link span{font-size:12px;text-decoration:underline;opacity:.85}
+.mkt-info p{margin:4px 0}.mkt-msg{font-weight:700;margin:10px 0}.hub-modal .wbody{overflow:auto}
 .team-play-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .team-play-row .btn.play{width:auto;margin:0;flex-shrink:0;font-size:15px;padding:10px 14px;white-space:nowrap}
 .slist{display:flex;flex-direction:column;gap:8px}.sitem{display:flex;justify-content:space-between;align-items:center;gap:10px;border:4px solid var(--paper);background:var(--navy);padding:8px 12px}.sitem .btn{margin:0;white-space:nowrap}
@@ -394,6 +396,15 @@ const TEAMS=[
  ['밀워키 브루어스','MLB',66,52,50],['시카고 컵스','MLB',58,80,68],['신시내티 레즈','MLB',50,48,42],['피츠버그 파이리츠','MLB',38,42,30],['세인트루이스 카디널스','MLB',70,76,64],
  ['LA 다저스','MLB',94,96,98],['샌디에이고 파드리스','MLB',68,64,76],['샌프란시스코 자이언츠','MLB',52,72,62],['애리조나 다이아몬드백스','MLB',54,44,46],['콜로라도 로키스','MLB',40,44,40]
 ].map(([name,org,win,fame,pay])=>({name,org,win,fame,pay}));
+/* 라이벌 구단: 라이벌 팀으로 옮기면 친정 팬들이 등을 돌린다(명성·멘탈 크게 하락)
+   KBO: 잠실 라이벌(LG–두산), 낙동강 더비(롯데–NC), 클래식 시리즈(롯데–삼성), 달빛 더비(삼성–KIA), 경인 더비(SSG–키움)
+   MLB: 양키스–레드삭스, 다저스–자이언츠, 컵스–카디널스, 서브웨이 시리즈, 프리웨이 시리즈, 크로스타운 클래식, NL 동부, 론스타 시리즈 */
+const KBO_RIVALS=[['LG 트윈스','두산 베어스'],['롯데 자이언츠','NC 다이노스'],['롯데 자이언츠','삼성 라이온즈'],['삼성 라이온즈','KIA 타이거즈'],['SSG 랜더스','키움 히어로즈']];
+const MLB_RIVALS=[['뉴욕 양키스','보스턴 레드삭스'],['LA 다저스','샌프란시스코 자이언츠'],['시카고 컵스','세인트루이스 카디널스'],['뉴욕 양키스','뉴욕 메츠'],['LA 다저스','LA 에인절스'],
+  ['시카고 컵스','시카고 화이트삭스'],['뉴욕 메츠','필라델피아 필리스'],['애틀랜타 브레이브스','뉴욕 메츠'],['휴스턴 애스트로스','텍사스 레인저스']];
+const RIVALS=KBO_RIVALS.concat(MLB_RIVALS);
+const isRival=(a,b)=>RIVALS.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
+const rivalsOf=a=>RIVALS.filter(r=>r.includes(a)).map(r=>r[0]===a?r[1]:r[0]);
 const UNIS=['강릉영동대학교','송호대학교','수성대학교','부산과학기술대학교','동원과학기술대학교','여주대학교'];
 const IND_TEAMS=['파주 챌린저스','연천 미라클','성남 맥파이스','수원 파인이그스','가평 웨일스','고양 위너스'];
 const REGIONS=['서울','부산','대구','인천','광주','대전','울산','세종','경기','강원','충북','충남','전북','전남','경북','경남','제주'];
@@ -459,7 +470,7 @@ function koLeague(L){
   return Object.assign({},d,{
     teams:d.teams&&d.teams.map(t=>[N(t[0])].concat(t.slice(1))),
     unis:d.unis&&(k.unis||d.unis.map(N)),ind:d.ind&&d.ind.map(N),regions:d.regions&&d.regions.map(N),
-    hs:d.hs&&keys(d.hs),fav:d.fav&&keys(d.fav)});
+    hs:d.hs&&keys(d.hs),fav:d.fav&&keys(d.fav),rivals:d.rivals&&d.rivals.map(r=>r.map(N))});
 }
 function setLeague(key,nat){
   if(!LEAGUES[key])key='KBO';
@@ -470,6 +481,7 @@ function setLeague(key,nat){
   rep(TEAMS,LG_SNAP.teams.map(t=>Object.assign({},t)));rep(KBO,LG_SNAP.kbo);rep(UNIS,LG_SNAP.unis);rep(IND_TEAMS,LG_SNAP.ind);rep(CREATE_REGIONS,LG_SNAP.regions);
   robj(HS_BY_REGION,LG_SNAP.hs);robj(FAV,LG_SNAP.fav);
   if(d.teams){rep(KBO,d.teams.map(t=>t[0]));const mlb=TEAMS.filter(t=>t.org==='MLB');rep(TEAMS,d.teams.map(([name,win,fame,pay])=>({name,org:'KBO',win,fame,pay})).concat(mlb))}
+  rep(RIVALS,(d.rivals||(key==='KBO'?KBO_RIVALS:[])).concat(MLB_RIVALS));
   if(d.unis)rep(UNIS,d.unis);
   if(d.ind)rep(IND_TEAMS,d.ind);
   if(d.regions)rep(CREATE_REGIONS,d.regions);
@@ -880,14 +892,14 @@ function loadGame(){HUBTAB='main';try{P=JSON.parse(localStorage.getItem(SK('b2ws
 function L(m){P.log.push(`${P.y}년 · ${m}`);if(P.log.length>300)P.log.shift()}
 function hofRead(){try{return JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]')}catch(e){return []}}
 const SETKEY='b2ws_set_v1';
-let SET={crt:true,rm:false},HUBSET=false,HUBSHARE=false,HUBCOFFEE=false,HUBRETIRE=false,SETCONF='',PREP_SEL=[],PREP_OPEN=false;
+let HUBMKT=false,SET={crt:true,rm:false},HUBSET=false,HUBSHARE=false,HUBCOFFEE=false,HUBRETIRE=false,SETCONF='',PREP_SEL=[],PREP_OPEN=false;
 const COFFEE_ACCOUNT='000-000-000000',CONTACT_EMAIL='janedoe@nowhere';
 const PREP_INJ=[-.025,0,.045,.095,.16,.24];
 try{Object.assign(SET,JSON.parse(localStorage.getItem(SETKEY)||'{}'))}catch(e){}
 function applySet(){try{document.documentElement.classList.toggle('no-crt',!SET.crt);document.documentElement.classList.toggle('rm',!!SET.rm)}catch(e){}}
 applySet();
 function toggleSet(k){SET[k]=!SET[k];try{localStorage.setItem(SETKEY,JSON.stringify(SET))}catch(e){}applySet();hub()}
-function closeHubModals(){HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';hub()}
+function closeHubModals(){HUBMKT=false;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';hub()}
 function careerShareText(){
   if(!P)return '';
   const o=ovr(),g=potG(),ti=titleOf();
@@ -1016,6 +1028,78 @@ function copyCoffeeAccount(){
   const done=()=>{try{alert('계좌번호를 복사했습니다.')}catch(_){}};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(COFFEE_ACCOUNT).then(done,()=>prompt('계좌번호',COFFEE_ACCOUNT));
   else prompt('계좌번호',COFFEE_ACCOUNT);
+}
+/* ============ 이적 시장 ============
+   프로(KBO·MLB 소속) 선수는 매 시즌 전 홈에서 현재 팀 이름을 눌러 연다
+   - 기본 정보: 남은 계약 기간 · 현재 연봉 · 지난 시즌 순위 · 라이벌 구단
+   - 계약 유지 / 연봉 인상 요구(시즌당 1번) / OVR에 맞는 구단들의 이적 제의(시즌당 1번 이적)
+   - 라이벌 구단으로 옮기면 명성 -3, 멘탈 -20 */
+function mktYear(){return P.y+(P.played?1:0)}
+function mktOpen(){return !!P&&(P.org==='KBO'||P.org==='MLB')&&isPro(P.lv)&&!(P.grace>0)}
+function teamLink(){
+  if(!mktOpen())return `<b>${P.team}</b>`;
+  const i=H.length;H.push(()=>{HUBMKT=true;hub()});
+  return `<button class="team-link" onclick="H[${i}]()"><b>${P.team}</b> <span>계약 · 이적 ▸</span></button>`;
+}
+function contractText(){
+  if(P.org==='KBO'&&!P.deal){const n=Math.max(0,faNeed()-(P.kboService||0));return n?`보류 선수 · FA까지 ${n}시즌`:'FA 자격 취득'}
+  const n=P.contract||0;return n>0?`${n}년 남음`:'계약 만료 (재계약 필요)';
+}
+function treatment(t,o){const b=teamBar(t);return o>=b+8?'핵심 전력 · 주전 보장':o>=b+2?'주전급 대우':o>=b-4?'주전 경쟁':'백업 · 육성'}
+function marketState(){
+  const y=mktYear();
+  if(P.mkt&&P.mkt.y===y&&P.mkt.team===P.team)return P.mkt;
+  const o=ovr(),abroadOk=P.org==='MLB'||(P.kboService||0)>=RULE.faAbroad;
+  const homeOk=!(P.amateurMLB&&!P.kboYears&&RULE.returnRule!=='free');
+  const pool=shuffle(TEAMS.filter(t=>t.name!==P.team&&teamFits(t,o)&&(t.org===P.org||(t.org==='MLB'&&abroadOk&&o>=75)||(t.org==='KBO'&&P.org==='MLB'&&homeOk))));
+  const offers=pool.slice(0,RI(2,3)).map(t=>{
+    const minor=t.org==='MLB'&&o<75;
+    return {team:t.name,org:t.org,minor,deal:Math.max(.05,Math.round(Math.min(offerCeiling(o,t.org,minor)*RAISE_MAX,offerDeal(o,t.org,t.pay,minor)*R(.9,1.1))*10)/10),yrs:offerYears(t,o),tstr:t.win/100,treat:treatment(t,o),rival:isRival(P.team,t.name)};
+  });
+  P.mkt={y,team:P.team,offers,raised:false,moved:false,msg:''};
+  return P.mkt;
+}
+function askRaise(){
+  const m=marketState();if(m.raised||m.moved)return;
+  m.raised=true;
+  const o=ovr(),org=P.org,pay=currentPay(),minor=org==='MLB'&&P.lv!=='MLB',ceil=offerCeiling(o,org,minor);
+  const idx=P.lastIdx||0,pct=idx>=1.5?.28:idx>=.6?.16:idx>=0?.08:0;
+  /* 지난 시즌 성적(lastIdx)이 좋을수록 인상 폭이 크다: 8% · 16% · 28%. 실력 기준 연봉의 1.2배가 상한 */
+  const want=Math.round(Math.min(ceil*RAISE_MAX,Math.max(pay,ceil)*(1+pct))*100)/100;
+  if(!pct||want<=pay+.05){mental(-3);m.msg=pct&&pay+.05>=ceil*RAISE_MAX?'구단: “이미 네 실력에 맞는 최고 대우다.” 인상은 무산됐다. (멘탈 -3)':'구단이 지난 시즌 성적을 이유로 인상을 거절했다. (멘탈 -3)'}
+  else{P.deal=want;P.contract=Math.max(P.contract||0,pct>=.16?3:2);mental(3);m.msg=`연봉 인상에 합의했다! ${payLabel(pay,org)} → ${payLabel(want,org)} · ${P.contract}년 (멘탈 +3)`;L('연봉 인상 — '+payLabel(want,org))}
+  hub();
+}
+function keepContract(){
+  const m=marketState();
+  if(!(P.contract>0)&&P.deal){P.contract=1;m.msg='1년 재계약에 사인했다.';L('1년 재계약 — '+P.team)}
+  HUBMKT=false;hub();
+}
+function moveTeam(i){
+  const m=marketState(),x=m.offers[i];if(!x||m.moved)return;
+  const old=P.team,back=P.org==='MLB'&&x.org==='KBO';
+  P.team=x.team;P.org=x.org;P.deal=x.deal;P.contract=x.yrs;P.tstr=x.tstr;P.lvYear=P.y;
+  if(x.org==='MLB'){const o=ovr();P.lv=(x.minor||o<75)?(o>=70?'AAA':o>=63?'AA':'A'):'MLB';if(P.lv==='MLB'&&!P.ach['MLB 빅리그 데뷔'])A('MLB 빅리그 데뷔')}
+  else{P.lv=ovr()>=65?'KBO1':'KBO2';if(P.lv==='KBO1'&&!P.ach['KBO 1군 데뷔'])A('KBO 1군 데뷔')}
+  let msg=`${x.team}로 이적했다. ${payLabel(x.deal,x.org)}/년 × ${x.yrs}년.${back?' 한국으로 돌아왔다.':''}`;
+  if(x.rival){fame(-3);mental(-20);msg+=` 라이벌 팀으로 간 배신자라는 비난이 쏟아졌다. ${old} 팬들이 유니폼을 불태웠다. (명성 -3, 멘탈 -20)`}
+  L(`이적 — ${old} → ${x.team}${x.rival?' (라이벌 이적)':''}`);
+  P.news.push(msg);
+  P.mkt=Object.assign(m,{team:P.team,moved:true,msg});
+  hub();
+}
+function hubMarketModal(){
+  const m=marketState(),cl=H.length;H.push(()=>{HUBMKT=false;hub()});
+  const org=P.org,cur=teamProfile(P.team),riv=rivalsOf(P.team),rk=lastRank(P.team);
+  const info=`<div class="tbox mkt-info"><b>${P.team}</b>${cur?` <span class="sub">${teamBlurb(cur)}</span>`:''}
+    <p>남은 계약 <b>${contractText()}</b></p><p>현재 연봉 <b>${payLabel(currentPay(),org)}</b></p>
+    ${rk?`<p>지난 시즌 순위 <b>${rk}</b></p>`:''}${riv.length?`<p>라이벌 <b>${riv.join(', ')}</b></p>`:''}</div>`;
+  const lock=m.moved?'<p class="sub">이번 이적 시장에서는 이미 팀을 옮겼다.</p>':'';
+  const keep=B(`<b>계약을 유지한다</b><span class="sub">${P.deal&&!(P.contract>0)?'1년 재계약':'현재 조건 그대로 다음 시즌을 맞는다'}</span>`,keepContract,'choice');
+  const raise=m.raised||m.moved?'':B('<b>연봉 인상을 요구한다</b><span class="sub">지난 시즌 성적이 좋을수록 받아들여질 가능성이 크다. 거절당하면 멘탈 -3</span>',askRaise,'choice');
+  const offers=m.moved?'':(m.offers.length?m.offers.map((x,i)=>B(`<b>${x.rival?'⚠ ':''}[${x.org}${x.minor?' 마이너':''}] ${x.team}</b><span class="sub">지난 시즌 ${lastRank(x.team)||'-'} · ${x.treat}<br>연봉 ${payLabel(x.deal,x.org)}/년 × ${x.yrs}년${x.rival?` · <b style="color:#c0392b">${P.team}의 라이벌 (명성 -3, 멘탈 -20)</b>`:''}</span>`,()=>moveTeam(i),'choice')).join('')
+    :'<p class="sub">지금 실력에 맞춰 연락해 온 구단이 없다.</p>');
+  return `<div class="backdrop hub-modal b2" onclick="H[${cl}]()"><div class="win" onclick="event.stopPropagation()"><div class="wbar"><span>${mktYear()} 시즌 이적 시장</span><button class="wx" onclick="H[${cl}]()">✕</button></div><div class="wbody">${info}${m.msg?`<p class="mkt-msg">${m.msg}</p>`:''}${lock}<div class="opts">${keep}${raise}</div>${m.moved?'':`<p style="margin-top:12px"><b>이적 제의</b> <span class="sub">현재 OVR에 맞는 구단들이 연락해 왔다</span></p><div class="opts">${offers}</div>`}</div></div></div>`;
 }
 function hubRetireModal(){
   const cl=H.length;H.push(()=>{HUBRETIRE=false;hub()});
@@ -1488,7 +1572,7 @@ function logPanel(){
 }
 let HUBTAB='main';
 const TABS=['shop','main','rec'],TABN={shop:['SHOP','상점'],main:['HOME','선수 홈'],rec:['CAREER','기록실']};
-function setTab(t){HUBTAB=t;SHOPCUSTWIN=false;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPCONS=false;SHOPLUX=false}hub()}
+function setTab(t){HUBTAB=t;HUBMKT=false;SHOPCUSTWIN=false;HUBSET=false;HUBSHARE=false;HUBCOFFEE=false;HUBRETIRE=false;SETCONF='';PREP_OPEN=false;PREP_SEL=[];if(t!=='shop'){SHOPCU=null;SHOPEDIT=null;SHOPCONS=false;SHOPLUX=false}hub()}
 function heroPanel(){
   const cu=P.cust;
   const rt=H.length;H.push(()=>{HUBRETIRE=true;hub()});
@@ -1512,7 +1596,7 @@ function mainTab(ny,na){
   const stats=`<div class="panel hp"><div class="ovrrow"><div><span class="sub">OVR</span><b>${o}${ovrDeltaMark()}</b></div><div><span class="sub">최근 시즌</span><b class="sm2">${last?last.lv:'-'}</b></div><div><span class="sub">최고 OVR</span><b>${Math.max(P.peak||0,o)}</b></div></div>
     ${P.labels.map((l,i)=>bar(l,P.st[i],P.lastDelta&&P.lastDelta[i])).join('')}${bar('멘탈',P.mental,P.lastMen)}${bar('명성',Math.min(P.fame,10)*10)}
     <p class="sub" style="margin-top:10px">${isPro(P.lv)||P.lv==='MIL'?`통산 수입 ${won(P.money)} · `:''}보유 ${moneyPair(P.money)}</p></div>`;
-  const play=`<div class="panel hp home-play"><div class="tbox team-play-row"><div><b>${P.team}</b> <span class="sub">팀 OVR ${teamOvr()}</span><br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
+  const play=`<div class="panel hp home-play"><div class="tbox team-play-row"><div>${teamLink()} <span class="sub">팀 OVR ${teamOvr()}</span><br><span class="sub">${lvLabel()} · ${na}세${RULE.mil==='none'?'':P.mil==='exempt'?' · 병역특례':P.mil==='done'?' · 병역필':P.mil==='none'?' · 병역 미필':' · 복무 중'}${faInfo}</span></div>${B('▶ 게임 플레이하기',playNext,'play')}</div><p class="sub" style="margin-top:10px">다음 시즌 ${ny}년${last?` · 지난 시즌: ${last.line}`:''}</p></div>`;
   const coach=`<div class="panel hp home-coach"><p class="sub">코치 조언</p><p style="font-size:17px;margin:8px 0">“${c.text}”</p><p class="sub">가장 약한 능력은 <b style="color:#b8860b">${c.low[0]}</b>, 가장 강한 능력은 <b style="color:#b8860b">${c.high[0]}</b>입니다.</p></div>`;
   return `<div class="hgrid">${heroPanel()}${stats}${play}${coach}</div>`;
 }
@@ -1614,7 +1698,7 @@ function hub(){
     const topb=hubTopbar();
     const body=HUBTAB==='shop'?shopTab():HUBTAB==='rec'?recTab():mainTab(ny,na);
     const nav=`<div class="hnav">${TABS.map(t=>B(`<small>${TABN[t][0]}</small>${TABN[t][1]}`,()=>setTab(t),'hn'+(t===HUBTAB?' on':''))).join('')}</div>`;
-    const mod=(HUBSET?hubSettingsModal():'')+(HUBSHARE?hubShareModal():'')+(HUBCOFFEE?hubCoffeeModal():'')+(HUBRETIRE?hubRetireModal():'')+(PREP_OPEN?prepOverlay():'')+(SEAS_MODE?seasonOverlay():'');
+    const mod=(HUBSET?hubSettingsModal():'')+(HUBSHARE?hubShareModal():'')+(HUBCOFFEE?hubCoffeeModal():'')+(HUBRETIRE?hubRetireModal():'')+(HUBMKT?hubMarketModal():'')+(PREP_OPEN?prepOverlay():'')+(SEAS_MODE?seasonOverlay():'');
     return topb+hofBanner()+body+nav+mod;
   },true);
 }
@@ -2334,10 +2418,32 @@ function teamResult(lg,idx){
     return {t:rs.length?'전국대회 우승 없이 시즌을 마쳤다':'지역 예선 탈락'};
   }
   if(lg==='UNI'){if(t>.82){A('대학리그 우승');return {t:'대학리그 우승!',tag:'대학리그 우승'}}return {t:t>.5?'대학리그 중상위권':'대학리그 하위권'}}
-  if(lg==='KBO2')return {t:`퓨처스리그 ${RI(1,10)}위`};
+  if(lg==='KBO2'){makeStandings('KBO',0);return {t:`퓨처스리그 ${RI(1,10)}위`}}
   if(lg==='IND')return {t:`독립리그 ${RI(1,6)}위`};
-  if(isMin(lg))return {t:`${LV[lg]} ${RI(1,12)}위`};
-  return postseason(t,lg==='KBO1'?'KBO':'MLB');
+  if(isMin(lg)){makeStandings('MLB',0);return {t:`${LV[lg]} ${RI(1,12)}위`}}
+  const org=lg==='KBO1'?'KBO':'MLB',r=postseason(t,org);
+  makeStandings(org,ownSeed(org,t,r.t||''));
+  return r;
+}
+/* 지난 시즌 순위: 시즌이 끝날 때 리그 순위표를 만든다. 내 팀은 이번 시즌 결과(가을야구 성적)에 맞는 자리에 둔다 */
+function ownSeed(org,t,txt){
+  const n=TEAMS.filter(x=>x.org===org).length,m=txt.match(/정규시즌 (\d+)위/);
+  if(org==='MLB')return /가을야구 실패/.test(txt)?RI(13,n):t>.8?RI(1,4):t>.7?RI(3,8):RI(6,12);
+  if(m)return Math.min(+m[1],n);
+  return t>.8?1:t>.7?2:t>.6?3:RI(4,5);
+}
+function makeStandings(org,seed){
+  const ts=TEAMS.filter(x=>x.org===org),sc=x=>x.win/100*.65+Math.random()*.35;
+  const mine=seed&&ts.some(x=>x.name===P.team);
+  const list=ts.filter(x=>!mine||x.name!==P.team).map(x=>[x.name,sc(x)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  if(mine)list.splice(C(seed-1,0,list.length),0,P.team);
+  (P.stand=P.stand||{})[org]={y:P.y,list};
+}
+function lastRank(name){
+  const t=teamProfile(name);if(!t||(t.org!=='KBO'&&t.org!=='MLB'))return '';
+  if(!P.stand||!P.stand[t.org])makeStandings(t.org,0);
+  const s=P.stand[t.org],i=s.list.indexOf(name);
+  return i<0?'':`${s.y}년 ${i+1}위 / ${s.list.length}팀`;
 }
 function seasonGames(lg,gf){
   if(lg==='MIL')return P.milType==='상무'?Math.round(96*C(gf,0,1)):0;
@@ -2461,9 +2567,11 @@ function payLabel(deal,org){
   const w=won(deal);
   return org==='MLB'&&RULE.cur!=='USD'?`${w} · ${usdText(deal)}`:w;
 }
+/* 계약 연봉은 실력 기준 연봉(cap)의 최대 1.2배까지 (성적으로 받아낸 인상분) */
+const RAISE_MAX=1.2;
 function currentPay(){
   const cap=yearlyPay(ovr(),P.lv==='MLB');
-  if(P.deal)return Math.min(P.deal,cap);
+  if(P.deal)return Math.min(P.deal,cap*RAISE_MAX);
   return cap;
 }
 function offerCeiling(o,org,minor){return yearlyPay(o,org==='MLB'&&!minor)}
@@ -2560,6 +2668,7 @@ function afterSeason(){
   if(P.grace>0){P.grace--;if(P.grace>0||P.lv==='MIL')return hub();return draftIntro('ABR')}
   ensureFaState();
   if(P.org==='KBO'){
+    if(P.deal&&P.contract>0)P.contract--;
     if(P.faEligible)return faScreen(false);
     if(Math.random()<.08)return tradeNotice();
     return hub();

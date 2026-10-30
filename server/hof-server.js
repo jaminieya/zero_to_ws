@@ -100,7 +100,11 @@ const server = http.createServer((req, res) => {
   const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.socket.remoteAddress;
   if (limited(ip)) return send(res, 429, { error: 'too many requests' });
   let body = '', over = false;
-  req.on('data', c => { body += c; if (body.length > MAX_BODY) { over = true; req.destroy(); } });
+  req.on('data', c => {
+    if (over) return;
+    body += c;
+    if (body.length > MAX_BODY) { over = true; res.setHeader('Connection', 'close'); send(res, 413, { error: 'entry too large' }); res.on('finish', () => req.destroy()); }
+  });
   req.on('end', () => {
     if (over) return;
     let e;

@@ -531,10 +531,10 @@ function setLang(l){if(l===LANG)return;try{localStorage.setItem('b2ws_lang',l)}c
 function langPicker(){
   return `<div class="lang-pick" data-notr>${LANGS.map(([k,n])=>B(n,()=>setLang(k),k===LANG?'':'alt')).join('')}</div>`;
 }
-const ROLE={PW:'강속구형 투수',CT:'제구형 투수',FN:'기교파 투수',SP:'선발투수',MR:'계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
-const PITCH_ROLES=['PW','CT','FN'],HIT_ROLES=['IF','OF','DH'];
-const ROLE_SUB={PW:'강속구형',CT:'제구형',FN:'기교파',SP:'선발',MR:'계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
-const ROLE_DESC={PW:'구속은 빠르지만 제구가 흔들린다',CT:'구속은 느려도 원하는 곳에 꽂는다',FN:'지치지 않고 오래 던진다',SP:'긴 이닝을 책임지는 에이스',MR:'승부처를 이어주는 허리',CL:'9회, 경기를 끝내는 사람',IF:'유격수·3루·2루·1루',OF:'타격·주루·어깨',DH:'수비 없이 방망이로 승부'};
+const ROLE={CO:'컨택트 타자',BA:'밸런스 타자',SL:'슬러거',PW:'강속구형 투수',CT:'제구형 투수',FN:'기교파 투수',SP:'선발투수',MR:'계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
+const PITCH_ROLES=['PW','CT','FN'],HIT_ROLES=['CO','BA','SL'];
+const ROLE_SUB={CO:'컨택트',BA:'밸런스',SL:'슬러거',PW:'강속구형',CT:'제구형',FN:'기교파',SP:'선발',MR:'계투',CL:'마무리',IF:'내야수',OF:'외야수',DH:'지명타자'};
+const ROLE_DESC={CO:'정확하게 맞히고 빠르게 달린다',BA:'모든 능력이 고르다',SL:'한 방으로 경기를 뒤집는다',PW:'구속은 빠르지만 제구가 흔들린다',CT:'구속은 느려도 원하는 곳에 꽂는다',FN:'지치지 않고 오래 던진다',SP:'긴 이닝을 책임지는 에이스',MR:'승부처를 이어주는 허리',CL:'9회, 경기를 끝내는 사람',IF:'유격수·3루·2루·1루',OF:'타격·주루·어깨',DH:'수비 없이 방망이로 승부'};
 const isSP=()=>P.role==='SP'||['PW','CT','FN'].includes(P.role);
 const LV={HS:'고교야구',UNI:'2년제 대학야구',KBO2:'KBO 퓨처스(2군)',KBO1:'KBO 1군',A:'MLB 마이너 A',AA:'MLB 마이너 AA',AAA:'MLB 마이너 AAA',MLB:'메이저리그',IND:'독립야구단',MIL:'군 복무'};
 const REQ={HS:42,UNI:52,KBO2:52,KBO1:60,A:52,AA:58,AAA:64,MLB:70,IND:50,MIL:54};
@@ -662,11 +662,17 @@ const panel=(h,b)=>`<div class="panel"><h2>${h}</h2>${b}</div>`;
    구위: 강속구형 >= 기교파 > 제구형     체력: 기교파 >= 제구형 > 강속구형
    회복력: 기교파 > 제구형 > 강속구형 */
 const PITCH_FIXED={PW:[58,32,52,43,40],CT:[39,56,43,45,42],FN:[44,43,48,46,44]};
+/* 컨택 · 파워 · 선구안 · 주루 · 수비 (합계 225 = OVR 45)
+   컨택: 컨택트 > 밸런스 > 슬러거      파워: 슬러거 > 밸런스 > 컨택트
+   주루: 컨택트 > 밸런스 > 슬러거      밸런스는 모든 능력 45 */
+const HIT_FIXED={CO:[56,34,48,50,37],BA:[45,45,45,45,45],SL:[38,60,47,37,43]};
 function rollStats(kind,role){
   const pitcher=kind==='P';
   const labels=pitcher?['구속','제구','구위','체력','회복력']:['컨택','파워','선구안','주루','수비'];
   const st=labels.map(()=>RI(34,50));
   /* 투수 유형은 고정 능력치 (합계 225 = OVR 45) */
+  const fixed=PITCH_FIXED[role]||HIT_FIXED[role];
+  if(fixed)return {labels,st:fixed.slice(),pot:Math.round(C(58+Math.abs(G())*16+R(0,6),58,97))};
   if(PITCH_FIXED[role])return {labels,st:PITCH_FIXED[role].slice(),pot:Math.round(C(58+Math.abs(G())*16+R(0,6),58,97))};
   if(role==='CL'){st[0]+=5;st[2]+=7;st[1]-=3;st[3]-=5}
   if(role==='MR'){st[0]+=2;st[2]+=3;st[3]-=1}
@@ -2049,7 +2055,7 @@ function statline(lg,idx,gf){
   }
   const pa=Math.round(g*R(3.45,4.15)*sc),ab=Math.round(pa*.9);
   const avg=C(.262+idx*.034+(P.st[0]-60)/1100,.17,.39);
-  const rf=P.role==='IF'?.85:P.role==='DH'?1.15:1.05;
+  const rf={CO:.8,BA:1,SL:1.2,IF:.85,DH:1.15}[P.role]||1.05;
   const volume=pa/560;
   const hr=Math.round(C((P.st[1]/100)*30*(1+idx*.3)*rf*volume*hit,0,62));
   const rbi=Math.round(hr*1.9+pa*.045*(1+idx*.25));

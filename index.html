@@ -1698,10 +1698,21 @@ function trainScreen(){
   }
   openPrepCamp();
 }
+/* 에이징 커브: 능력치마다 하락이 시작되는 나이(from)와 속도(k)가 다르다
+   하락 시작 뒤 해마다 평균 0.6 + k×(나이-시작) 만큼 깎인다
+   타자: 주루 27 → 수비 29 → 컨택·파워 31 → 선구안 33 (스피드가 가장 먼저, 눈은 가장 늦게)
+   투수: 구속 28 → 회복력 29 → 구위·체력 30 → 제구 33 (구속이 먼저, 제구는 30대 초반까지 오른다)
+   선구안·제구는 27세 이후에도 하락 전까지 조금씩 오른다 */
+const AGE_CURVE={
+  h:[{from:31,k:.25},{from:31,k:.3},{from:33,k:.2,late:true},{from:27,k:.25},{from:29,k:.25}],
+  p:[{from:28,k:.3},{from:33,k:.2,late:true},{from:30,k:.25},{from:30,k:.25},{from:29,k:.3}]
+};
 function grow(){
-  const a=P.age;
-  P.st=P.st.map(s=>{const c=C((P.pot-s)/25,.25,1.4);let d;
-    if(a<=18)d=R(1.5,5)*c;else if(a<=21)d=R(1,4)*c;else if(a<=26)d=R(0,2.5)*c;else if(a<=30)d=R(-1,1);else if(a<=34)d=R(-2.6,.2);else d=R(-3.8,-.8);
+  const a=P.age,cv=AGE_CURVE[P.pitcher?'p':'h'];
+  P.st=P.st.map((s,i)=>{const c=C((P.pot-s)/25,.25,1.4),g=cv[i];let d;
+    if(a<=18)d=R(1.5,5)*c;else if(a<=21)d=R(1,4)*c;else if(a<=26)d=R(0,2.5)*c;
+    else if(a<g.from)d=g.late?R(-.5,1.2):R(-1,1);
+    else d=-(.6+g.k*(a-g.from))+R(-.8,.8);
     return C(Math.round((s+d)*10)/10,15,99)});
   const q=k=>(P.eq&&P.eq[k])||0,add=(i,v)=>{if(v)P.st[i]=C(Math.round((P.st[i]+v)*10)/10,15,99)};
   add(0,.3*q('weapon'));add(P.pitcher?1:4,.3*q('glove'));add(3,.3*q('spike'));
@@ -2496,9 +2507,25 @@ function nextSeason(first){
   P.mod=null;P.planPicks=[];P.eventNote='';P.seasNews=[];P.hsRun=null;
   if(!first){P.age++;P.y++}
   if(P.outLeft>0)P.news.push('재활 시즌: 작년 부상으로 이번 시즌도 뛸 수 없다.');
-  if(isPro(P.lv)&&(P.age>=42||(P.age>=30&&ovr()<46))){P.retire=true;return ending()}
+  const why=retireCheck();if(why){P.retire=true;P.retireWhy=why;return ending()}
+  if(!first){const cv=AGE_CURVE[P.pitcher?'p':'h'],fall=P.labels.filter((l,i)=>cv[i].from===P.age);
+    if(fall.length)P.news.push(`에이징 커브: ${fall.join('·')} 능력이 떨어지기 시작했다. 나이는 속일 수 없다.`)}
   if(RULE.mil!=='none'&&isPro(P.lv)&&P.mil==='none'&&P.age>=27)return militaryChoice(P.age===27&&!P.deferred);
   proceed();
+}
+/* 강제 은퇴 (새 시즌 시작 시 판정)
+   - 45세: 신체 한계. MLB 최고령급(콜론·힐 45세), KBO 오승환 43세 은퇴
+   - 30세 이상: 최하위 리그(KBO 2군 / 싱글A) 기준에서 6 이상 모자라면 방출 → 은퇴
+   - 33세 이상 A·AA: 유망주가 아닌 노장은 하위 마이너에 자리가 없다
+   - 36세 이상 2군·AAA: 1군/빅리그에 못 올라가는 베테랑은 유니폼을 벗는다 */
+function retireCheck(){
+  if(!isPro(P.lv))return '';
+  if(P.age>=45)return '마흔다섯, 몸이 더는 버텨주지 않았다. 마지막 시즌을 끝으로 글러브를 내려놓았다.';
+  if(P.age<30)return '';
+  if(ovr()<(P.org==='MLB'?REQ.A:REQ.KBO2)-6)return '구단으로부터 방출 통보를 받았다. 불러주는 팀은 더 이상 없었다.';
+  if(P.age>=33&&(P.lv==='A'||P.lv==='AA'))return '하위 마이너에 서른을 훌쩍 넘긴 선수의 자리는 없었다. 방출 뒤 은퇴를 결심했다.';
+  if(P.age>=36&&(P.lv==='KBO2'||P.lv==='AAA'))return '다시 1군 무대를 밟을 수 없다는 걸 받아들였다. 정든 유니폼을 벗기로 했다.';
+  return '';
 }
 function proceed(){PREP_SEL=[];movement();P.news.forEach(n=>L(n));trainScreen()}
 function movement(){
@@ -2693,9 +2720,10 @@ function ending(){
   const role=roleLabel();
   try{const l=JSON.parse(localStorage.getItem(SK('b2ws_hof'))||'[]');l.push({name:P.name,role,grade:g,score:s,title:ti,kbo:P.kbo1Years,mlb:P.mlbYears,card:cardHtml(P,{ovr:ovr(),pot:potG()})});l.sort((a,b)=>b.score-a.score);localStorage.setItem(SK('b2ws_hof'),JSON.stringify(l.slice(0,10)))}catch(e){}
   const ach=Object.keys(P.ach).map(k=>`<span class="tag g">${k}${P.ach[k]>1?' ×'+P.ach[k]:''}</span>`).join('')||'<span class="sub">(없음)</span>';
-  const epi=(P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다. ':'')+(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
+  const why=P.injRetire?'큰 부상으로 선수 생활을 일찍 마감했다.':(P.retireWhy||'');
+  const epi=(g==='S'?'은퇴식 날, 구단은 당신의 등번호를 영구결번으로 지정했다. 소년들은 오늘도 당신의 투구/스윙 영상을 돌려본다.':g==='A'?'은퇴 후 몇 년이 지나 명예의 전당 입성 소식이 전해졌다.':g==='B'?'팬들은 당신이 뛰던 시절을 “그때가 좋았지”하고 기억한다.':g==='C'?'화려하진 않았지만 팀의 한 시대를 묵묵히 받쳐준 선수로 남았다.':g==='D'?'1군 무대를 밟았다는 사실, 그것만으로도 대단한 일이다.':'벤치에서 시작했고, 끝내 벤치를 떠나지 못했다. 그래도 야구는 즐거웠다.');
   const share=`⚾ 「${GAME_NAME}」 ${P.name}(${role}) — ${g}등급 ${gd}\n${ti}\nKBO ${P.kbo1Years}시즌 · MLB ${P.mlbYears}시즌 · 통산 ${won(P.money)}\n나도 해보기 👉 `;
-  show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점</p><p>${epi}</p></div>`
+  show(()=>`<div class="panel" style="text-align:center"><p class="sub">${P.y}년, ${P.age}세 — 은퇴</p><div class="big">${g}</div><h2 style="font-size:22px">${ti}</h2><p>${gd} · 레전드 점수 ${s}점</p>${why?`<p>${why}</p>`:''}<p>${epi}</p></div>`
    +panel('커리어 요약',`<p>${P.name} · ${role} · ${P.region} 출신</p><p>KBO 1군 ${P.kbo1Years}시즌 (프로 ${P.kboYears}시즌) · MLB ${P.mlbYears}시즌</p><p>${RULE.mil==='none'?'':`병역: ${P.mil==='exempt'?'특례 면제':P.mil==='done'?'군 복무 완료':'미필'} · `}통산 수입 ${won(P.money)}</p><p>${ach}</p>`)
    +panel('시즌별 기록',`<div class="scroll"><table><tr><th>연도</th><th>나이</th><th>소속</th><th>리그</th><th>성적</th><th>기록</th></tr>${P.hist.map(h=>`<tr><td>${h.y}</td><td>${h.age}</td><td>${h.team}</td><td>${h.lv}</td><td>${h.line}</td><td>${h.tags.join(', ')}</td></tr>`).join('')}</table></div>`)
    +`<div>${B('결과 공유(복사)',()=>{const txt=TR(share)+location.href;if(navigator.share){navigator.share({text:TR(share),url:location.href}).catch(()=>{})}else if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('복사했어요!'),()=>prompt('복사해서 공유하세요',txt))}else prompt('복사해서 공유하세요',txt)})}${B('Hall of Fame',hofScreen)}${B('메인 메뉴',menu,'alt')}</div>`);
